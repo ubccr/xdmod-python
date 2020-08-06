@@ -66,7 +66,7 @@ class DataWareHouse:
 
         return self.xdmodcsvtopandas(csvdata)
 
-    def get_usagedata(config):
+    def get_usagedata(self, config):
 
         crl = pycurl.Curl()
         crl.setopt(crl.URL, self.xdmodhost + '/controllers/user_interface.php')
@@ -81,7 +81,7 @@ class DataWareHouse:
 
         return get_body.decode('utf8')
 
-    def xdmodcsvtopandas(rd):
+    def xdmodcsvtopandas(self, rd):
         groups = []
         data = []
         for line_num, line in enumerate(rd):
