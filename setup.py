@@ -11,7 +11,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         'numpy',
-        'csv',
         'pandas',
         'pycurl',
         'mariadb'
