@@ -4,6 +4,7 @@ import csv
 import pycurl
 from urllib.parse import urlencode
 import pandas as pd
+import io
 
 class DataWareHouse:
     def __init__(self, xdmodhost, apikey):
@@ -71,7 +72,7 @@ class DataWareHouse:
         crl = pycurl.Curl()
         crl.setopt(crl.URL, self.xdmodhost + '/controllers/user_interface.php')
         pf = urlencode(config)
-        b_obj = BytesIO()
+        b_obj = io.BytesIO()
         crl.setopt(crl.WRITEDATA, b_obj)
         crl.setopt(crl.POSTFIELDS, pf)
         crl.perform()
