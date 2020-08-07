@@ -5,6 +5,7 @@ import json
 import os
 import csv
 from urllib.parse import urlencode
+import re
 
 import numpy
 import pycurl
@@ -150,6 +151,7 @@ class DataWareHouse:
 
         csvdata = csv.reader(response.splitlines())
 
+        labelre = re.compile(r'\[([^\]]+)\].*')
         timestamps = []
         data = []
         for line_num, line in enumerate(csvdata):
@@ -159,7 +161,13 @@ class DataWareHouse:
                 start, end = line
             elif line_num == 7:
                 timeunit = line[0]
-                dimensions = line[1:]
+                dimensions = []
+                for label in line[1:]:
+                    match = labelre.match(label)
+                    if match:
+                        dimensions.append(match.group(1))
+                    else:
+                        dimensions.append(label)
             elif line_num > 7 and len(line) > 1:
                 # TODO handle non-days case
                 timestamps.append(datetime.strptime(line[0], "%Y-%m-%d"))
