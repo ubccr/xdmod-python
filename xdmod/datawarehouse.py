@@ -1,12 +1,14 @@
-import numpy
-import csv
-import pycurl
-from urllib.parse import urlencode
-import pandas as pd
+from datetime import datetime
 import io
 import tempfile
 import json
 import os
+import csv
+from urllib.parse import urlencode
+
+import numpy
+import pycurl
+import pandas as pd
 
 
 class DataWareHouse:
@@ -106,6 +108,64 @@ class DataWareHouse:
         self.descriptor = response['data'][0]
 
         return self.descriptor
+
+    def timeseries(self, realm, dimension, metric, start, end):
+        """ Undergoing prototype testing at the moment """
+
+        config = {
+            'start_date': start,
+            'end_date': end,
+            'realm': realm,
+            'statistic': metric,
+            'group_by': dimension,
+            'public_user': 'true',
+            'timeframe_label': '2016',
+            'scale': '1',
+            'aggregation_unit': 'Auto',
+            'dataset_type': 'timeseries',
+            'thumbnail': 'n',
+            'query_group': 'po_usage',
+            'display_type': 'line',
+            'combine_type': 'side',
+            'limit': '10',
+            'offset': '0',
+            'log_scale': 'n',
+            'show_guide_lines': 'y',
+            'show_trend_line': 'y',
+            'show_percent_alloc': 'n',
+            'show_error_bars': 'y',
+            'show_aggregate_labels': 'n',
+            'show_error_labels': 'n',
+            'show_title': 'y',
+            'width': '916',
+            'height': '484',
+            'legend_type': 'bottom_center',
+            'font_size': '3',
+            'inline': 'n',
+            'operation': 'get_data',
+            'format': 'csv'
+        }
+
+        response = self.get_usagedata(config)
+
+        csvdata = csv.reader(response.splitlines())
+
+        timestamps = []
+        data = []
+        for line_num, line in enumerate(csvdata):
+            if line_num == 1:
+                title = line[0]
+            elif line_num == 5:
+                start, end = line
+            elif line_num == 7:
+                timeunit = line[0]
+                dimensions = line[1:]
+            elif line_num > 7 and len(line) > 1:
+                # TODO handle non-days case
+                timestamps.append(datetime.strptime(line[0], "%Y-%m-%d"))
+                data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+
+        return pd.DataFrame(data=data, index=timestamps, columns=dimensions)
 
     def aggregate(self, realm, dimension, metric, start, end):
 
