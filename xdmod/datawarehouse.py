@@ -6,6 +6,7 @@ import os
 import csv
 from urllib.parse import urlencode
 import re
+import html
 
 import numpy
 import pycurl
@@ -165,9 +166,9 @@ class DataWareHouse:
                 for label in line[1:]:
                     match = labelre.match(label)
                     if match:
-                        dimensions.append(match.group(1))
+                        dimensions.append(html.unescape(match.group(1)))
                     else:
-                        dimensions.append(label)
+                        dimensions.append(html.unescape(label))
             elif line_num > 7 and len(line) > 1:
                 # TODO handle non-days case
                 timestamps.append(datetime.strptime(line[0], "%Y-%m-%d"))
@@ -241,7 +242,7 @@ class DataWareHouse:
             elif line_num == 7:
                 group, metric = line
             elif line_num > 7 and len(line) > 1:
-                groups.append(line[0])
+                groups.append(html.unescape(line[0]))
                 data.append(numpy.float64(line[1]))
 
-        return pd.DataFrame(data=data, index=groups)
+        return pd.DataFrame(data=data, index=groups, columns=[metric, ])
