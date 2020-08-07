@@ -4,11 +4,102 @@ import pycurl
 from urllib.parse import urlencode
 import pandas as pd
 import io
+import tempfile
+import json
+import os
+
 
 class DataWareHouse:
-    def __init__(self, xdmodhost, apikey):
+    """ Access the XDMoD datawarehouse via XDMoD's network API """
+
+    def __init__(self, xdmodhost, apikey=None):
         self.xdmodhost = xdmodhost
         self.apikey = apikey
+        self.crl = None
+        self.cookiefile = None
+        self.descriptor = None
+
+        if not self.apikey:
+            try:
+                self.apikey = {
+                    'username': os.environ['XDMOD_USER'],
+                    'password': os.environ['XDMOD_PASS']
+                }
+            except KeyError:
+                pass
+
+    def __enter__(self):
+        self.crl = pycurl.Curl()
+        if self.apikey:
+            _, self.cookiefile = tempfile.mkstemp()
+            self.crl.setopt(pycurl.COOKIEJAR, self.cookiefile)
+            self.crl.setopt(pycurl.COOKIEFILE, self.cookiefile)
+
+            self.crl.setopt(pycurl.URL, self.xdmodhost + '/rest/auth/login')
+            pf = urlencode(self.apikey)
+            b_obj = io.BytesIO()
+            self.crl.setopt(pycurl.WRITEDATA, b_obj)
+            self.crl.setopt(pycurl.POSTFIELDS, pf)
+            self.crl.perform()
+
+            response = json.loads(b_obj.getvalue().decode('utf8'))
+            if response['success'] is True:
+                token = response['results']['token']
+                self.crl.setopt(pycurl.HTTPHEADER, ['Token: ' + token])
+            else:
+                raise RuntimeError('Access Denied')
+
+            print("logged in as " + response['results']['name'])
+
+        return self
+
+    def __exit__(self, tpe, value, tb):
+        if self.cookiefile:
+            os.unlink(self.cookiefile)
+        if self.crl:
+            self.crl.close()
+
+    def realms(self):
+        info = self.get_descriptor()
+        return [*info['realms']]
+
+    def metrics(self, realm):
+        info = self.get_descriptor()
+        output = []
+        for metric, minfo in info['realms'][realm]['metrics'].items():
+            output.append((metric, minfo['text'] + ': ' + minfo['info']))
+        return output
+
+    def dimensions(self, realm):
+        info = self.get_descriptor()
+        output = []
+        for dimension, dinfo in info['realms'][realm]['dimensions'].items():
+            output.append((dimension, dinfo['text'] + ': ' + dinfo['info']))
+        return output
+
+    def get_descriptor(self):
+        if self.descriptor:
+            return self.descriptor
+
+        self.crl.setopt(pycurl.URL,
+                        self.xdmodhost + '/controllers/metric_explorer.php')
+        config = {'operation': 'get_dw_descripter'}
+        pf = urlencode(config)
+        b_obj = io.BytesIO()
+        self.crl.setopt(pycurl.WRITEDATA, b_obj)
+        self.crl.setopt(pycurl.POSTFIELDS, pf)
+        self.crl.perform()
+
+        get_body = b_obj.getvalue()
+
+        response = json.loads(get_body.decode('utf8'))
+
+        if response['totalCount'] != 1:
+            raise RuntimeError('Retrieving XDMoD data descriptor')
+
+        self.descriptor = response['data'][0]
+
+        return self.descriptor
 
     def aggregate(self, realm, group_by, statistic, start, end):
 
@@ -53,14 +144,13 @@ class DataWareHouse:
 
     def get_usagedata(self, config):
 
-        crl = pycurl.Curl()
-        crl.setopt(crl.URL, self.xdmodhost + '/controllers/user_interface.php')
+        self.crl.setopt(pycurl.URL,
+                        self.xdmodhost + '/controllers/user_interface.php')
         pf = urlencode(config)
         b_obj = io.BytesIO()
-        crl.setopt(crl.WRITEDATA, b_obj)
-        crl.setopt(crl.POSTFIELDS, pf)
-        crl.perform()
-        crl.close()
+        self.crl.setopt(pycurl.WRITEDATA, b_obj)
+        self.crl.setopt(pycurl.POSTFIELDS, pf)
+        self.crl.perform()
 
         get_body = b_obj.getvalue()
 
