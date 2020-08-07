@@ -12,7 +12,6 @@ setup(
     install_requires=[
         'numpy',
         'pandas',
-        'pycurl',
-        'mariadb'
+        'pycurl'
     ]
 )
