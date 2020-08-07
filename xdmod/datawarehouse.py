@@ -15,6 +15,7 @@ class DataWareHouse:
     def __init__(self, xdmodhost, apikey=None):
         self.xdmodhost = xdmodhost
         self.apikey = apikey
+        self.logged_in = None
         self.crl = None
         self.cookiefile = None
         self.descriptor = None
@@ -46,10 +47,9 @@ class DataWareHouse:
             if response['success'] is True:
                 token = response['results']['token']
                 self.crl.setopt(pycurl.HTTPHEADER, ['Token: ' + token])
+                self.logged_in = response['results']['name']
             else:
                 raise RuntimeError('Access Denied')
-
-            print("logged in as " + response['results']['name'])
 
         return self
 
@@ -58,6 +58,12 @@ class DataWareHouse:
             os.unlink(self.cookiefile)
         if self.crl:
             self.crl.close()
+        self.logged_in = None
+
+    def whoami(self):
+        if self.logged_in:
+            return self.logged_in
+        return "Not logged in"
 
     def realms(self):
         info = self.get_descriptor()
@@ -101,14 +107,14 @@ class DataWareHouse:
 
         return self.descriptor
 
-    def aggregate(self, realm, group_by, statistic, start, end):
+    def aggregate(self, realm, dimension, metric, start, end):
 
         config = {
             'start_date': start,
             'end_date': end,
             'realm': realm,
-            'statistic': statistic,
-            'group_by': group_by,
+            'statistic': metric,
+            'group_by': dimension,
             'public_user': 'true',
             'timeframe_label': '2016',
             'scale': '1',
