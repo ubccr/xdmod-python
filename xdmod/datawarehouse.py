@@ -257,7 +257,7 @@ class DataWareHouse:
         self.crl.perform()
 
         get_body = b_obj.getvalue()
-        return pd.DataFrame(json.loads(get_body.decode('utf8')), columns=stats)
+        return pd.DataFrame(json.loads(get_body.decode('utf8')), columns=stats, dtype=numpy.float64)
 
     def xdmodcsvtopandas(self, rd):
         groups = []

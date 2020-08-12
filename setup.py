@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name="xdmod",
-    version="0.0.11",
+    version="0.0.12",
     description='Python driver for XDMoD',
     license='LGPLv3',
     author='Joseph P White',
