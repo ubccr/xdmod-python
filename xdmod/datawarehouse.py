@@ -23,6 +23,7 @@ class DataWareHouse:
         self.crl = None
         self.cookiefile = None
         self.descriptor = None
+        self.headers = ''
 
         if not self.apikey:
             try:
@@ -50,7 +51,8 @@ class DataWareHouse:
             response = json.loads(b_obj.getvalue().decode('utf8'))
             if response['success'] is True:
                 token = response['results']['token']
-                self.crl.setopt(pycurl.HTTPHEADER, ['Token: ' + token])
+                self.headers = ['Token: ' + token]
+                self.crl.setopt(pycurl.HTTPHEADER, self.headers)
                 self.logged_in = response['results']['name']
             else:
                 raise RuntimeError('Access Denied')
@@ -96,6 +98,7 @@ class DataWareHouse:
         config = {'operation': 'get_dw_descripter'}
         pf = urlencode(config)
         b_obj = io.BytesIO()
+        self.crl.setopt(pycurl.HTTPHEADER, self.headers)
         self.crl.setopt(pycurl.WRITEDATA, b_obj)
         self.crl.setopt(pycurl.POSTFIELDS, pf)
         self.crl.perform()
@@ -223,6 +226,7 @@ class DataWareHouse:
                         self.xdmodhost + '/controllers/user_interface.php')
         pf = urlencode(config)
         b_obj = io.BytesIO()
+        self.crl.setopt(pycurl.HTTPHEADER, self.headers)
         self.crl.setopt(pycurl.WRITEDATA, b_obj)
         self.crl.setopt(pycurl.POSTFIELDS, pf)
         self.crl.perform()
@@ -230,6 +234,30 @@ class DataWareHouse:
         get_body = b_obj.getvalue()
 
         return get_body.decode('utf8')
+
+    def rawdata(self, realm, start, end, filters, stats):
+
+        config = {
+            'realm': realm,
+            'start_date': start,
+            'end_date': end,
+            'params': filters,
+            'stats': stats
+        }
+
+        request = json.dumps(config)
+
+        self.crl.setopt(pycurl.URL, self.xdmodhost + '/rest/v1/warehouse/rawdata')
+
+        b_obj = io.BytesIO()
+        self.crl.setopt(pycurl.WRITEDATA, b_obj)
+        headers = self.headers + ["Accept: application/json", "Content-Type: application/json", "charset: utf-8"]
+        self.crl.setopt(pycurl.HTTPHEADER, headers)
+        self.crl.setopt(pycurl.POSTFIELDS, request)
+        self.crl.perform()
+
+        get_body = b_obj.getvalue()
+        return pd.DataFrame(json.loads(get_body.decode('utf8')), columns=stats)
 
     def xdmodcsvtopandas(self, rd):
         groups = []
