@@ -16,13 +16,14 @@ import pandas as pd
 class DataWareHouse:
     """ Access the XDMoD datawarehouse via XDMoD's network API """
 
-    def __init__(self, xdmodhost, apikey=None):
+    def __init__(self, xdmodhost, apikey=None, sslverify=True):
         self.xdmodhost = xdmodhost
         self.apikey = apikey
         self.logged_in = None
         self.crl = None
         self.cookiefile = None
         self.descriptor = None
+        self.sslverify = sslverify
         self.headers = ''
 
         if not self.apikey:
@@ -36,6 +37,11 @@ class DataWareHouse:
 
     def __enter__(self):
         self.crl = pycurl.Curl()
+
+        if not self.sslverify:
+            self.crl.setopt(pycurl.SSL_VERIFYPEER, 0)
+            self.crl.setopt(pycurl.SSL_VERIFYHOST, 0)
+
         if self.apikey:
             _, self.cookiefile = tempfile.mkstemp()
             self.crl.setopt(pycurl.COOKIEJAR, self.cookiefile)
