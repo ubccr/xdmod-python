@@ -179,9 +179,15 @@ class DataWareHouse:
                     else:
                         dimensions.append(html.unescape(label))
             elif line_num > 7 and len(line) > 1:
-                # TODO handle non-days case
-                timestamps.append(datetime.strptime(line[0], "%Y-%m-%d"))
-                data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                if re.match(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$", line[0]):
+                    timestamps.append(datetime.strptime(line[0], "%Y-%m-%d"))
+                    data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                elif re.match(r"^[0-9]{4}-[0-9]{2}$", line[0]):
+                    timestamps.append(datetime.strptime(line[0], "%Y-%m"))
+                    data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                else:
+                    # TODO handle other date cases
+                    raise Exception("Unsupported date specification " + line[0])
 
         return pd.DataFrame(data=data, index=timestamps, columns=dimensions)
 
@@ -263,6 +269,11 @@ class DataWareHouse:
         self.crl.perform()
 
         get_body = b_obj.getvalue()
+
+        code = self.crl.getinfo(pycurl.RESPONSE_CODE)
+        if code != 200:
+           raise RuntimeError('Error ' + str(code) + ' ' + get_body.decode('utf8'))
+
         result = json.loads(get_body.decode('utf8'))
         return pd.DataFrame(result['data'], columns=result['stats'], dtype=numpy.float64)
 
