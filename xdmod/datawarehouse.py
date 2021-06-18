@@ -24,7 +24,7 @@ class DataWareHouse:
         self.cookiefile = None
         self.descriptor = None
         self.sslverify = sslverify
-        self.headers = ''
+        self.headers = []
 
         if not self.apikey:
             try:
