@@ -38,18 +38,7 @@ def resource_plot(df, resource, past_df = None):
     ax1 = fig.add_subplot(111)
     
     plt.setp(ax1.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-    '''
-    for i,j in zip(dates, quality):
-        ax1.scatter(i, j, s=50, c='b', marker="s")
-    #ax1.scatter(x[0:],y[0:], s=10, c='r', marker="o", label='second')
-    #plt.legend(loc='upper left');
     
-    if past_df is not None:
-        past_dates = list(past_df.columns)
-        past_quality = [past_df.loc[resource][date] for date in past_dates]
-        for i,j in zip(dates, past_quality):
-            ax1.scatter(i, j, s=50, c='r', marker="o")
-    '''
     ax1.scatter(dates, quality, s=80, c='b', marker="s", label='This Week')
     
     if past_df is not None:
