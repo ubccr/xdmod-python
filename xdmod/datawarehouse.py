@@ -5,12 +5,9 @@ import json
 import os
 import csv
 from urllib.parse import urlencode
-import requests
 import re
 import html
 
-import matplotlib
-import matplotlib.pyplot as plt
 import numpy
 import pycurl
 import pandas as pd
@@ -297,32 +294,32 @@ class DataWareHouse:
         return pd.DataFrame(data=data, index=groups, columns=[metric, ])
 
     def get_qualitydata(self, params, is_numpy=False):
-        
-        type_to_title = {'gpu': '% of CCR SUPReMM jobs with GPU information', 
-                         'hardware': '% of CCR SUPReMM jobs with hardware perf information', 
-                         'cpu': '% of CCR SUPReMM jobs with cpu usage information', 
-                         'script': '% of CCR SUPReMM jobs with Job Batch Script information', 
-                         'realms': '% of CCR jobs in the SUPReMM realm compared to Jobs realm'}
-        
+
+        type_to_title = {'gpu': '% of jobs with GPU information',
+                         'hardware': '% of jobs with hardware perf information',
+                         'cpu': '% of jobs with cpu usage information',
+                         'script': '% of jobs with Job Batch Script information',
+                         'realms': '% of jobs in the SUPReMM realm compared to Jobs realm'}
+
         pf = urlencode(params)
         b_obj = io.BytesIO()
-        
+
         self.crl.reset()
         self.crl.setopt(pycurl.URL, self.xdmodhost + '/rest/supremm_dataflow/quality?' + pf)
         self.crl.setopt(pycurl.HTTPHEADER, self.headers)
         self.crl.setopt(pycurl.WRITEDATA, b_obj)
         self.crl.perform()
         get_body = b_obj.getvalue()
-        
+
         code = self.crl.getinfo(pycurl.RESPONSE_CODE)
         response = json.loads(get_body.decode('utf8'))
-        
+
         if response['success']:
             jobs = [job for job in response['result']]
             dates = [date.strftime("%Y-%m-%d") for date in pd.date_range(params['start'], params['end'],freq='D').date]
-        
+
             quality = numpy.empty((len(jobs), len(dates)))
-            
+
             for i in range(len(jobs)):
                 for j in range(len(dates)):
                     if response['result'][jobs[i]].get(dates[j], numpy.nan) != 'N/A':
