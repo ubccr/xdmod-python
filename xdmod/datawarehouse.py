@@ -189,7 +189,7 @@ class DataWareHouse:
                     # TODO handle other date cases
                     raise Exception("Unsupported date specification " + line[0])
 
-        return pd.DataFrame(data=data, index=timestamps, columns=dimensions)
+        return (pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions), title)
 
     def aggregate(self, realm, dimension, metric, start, end):
 
