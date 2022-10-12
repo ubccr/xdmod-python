@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name="xdmod",
-    version="0.0.14",
+    version="0.0.15",
     description='Python driver for XDMoD',
     license='LGPLv3',
     author='Joseph P White',
@@ -12,6 +12,7 @@ setup(
     install_requires=[
         'numpy',
         'pandas',
-        'pycurl'
+        'pycurl',
+        'plotly'
     ]
 )
