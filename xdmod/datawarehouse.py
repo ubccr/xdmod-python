@@ -340,7 +340,10 @@ class DataWareHouse:
                 groups.append(html.unescape(line[0]))
                 data.append(numpy.float64(line[1]))
 
-        return pd.DataFrame(data=data, index=groups, columns=[metric, ])
+        if len(data) == 0:
+            return pd.Series(dtype='float64')
+
+        return pd.Series(data=data, index=groups, name=metric)
 
     def get_qualitydata(self, params, is_numpy=False):
 
