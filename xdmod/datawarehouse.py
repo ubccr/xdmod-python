@@ -120,6 +120,39 @@ class DataWareHouse:
 
         return self.descriptor
 
+    def compliance(self, timeframe):
+        """ retrieve compliance reports """
+
+        self.crl.setopt(pycurl.URL,
+                        self.xdmodhost + '/controllers/compliance.php')
+        config = {'timeframe_mode': timeframe}
+        pf = urlencode(config)
+        b_obj = io.BytesIO()
+        self.crl.setopt(pycurl.HTTPHEADER, self.headers)
+        self.crl.setopt(pycurl.WRITEDATA, b_obj)
+        self.crl.setopt(pycurl.POSTFIELDS, pf)
+        self.crl.perform()
+
+        get_body = b_obj.getvalue()
+
+        response = json.loads(get_body.decode('utf8'))
+        return response
+
+    def resources(self):
+        names = []
+        types = []
+        resource_ids = []
+
+        cdata = self.compliance('to_date')
+        for resource in cdata['metaData']['fields']:
+            if resource['name'] == 'requirement':
+                continue
+            names.append(resource['header'][:-7].split(">")[1].replace('-', ' '))
+            types.append(resource['status'].split("|")[0].strip())
+            resource_ids.append(resource['resource_id'])
+
+        return pd.Series(data=types, index=names)
+
     def timeseries(self, realm, dimension, metric, start, end):
         """ Undergoing prototype testing at the moment """
 
