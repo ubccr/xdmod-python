@@ -185,6 +185,22 @@ class DataWareHouse:
                 elif re.match(r"^[0-9]{4}-[0-9]{2}$", line[0]):
                     timestamps.append(datetime.strptime(line[0], "%Y-%m"))
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                elif re.match(r"^[0-9]{4} Q[0-9]$", line[0]):
+                    year, quarter = line[0].split(" ")
+                    dstamp = ''
+                    if quarter == 'Q1':
+                        dstamp = year + '-01-01'
+                    elif quarter == 'Q2':
+                        dstamp = year + '-04-01'
+                    elif quarter == 'Q3':
+                        dstamp = year + '-07-01'
+                    elif quarter == 'Q4':
+                        dstamp = year + '-10-01'
+                    else:
+                        raise Exception("Unsupported date quarter specification " + line[0])
+
+                    timestamps.append(datetime.strptime(dstamp, '%Y-%m-%d'))
+                    data.append(numpy.asarray(line[1:], dtype=numpy.float64))
                 else:
                     # TODO handle other date cases
                     raise Exception("Unsupported date specification " + line[0])
