@@ -203,7 +203,6 @@ class DataWareHouse:
             elif line_num == 5:
                 start, end = line
             elif line_num == 7:
-                timeunit = line[0]
                 dimensions = []
                 for label in line[1:]:
                     match = labelre.match(label)
@@ -321,7 +320,7 @@ class DataWareHouse:
 
         code = self.crl.getinfo(pycurl.RESPONSE_CODE)
         if code != 200:
-           raise RuntimeError('Error ' + str(code) + ' ' + get_body.decode('utf8'))
+            raise RuntimeError('Error ' + str(code) + ' ' + get_body.decode('utf8'))
 
         result = json.loads(get_body.decode('utf8'))
         return pd.DataFrame(result['data'], columns=result['stats'], dtype=numpy.float64)
@@ -330,9 +329,7 @@ class DataWareHouse:
         groups = []
         data = []
         for line_num, line in enumerate(rd):
-            if line_num == 1:
-                title = line[0]
-            elif line_num == 5:
+            if line_num == 5:
                 start, end = line
             elif line_num == 7:
                 group, metric = line
@@ -368,19 +365,19 @@ class DataWareHouse:
 
         if response['success']:
             jobs = [job for job in response['result']]
-            dates = [date.strftime("%Y-%m-%d") for date in pd.date_range(params['start'], params['end'],freq='D').date]
+            dates = [date.strftime("%Y-%m-%d") for date in pd.date_range(params['start'], params['end'], freq='D').date]
 
             quality = numpy.empty((len(jobs), len(dates)))
 
             for i in range(len(jobs)):
                 for j in range(len(dates)):
                     if response['result'][jobs[i]].get(dates[j], numpy.nan) != 'N/A':
-                        quality[i,j] = response['result'][jobs[i]].get(dates[j], numpy.nan)
+                        quality[i, j] = response['result'][jobs[i]].get(dates[j], numpy.nan)
                     else:
-                        quality[i,j] = numpy.nan
+                        quality[i, j] = numpy.nan
             if is_numpy:
                 return quality
-            df = pd.DataFrame(data= quality, index=jobs, columns = dates)
+            df = pd.DataFrame(data=quality, index=jobs, columns=dates)
             df.name = type_to_title[params['type']]
             return df
         else:
