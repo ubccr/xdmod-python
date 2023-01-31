@@ -104,13 +104,25 @@ class DataWareHouse:
         return tuple([*descriptor['realms']])
 
     def get_metrics(self, realm):
+        self.__assert_str('realm', realm)
         return self.__get_descriptor_data_frame(realm, 'metrics')
+
+    def __assert_str(self, name, value):
+        if not isinstance(value, str):
+            raise TypeError(name + ' ' + str(value) +
+                            ' must be of type ' + str(str) +
+                            ' not ' + str(type(value)))
 
     def __get_descriptor_data_frame(self, realm, key):
         df = self.__get_indexed_data_frame(
             data=self.__get_descriptor_id_text_info_list(realm, key),
             columns=('id', 'label', 'description'),
             index='id')
+        return df
+
+    def __get_indexed_data_frame(self, data, columns, index):
+        df = pd.DataFrame(data=data, columns=columns)
+        df = df.set_index('id')
         return df
 
     def get_dimensions(self, realm):
@@ -152,6 +164,23 @@ class DataWareHouse:
             resource_ids.append(resource['resource_id'])
 
         return pd.Series(data=types, index=names)
+
+    def __get_descriptor_id_text_info_list(self, realm, key):
+        self.__assert_str('realm', realm)
+        self.__assert_str('key', key)
+        descriptor = self.__get_descriptor()
+        try:
+            realm_desc = descriptor['realms'][realm]
+        except KeyError:
+            raise KeyError('Invalid realm \'' + realm + '\'. ' +
+                           'Valid realms are ' + str(self.get_realms())) from None
+        try:
+            data = realm_desc[key]
+        except KeyError:
+            raise KeyError('Invalid key \'' + key + '\'') from None
+        return [(id,
+                 data[id]['text'],
+                 data[id]['info']) for id in data]
 
     def timeseries(self, realm, dimension, metric, start, end):
         """ Undergoing prototype testing at the moment """
