@@ -191,14 +191,16 @@ class DataWareHouse:
                     filters={},
                     dataset_type='timeseries',
                     aggregation_unit='Auto'):
+        metric_id = self.__get_id_from_descriptor(realm, 'metrics', metric)
+        dimension_id = self.__get_id_from_descriptor(realm, 'dimensions', dimension)
 
         config = {
             'operation': 'get_data',
             'start_date': start,
             'end_date': end,
             'realm': realm,
-            'statistic': metric,
-            'group_by': dimension,
+            'statistic': metric_id,
+            'group_by': dimension_id,
             'dataset_type': dataset_type,
             'aggregation_unit': aggregation_unit,
             'public_user': 'true',
@@ -280,6 +282,13 @@ class DataWareHouse:
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
 
             return pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions)
+
+    def __get_id_from_descriptor(self, realm, key, id):
+        list = self.__get_descriptor_id_text_info_list(realm, key)
+        output = next((i for (i, text, info) in list if id == i or id == text), None)
+        if output is None:
+            raise KeyError(key + ' key \'' + id + '\' not found in \'' + realm + '\' realm')
+        return output
 
     def get_usagedata(self, config):
         response = self.__request('/controllers/user_interface.php',
