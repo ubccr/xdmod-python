@@ -237,9 +237,7 @@ class DataWareHouse:
             timestamps = []
             data = []
             for line_num, line in enumerate(csvdata):
-                if line_num == 1:
-                    title = line[0]
-                elif line_num == 5:
+                if line_num == 5:
                     start, end = line
                 elif line_num == 7:
                     dimensions = []
