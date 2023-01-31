@@ -25,6 +25,11 @@ class DataWareHouse:
         self.sslverify = sslverify
         self.headers = []
 
+        self.VALID_VALUES = {
+            'dataset_type': (
+                'timeseries',
+                'aggregate')}
+
         if not self.apikey:
             try:
                 self.apikey = {
@@ -194,6 +199,8 @@ class DataWareHouse:
         metric_id = self.__get_id_from_descriptor(realm, 'metrics', metric)
         dimension_id = self.__get_id_from_descriptor(realm, 'dimensions', dimension)
 
+        self.__validate_str('dataset_type', dataset_type)
+
         config = {
             'operation': 'get_data',
             'start_date': start,
@@ -298,6 +305,12 @@ class DataWareHouse:
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
 
             return pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions)
+
+    def __validate_str(self, key, value):
+        self.__assert_str(key, value)
+        if value not in self.VALID_VALUES[key]:
+            raise KeyError('Invalid ' + key + ' \'' + value +
+                           '\'. Valid values are: ' + str(self.VALID_VALUES[key]))
 
     def __get_id_from_descriptor(self, realm, key, id):
         list = self.__get_descriptor_id_text_info_list(realm, key)
