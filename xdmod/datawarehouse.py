@@ -1,16 +1,15 @@
-from datetime import datetime
-import io
-import tempfile
-import json
-import os
 import csv
-from urllib.parse import urlencode
-import re
+from datetime import datetime
 import html
-
+import io
+import json
 import numpy
-import pycurl
+import os
 import pandas as pd
+import pycurl
+import re
+import tempfile
+from urllib.parse import urlencode
 
 
 class DataWareHouse:
