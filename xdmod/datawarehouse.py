@@ -28,7 +28,13 @@ class DataWareHouse:
         self.VALID_VALUES = {
             'dataset_type': (
                 'timeseries',
-                'aggregate')}
+                'aggregate'),
+            'aggregation_unit': (
+                'Auto',
+                'Day',
+                'Month',
+                'Quarter',
+                'Year')}
 
         if not self.apikey:
             try:
@@ -200,6 +206,7 @@ class DataWareHouse:
         dimension_id = self.__get_id_from_descriptor(realm, 'dimensions', dimension)
 
         self.__validate_str('dataset_type', dataset_type)
+        self.__validate_str('aggregation_unit', aggregation_unit)
 
         config = {
             'operation': 'get_data',
