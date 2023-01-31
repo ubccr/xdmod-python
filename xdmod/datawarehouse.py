@@ -248,31 +248,36 @@ class DataWareHouse:
                         else:
                             dimensions.append(html.unescape(label))
                 elif line_num > 7 and len(line) > 1:
+                    date_string = line[0]
+                    # Match YYYY-MM-DD
                     if re.match(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', line[0]):
-                        timestamps.append(datetime.strptime(line[0], '%Y-%m-%d'))
-                        data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                        format = '%Y-%m-%d'
+                    # Match YYYY-MM
                     elif re.match(r'^[0-9]{4}-[0-9]{2}$', line[0]):
-                        timestamps.append(datetime.strptime(line[0], '%Y-%m'))
-                        data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                        format = '%Y-%m'
+                    # Match YYYY
+                    elif re.match(r'^[0-9]{4}$', line[0]):
+                        format = '%Y'
+                    # Match YYYY Q#
                     elif re.match(r'^[0-9]{4} Q[0-9]$', line[0]):
                         year, quarter = line[0].split(' ')
-                        dstamp = ''
                         if quarter == 'Q1':
-                            dstamp = year + '-01-01'
+                            month = '01'
                         elif quarter == 'Q2':
-                            dstamp = year + '-04-01'
+                            month = '04'
                         elif quarter == 'Q3':
-                            dstamp = year + '-07-01'
+                            month = '07'
                         elif quarter == 'Q4':
-                            dstamp = year + '-10-01'
+                            month = '10'
                         else:
                             raise Exception('Unsupported date quarter specification ' + line[0])
-
-                        timestamps.append(datetime.strptime(dstamp, '%Y-%m-%d'))
-                        data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                        date_string = year + '-' + month + '-01'
+                        format = '%Y-%m-%d'
                     else:
                         # TODO handle other date cases
                         raise Exception('Unsupported date specification ' + line[0])
+                    timestamps.append(datetime.strptime(date_string, format))
+                    data.append(numpy.asarray(line[1:], dtype=numpy.float64))
 
             return pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions)
 
