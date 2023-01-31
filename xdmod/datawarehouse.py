@@ -276,7 +276,7 @@ class DataWareHouse:
                         # TODO handle other date cases
                         raise Exception('Unsupported date specification ' + line[0])
 
-            return (pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions), title)
+            return pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions)
 
     def get_usagedata(self, config):
         response = self.__request('/controllers/user_interface.php',
