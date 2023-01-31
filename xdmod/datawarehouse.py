@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import html
 import io
 import json
@@ -25,7 +25,26 @@ class DataWareHouse:
         self.sslverify = sslverify
         self.headers = []
 
+        this_year = date.today().year
+        six_years_ago = this_year - 6
         self.VALID_VALUES = {
+            'duration': ((
+                'Yesterday',
+                '7 day',
+                '30 day',
+                '90 day',
+                'Month to date',
+                'Previous month',
+                'Quarter to date',
+                'Previous quarter',
+                'Year to date',
+                'Previous year',
+                '1 year',
+                '2 year',
+                '3 year',
+                '5 year',
+                '10 year') +
+                tuple(map(str, reversed(range(six_years_ago, this_year + 1))))),
             'dataset_type': (
                 'timeseries',
                 'aggregate'),
@@ -36,6 +55,8 @@ class DataWareHouse:
                 'Quarter',
                 'Year')}
 
+        self.__init_dates()
+
         if not self.apikey:
             try:
                 self.apikey = {
@@ -44,6 +65,79 @@ class DataWareHouse:
                 }
             except KeyError:
                 pass
+
+    def __init_dates(self):
+        today = date.today()
+        yesterday = today + timedelta(days=-1)
+        last_week = today + timedelta(days=-7)
+        last_month = today + timedelta(days=-30)
+        last_quarter = today + timedelta(days=-90)
+        this_month_start = date(today.year, today.month, 1)
+
+        if today.month == 1:
+            last_full_month_start_year = today.year - 1
+            last_full_month_start_month = 12
+        else:
+            last_full_month_start_year = today.year
+            last_full_month_start_month = today.month - 1
+
+        last_full_month_start = date(
+            last_full_month_start_year,
+            last_full_month_start_month,
+            1)
+
+        last_full_month_end = this_month_start + timedelta(days=-1)
+        this_quarter_start = date(today.year, ((today.month - 1) // 3) * 3 + 1, 1)
+
+        if today.month < 4:
+            last_quarter_start_year = today.year - 1
+        else:
+            last_quarter_start_year = today.year
+        last_quarter_start = date(
+            last_quarter_start_year,
+            (((today.month - 1) - ((today.month - 1) % 3) + 9) % 12) + 1,
+            1)
+
+        last_quarter_end = this_quarter_start + timedelta(days=-1)
+        this_year_start = date(today.year, 1, 1)
+        previous_year_start = date(today.year - 1, 1, 1)
+        previous_year_end = date(today.year - 1, 12, 31)
+
+        self.__DURATION_TO_START_END = {
+            'Yesterday': (yesterday, yesterday),
+            '7 day': (last_week, today),
+            '30 day': (last_month, today),
+            '90 day': (last_quarter, today),
+            'Month to date': (this_month_start, today),
+            'Previous month': (last_full_month_start, last_full_month_end),
+            'Quarter to date': (this_quarter_start, today),
+            'Previous quarter': (last_quarter_start, last_quarter_end),
+            'Year to date': (this_year_start, today),
+            'Previous year': (previous_year_start, previous_year_end),
+            '1 year': (self.__date_add_year(today, -1), today),
+            '2 year': (self.__date_add_year(today, -2), today),
+            '3 year': (self.__date_add_year(today, -3), today),
+            '5 year': (self.__date_add_year(today, -5), today),
+            '10 year': (self.__date_add_year(today, -10), today)
+        }
+
+    # When adding (or subtracting years), make dates behave like Ext.JS,
+    # i.e., if a date is specified with a day value that is too big,
+    # add days to the last valid day in that month,
+    # e.g., 2023-02-31 becomes 2023-03-03
+    def __date_add_year(self, old_date, year_delta):
+        new_date_year = old_date.year + year_delta
+        new_date_day = old_date.day
+        days_above = 0
+        keep_going = True
+        while keep_going:
+            try:
+                new_date = date(new_date_year, old_date.month, new_date_day)
+                keep_going = False
+            except ValueError:
+                new_date_day -= 1
+                days_above += 1
+        return new_date + timedelta(days=days_above)
 
     def __enter__(self):
         self.crl = pycurl.Curl()
@@ -194,8 +288,7 @@ class DataWareHouse:
                  data[id]['info']) for id in data]
 
     def get_dataset(self,
-                    start='2022-12-01',
-                    end='2022-12-31',
+                    duration='Previous month',
                     realm='Jobs',
                     metric='CPU Hours: Total',
                     dimension='None',
@@ -204,6 +297,18 @@ class DataWareHouse:
                     aggregation_unit='Auto'):
         metric_id = self.__get_id_from_descriptor(realm, 'metrics', metric)
         dimension_id = self.__get_id_from_descriptor(realm, 'dimensions', dimension)
+
+        if isinstance(duration, (tuple, list)):
+            if len(duration) == 2:
+                (start, end) = duration
+            else:
+                raise RuntimeError('If duration is of type ' + str(type(duration)) +
+                                   ', it must be of size 2 (start and end times)')
+        else:
+            self.__validate_str('duration', duration)
+            (start, end) = self.__DURATION_TO_START_END[duration]
+
+        # TODO: validate start and end
 
         self.__validate_str('dataset_type', dataset_type)
         self.__validate_str('aggregation_unit', aggregation_unit)
