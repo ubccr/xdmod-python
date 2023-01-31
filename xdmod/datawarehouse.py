@@ -100,8 +100,8 @@ class DataWareHouse:
         return 'Not logged in'
 
     def get_realms(self):
-        info = self.__get_descriptor()
-        return [*info['realms']]
+        descriptor = self.__get_descriptor()
+        return tuple([*descriptor['realms']])
 
     def get_metrics(self, realm):
         info = self.__get_descriptor()
