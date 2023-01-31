@@ -182,8 +182,15 @@ class DataWareHouse:
                  data[id]['text'],
                  data[id]['info']) for id in data]
 
-    def timeseries(self, realm, dimension, metric, start, end):
-        """ Undergoing prototype testing at the moment """
+    def get_dataset(self,
+                    start='2022-12-01',
+                    end='2022-12-31',
+                    realm='Jobs',
+                    metric='CPU Hours: Total',
+                    dimension='None',
+                    filters={},
+                    dataset_type='timeseries',
+                    aggregation_unit='Auto'):
 
         config = {
             'start_date': start,
@@ -194,8 +201,8 @@ class DataWareHouse:
             'public_user': 'true',
             'timeframe_label': '2016',
             'scale': '1',
-            'aggregation_unit': 'Auto',
-            'dataset_type': 'timeseries',
+            'aggregation_unit': aggregation_unit,
+            'dataset_type': dataset_type,
             'thumbnail': 'n',
             'query_group': 'po_usage',
             'display_type': 'line',
@@ -223,91 +230,53 @@ class DataWareHouse:
 
         csvdata = csv.reader(response.splitlines())
 
-        labelre = re.compile(r'\[([^\]]+)\].*')
-        timestamps = []
-        data = []
-        for line_num, line in enumerate(csvdata):
-            if line_num == 1:
-                title = line[0]
-            elif line_num == 5:
-                start, end = line
-            elif line_num == 7:
-                dimensions = []
-                for label in line[1:]:
-                    match = labelre.match(label)
-                    if match:
-                        dimensions.append(html.unescape(match.group(1)))
+        if dataset_type == 'aggregate':
+            return self.xdmodcsvtopandas(csvdata)
+        else:
+            labelre = re.compile(r'\[([^\]]+)\].*')
+            timestamps = []
+            data = []
+            for line_num, line in enumerate(csvdata):
+                if line_num == 1:
+                    title = line[0]
+                elif line_num == 5:
+                    start, end = line
+                elif line_num == 7:
+                    dimensions = []
+                    for label in line[1:]:
+                        match = labelre.match(label)
+                        if match:
+                            dimensions.append(html.unescape(match.group(1)))
+                        else:
+                            dimensions.append(html.unescape(label))
+                elif line_num > 7 and len(line) > 1:
+                    if re.match(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', line[0]):
+                        timestamps.append(datetime.strptime(line[0], '%Y-%m-%d'))
+                        data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                    elif re.match(r'^[0-9]{4}-[0-9]{2}$', line[0]):
+                        timestamps.append(datetime.strptime(line[0], '%Y-%m'))
+                        data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                    elif re.match(r'^[0-9]{4} Q[0-9]$', line[0]):
+                        year, quarter = line[0].split(' ')
+                        dstamp = ''
+                        if quarter == 'Q1':
+                            dstamp = year + '-01-01'
+                        elif quarter == 'Q2':
+                            dstamp = year + '-04-01'
+                        elif quarter == 'Q3':
+                            dstamp = year + '-07-01'
+                        elif quarter == 'Q4':
+                            dstamp = year + '-10-01'
+                        else:
+                            raise Exception('Unsupported date quarter specification ' + line[0])
+
+                        timestamps.append(datetime.strptime(dstamp, '%Y-%m-%d'))
+                        data.append(numpy.asarray(line[1:], dtype=numpy.float64))
                     else:
-                        dimensions.append(html.unescape(label))
-            elif line_num > 7 and len(line) > 1:
-                if re.match(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', line[0]):
-                    timestamps.append(datetime.strptime(line[0], '%Y-%m-%d'))
-                    data.append(numpy.asarray(line[1:], dtype=numpy.float64))
-                elif re.match(r'^[0-9]{4}-[0-9]{2}$', line[0]):
-                    timestamps.append(datetime.strptime(line[0], '%Y-%m'))
-                    data.append(numpy.asarray(line[1:], dtype=numpy.float64))
-                elif re.match(r'^[0-9]{4} Q[0-9]$', line[0]):
-                    year, quarter = line[0].split(' ')
-                    dstamp = ''
-                    if quarter == 'Q1':
-                        dstamp = year + '-01-01'
-                    elif quarter == 'Q2':
-                        dstamp = year + '-04-01'
-                    elif quarter == 'Q3':
-                        dstamp = year + '-07-01'
-                    elif quarter == 'Q4':
-                        dstamp = year + '-10-01'
-                    else:
-                        raise Exception('Unsupported date quarter specification ' + line[0])
+                        # TODO handle other date cases
+                        raise Exception('Unsupported date specification ' + line[0])
 
-                    timestamps.append(datetime.strptime(dstamp, '%Y-%m-%d'))
-                    data.append(numpy.asarray(line[1:], dtype=numpy.float64))
-                else:
-                    # TODO handle other date cases
-                    raise Exception('Unsupported date specification ' + line[0])
-
-        return (pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions), title)
-
-    def aggregate(self, realm, dimension, metric, start, end):
-
-        config = {
-            'start_date': start,
-            'end_date': end,
-            'realm': realm,
-            'statistic': metric,
-            'group_by': dimension,
-            'public_user': 'true',
-            'timeframe_label': '2016',
-            'scale': '1',
-            'aggregation_unit': 'Auto',
-            'dataset_type': 'aggregate',
-            'thumbnail': 'n',
-            'query_group': 'po_usage',
-            'display_type': 'line',
-            'combine_type': 'side',
-            'limit': '10',
-            'offset': '0',
-            'log_scale': 'n',
-            'show_guide_lines': 'y',
-            'show_trend_line': 'y',
-            'show_percent_alloc': 'n',
-            'show_error_bars': 'y',
-            'show_aggregate_labels': 'n',
-            'show_error_labels': 'n',
-            'show_title': 'y',
-            'width': '916',
-            'height': '484',
-            'legend_type': 'bottom_center',
-            'font_size': '3',
-            'inline': 'n',
-            'operation': 'get_data',
-            'format': 'csv'
-        }
-
-        response = self.get_usagedata(config)
-        csvdata = csv.reader(response.splitlines())
-
-        return self.xdmodcsvtopandas(csvdata)
+            return (pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions), title)
 
     def get_usagedata(self, config):
         response = self.__request('/controllers/user_interface.php',
