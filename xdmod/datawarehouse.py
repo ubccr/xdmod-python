@@ -193,16 +193,17 @@ class DataWareHouse:
                     aggregation_unit='Auto'):
 
         config = {
+            'operation': 'get_data',
             'start_date': start,
             'end_date': end,
             'realm': realm,
             'statistic': metric,
             'group_by': dimension,
+            'dataset_type': dataset_type,
+            'aggregation_unit': aggregation_unit,
             'public_user': 'true',
             'timeframe_label': '2016',
             'scale': '1',
-            'aggregation_unit': aggregation_unit,
-            'dataset_type': dataset_type,
             'thumbnail': 'n',
             'query_group': 'po_usage',
             'display_type': 'line',
@@ -222,7 +223,6 @@ class DataWareHouse:
             'legend_type': 'bottom_center',
             'font_size': '3',
             'inline': 'n',
-            'operation': 'get_data',
             'format': 'csv'
         }
 
