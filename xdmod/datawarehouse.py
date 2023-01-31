@@ -46,14 +46,9 @@ class DataWareHouse:
             self.crl.setopt(pycurl.COOKIEJAR, self.cookiefile)
             self.crl.setopt(pycurl.COOKIEFILE, self.cookiefile)
 
-            self.crl.setopt(pycurl.URL, self.xdmodhost + '/rest/auth/login')
-            pf = urlencode(self.apikey)
-            b_obj = io.BytesIO()
-            self.crl.setopt(pycurl.WRITEDATA, b_obj)
-            self.crl.setopt(pycurl.POSTFIELDS, pf)
-            self.crl.perform()
+            response = self.__request_json('/rest/auth/login',
+                                           self.apikey)
 
-            response = json.loads(b_obj.getvalue().decode('utf8'))
             if response['success'] is True:
                 token = response['results']['token']
                 self.headers = ['Token: ' + token]
@@ -63,6 +58,34 @@ class DataWareHouse:
                 raise RuntimeError('Access Denied')
 
         return self
+
+    def __request_json(self, path, config, headers=None, contentType=None):
+        response = self.__request(path, config, headers, contentType)
+        return json.loads(response)
+
+    def __request(self, path, config, headers=None, contentType=None):
+        if headers is None:
+            headers = self.headers
+        if contentType == 'JSON':
+            pf = config
+        else:
+            pf = urlencode(config)
+        b_obj = io.BytesIO()
+        self.crl.reset()
+        self.crl.setopt(pycurl.URL, self.xdmodhost + path)
+        self.crl.setopt(pycurl.HTTPHEADER, headers)
+        self.crl.setopt(pycurl.WRITEDATA, b_obj)
+        self.crl.setopt(pycurl.POSTFIELDS, pf)
+        self.crl.perform()
+        body_bytes = b_obj.getvalue()
+        code = self.crl.getinfo(pycurl.RESPONSE_CODE)
+        body_text = body_bytes.decode('utf8')
+        if code != 200:
+            body_json = json.loads(body_text)
+            raise RuntimeError('Error ' + str(code) + ': \'' +
+                               body_json['message'] + '\'')
+        response = body_text
+        return response
 
     def __exit__(self, tpe, value, tb):
         if self.cookiefile:
@@ -98,19 +121,8 @@ class DataWareHouse:
         if self.descriptor:
             return self.descriptor
 
-        self.crl.setopt(pycurl.URL,
-                        self.xdmodhost + '/controllers/metric_explorer.php')
-        config = {'operation': 'get_dw_descripter'}
-        pf = urlencode(config)
-        b_obj = io.BytesIO()
-        self.crl.setopt(pycurl.HTTPHEADER, self.headers)
-        self.crl.setopt(pycurl.WRITEDATA, b_obj)
-        self.crl.setopt(pycurl.POSTFIELDS, pf)
-        self.crl.perform()
-
-        get_body = b_obj.getvalue()
-
-        response = json.loads(get_body.decode('utf8'))
+        response = self.__request_json('/controllers/metric_explorer.php',
+                                       {'operation': 'get_dw_descripter'})
 
         if response['totalCount'] != 1:
             raise RuntimeError('Retrieving XDMoD data descriptor')
@@ -122,19 +134,9 @@ class DataWareHouse:
     def compliance(self, timeframe):
         """ retrieve compliance reports """
 
-        self.crl.setopt(pycurl.URL,
-                        self.xdmodhost + '/controllers/compliance.php')
-        config = {'timeframe_mode': timeframe}
-        pf = urlencode(config)
-        b_obj = io.BytesIO()
-        self.crl.setopt(pycurl.HTTPHEADER, self.headers)
-        self.crl.setopt(pycurl.WRITEDATA, b_obj)
-        self.crl.setopt(pycurl.POSTFIELDS, pf)
-        self.crl.perform()
+        response = self.__request_json('/controllers/compliance.php',
+                                       {'timeframe_mode': timeframe})
 
-        get_body = b_obj.getvalue()
-
-        response = json.loads(get_body.decode('utf8'))
         return response
 
     def resources(self):
@@ -280,22 +282,12 @@ class DataWareHouse:
         return self.xdmodcsvtopandas(csvdata)
 
     def get_usagedata(self, config):
+        response = self.__request('/controllers/user_interface.php',
+                                  config)
 
-        self.crl.setopt(pycurl.URL,
-                        self.xdmodhost + '/controllers/user_interface.php')
-        pf = urlencode(config)
-        b_obj = io.BytesIO()
-        self.crl.setopt(pycurl.HTTPHEADER, self.headers)
-        self.crl.setopt(pycurl.WRITEDATA, b_obj)
-        self.crl.setopt(pycurl.POSTFIELDS, pf)
-        self.crl.perform()
-
-        get_body = b_obj.getvalue()
-
-        return get_body.decode('utf8')
+        return response
 
     def rawdata(self, realm, start, end, filters, stats):
-
         config = {
             'realm': realm,
             'start_date': start,
@@ -306,22 +298,15 @@ class DataWareHouse:
 
         request = json.dumps(config)
 
-        self.crl.setopt(pycurl.URL, self.xdmodhost + '/rest/v1/warehouse/rawdata')
+        headers = self.headers + ['Accept: application/json',
+                                  'Content-Type: application/json',
+                                  'charset: utf-8']
 
-        b_obj = io.BytesIO()
-        self.crl.setopt(pycurl.WRITEDATA, b_obj)
-        headers = self.headers + ['Accept: application/json', 'Content-Type: application/json', 'charset: utf-8']
-        self.crl.setopt(pycurl.HTTPHEADER, headers)
-        self.crl.setopt(pycurl.POSTFIELDS, request)
-        self.crl.perform()
+        result = self.__request_json('/rest/v1/warehouse/rawdata',
+                                     request,
+                                     headers,
+                                     contentType='JSON')
 
-        get_body = b_obj.getvalue()
-
-        code = self.crl.getinfo(pycurl.RESPONSE_CODE)
-        if code != 200:
-            raise RuntimeError('Error ' + str(code) + ' ' + get_body.decode('utf8'))
-
-        result = json.loads(get_body.decode('utf8'))
         return pd.DataFrame(result['data'], columns=result['stats'], dtype=numpy.float64)
 
     def xdmodcsvtopandas(self, rd):
@@ -342,25 +327,14 @@ class DataWareHouse:
         return pd.Series(data=data, index=groups, name=metric)
 
     def get_qualitydata(self, params, is_numpy=False):
-
         type_to_title = {'gpu': '% of jobs with GPU information',
                          'hardware': '% of jobs with hardware perf information',
                          'cpu': '% of jobs with cpu usage information',
                          'script': '% of jobs with Job Batch Script information',
                          'realms': '% of jobs in the SUPReMM realm compared to Jobs realm'}
 
-        pf = urlencode(params)
-        b_obj = io.BytesIO()
-
-        self.crl.reset()
-        self.crl.setopt(pycurl.URL, self.xdmodhost + '/rest/supremm_dataflow/quality?' + pf)
-        self.crl.setopt(pycurl.HTTPHEADER, self.headers)
-        self.crl.setopt(pycurl.WRITEDATA, b_obj)
-        self.crl.perform()
-        get_body = b_obj.getvalue()
-
-        code = self.crl.getinfo(pycurl.RESPONSE_CODE)
-        response = json.loads(get_body.decode('utf8'))
+        response = self.__request_json('/rest/supremm_dataflow/quality',
+                                       params)
 
         if response['success']:
             jobs = [job for job in response['result']]
@@ -379,5 +353,3 @@ class DataWareHouse:
             df = pd.DataFrame(data=quality, index=jobs, columns=dates)
             df.name = type_to_title[params['type']]
             return df
-        else:
-            raise RuntimeError('Error ' + str(code) + ' ' + get_body.decode('utf8'))
