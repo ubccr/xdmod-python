@@ -74,7 +74,7 @@ class DataWareHouse:
     def whoami(self):
         if self.logged_in:
             return self.logged_in
-        return "Not logged in"
+        return 'Not logged in'
 
     def realms(self):
         info = self.get_descriptor()
@@ -146,8 +146,8 @@ class DataWareHouse:
         for resource in cdata['metaData']['fields']:
             if resource['name'] == 'requirement':
                 continue
-            names.append(resource['header'][:-7].split(">")[1].replace('-', ' '))
-            types.append(resource['status'].split("|")[0].strip())
+            names.append(resource['header'][:-7].split('>')[1].replace('-', ' '))
+            types.append(resource['status'].split('|')[0].strip())
             resource_ids.append(resource['resource_id'])
 
         return pd.Series(data=types, index=names)
@@ -210,14 +210,14 @@ class DataWareHouse:
                     else:
                         dimensions.append(html.unescape(label))
             elif line_num > 7 and len(line) > 1:
-                if re.match(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$", line[0]):
-                    timestamps.append(datetime.strptime(line[0], "%Y-%m-%d"))
+                if re.match(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', line[0]):
+                    timestamps.append(datetime.strptime(line[0], '%Y-%m-%d'))
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
-                elif re.match(r"^[0-9]{4}-[0-9]{2}$", line[0]):
-                    timestamps.append(datetime.strptime(line[0], "%Y-%m"))
+                elif re.match(r'^[0-9]{4}-[0-9]{2}$', line[0]):
+                    timestamps.append(datetime.strptime(line[0], '%Y-%m'))
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
-                elif re.match(r"^[0-9]{4} Q[0-9]$", line[0]):
-                    year, quarter = line[0].split(" ")
+                elif re.match(r'^[0-9]{4} Q[0-9]$', line[0]):
+                    year, quarter = line[0].split(' ')
                     dstamp = ''
                     if quarter == 'Q1':
                         dstamp = year + '-01-01'
@@ -228,13 +228,13 @@ class DataWareHouse:
                     elif quarter == 'Q4':
                         dstamp = year + '-10-01'
                     else:
-                        raise Exception("Unsupported date quarter specification " + line[0])
+                        raise Exception('Unsupported date quarter specification ' + line[0])
 
                     timestamps.append(datetime.strptime(dstamp, '%Y-%m-%d'))
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
                 else:
                     # TODO handle other date cases
-                    raise Exception("Unsupported date specification " + line[0])
+                    raise Exception('Unsupported date specification ' + line[0])
 
         return (pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions), title)
 
@@ -310,7 +310,7 @@ class DataWareHouse:
 
         b_obj = io.BytesIO()
         self.crl.setopt(pycurl.WRITEDATA, b_obj)
-        headers = self.headers + ["Accept: application/json", "Content-Type: application/json", "charset: utf-8"]
+        headers = self.headers + ['Accept: application/json', 'Content-Type: application/json', 'charset: utf-8']
         self.crl.setopt(pycurl.HTTPHEADER, headers)
         self.crl.setopt(pycurl.POSTFIELDS, request)
         self.crl.perform()
@@ -364,7 +364,7 @@ class DataWareHouse:
 
         if response['success']:
             jobs = [job for job in response['result']]
-            dates = [date.strftime("%Y-%m-%d") for date in pd.date_range(params['start'], params['end'], freq='D').date]
+            dates = [date.strftime('%Y-%m-%d') for date in pd.date_range(params['start'], params['end'], freq='D').date]
 
             quality = numpy.empty((len(jobs), len(dates)))
 
