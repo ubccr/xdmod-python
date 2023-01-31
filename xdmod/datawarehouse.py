@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime, date, timedelta
+from datetime import date, datetime, timedelta
 import html
 import io
 import json
@@ -192,101 +192,6 @@ class DataWareHouse:
         response = body_text
         return response
 
-    def __exit__(self, tpe, value, tb):
-        if self.cookiefile:
-            os.unlink(self.cookiefile)
-        if self.crl:
-            self.crl.close()
-        self.logged_in = None
-
-    def whoami(self):
-        if self.logged_in:
-            return self.logged_in
-        return 'Not logged in'
-
-    def get_realms(self):
-        descriptor = self.__get_descriptor()
-        return tuple([*descriptor['realms']])
-
-    def get_metrics(self, realm):
-        self.__assert_str('realm', realm)
-        return self.__get_descriptor_data_frame(realm, 'metrics')
-
-    def __assert_str(self, name, value):
-        if not isinstance(value, str):
-            raise TypeError(name + ' ' + str(value) +
-                            ' must be of type ' + str(str) +
-                            ' not ' + str(type(value)))
-
-    def __get_descriptor_data_frame(self, realm, key):
-        df = self.__get_indexed_data_frame(
-            data=self.__get_descriptor_id_text_info_list(realm, key),
-            columns=('id', 'label', 'description'),
-            index='id')
-        return df
-
-    def __get_indexed_data_frame(self, data, columns, index):
-        df = pd.DataFrame(data=data, columns=columns)
-        df = df.set_index('id')
-        return df
-
-    def get_dimensions(self, realm):
-        return self.__get_descriptor_data_frame(realm, 'dimensions')
-
-    def __get_descriptor(self):
-        if self.descriptor:
-            return self.descriptor
-
-        response = self.__request_json('/controllers/metric_explorer.php',
-                                       {'operation': 'get_dw_descripter'})
-
-        if response['totalCount'] != 1:
-            raise RuntimeError('Retrieving XDMoD data descriptor')
-
-        self.descriptor = response['data'][0]
-
-        return self.descriptor
-
-    def compliance(self, timeframe):
-        """ retrieve compliance reports """
-
-        response = self.__request_json('/controllers/compliance.php',
-                                       {'timeframe_mode': timeframe})
-
-        return response
-
-    def resources(self):
-        names = []
-        types = []
-        resource_ids = []
-
-        cdata = self.compliance('to_date')
-        for resource in cdata['metaData']['fields']:
-            if resource['name'] == 'requirement':
-                continue
-            names.append(resource['header'][:-7].split('>')[1].replace('-', ' '))
-            types.append(resource['status'].split('|')[0].strip())
-            resource_ids.append(resource['resource_id'])
-
-        return pd.Series(data=types, index=names)
-
-    def __get_descriptor_id_text_info_list(self, realm, key):
-        self.__assert_str('realm', realm)
-        self.__assert_str('key', key)
-        descriptor = self.__get_descriptor()
-        try:
-            realm_desc = descriptor['realms'][realm]
-        except KeyError:
-            raise KeyError('Invalid realm \'' + realm + '\'. ' +
-                           'Valid realms are ' + str(self.get_realms())) from None
-        try:
-            data = realm_desc[key]
-        except KeyError:
-            raise KeyError('Invalid key \'' + key + '\'') from None
-        return [(id,
-                 data[id]['text'],
-                 data[id]['info']) for id in data]
-
     def get_dataset(self,
                     duration='Previous month',
                     realm='Jobs',
@@ -418,18 +323,59 @@ class DataWareHouse:
 
             return pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions)
 
-    def __validate_str(self, key, value):
-        self.__assert_str(key, value)
-        if value not in self.VALID_VALUES[key]:
-            raise KeyError('Invalid ' + key + ' \'' + value +
-                           '\'. Valid values are: ' + str(self.VALID_VALUES[key]))
-
     def __get_id_from_descriptor(self, realm, key, id):
         list = self.__get_descriptor_id_text_info_list(realm, key)
         output = next((i for (i, text, info) in list if id == i or id == text), None)
         if output is None:
             raise KeyError(key + ' key \'' + id + '\' not found in \'' + realm + '\' realm')
         return output
+
+    def __get_descriptor_id_text_info_list(self, realm, key):
+        self.__assert_str('realm', realm)
+        self.__assert_str('key', key)
+        descriptor = self.__get_descriptor()
+        try:
+            realm_desc = descriptor['realms'][realm]
+        except KeyError:
+            raise KeyError('Invalid realm \'' + realm + '\'. ' +
+                           'Valid realms are ' + str(self.get_realms())) from None
+        try:
+            data = realm_desc[key]
+        except KeyError:
+            raise KeyError('Invalid key \'' + key + '\'') from None
+        return [(id,
+                 data[id]['text'],
+                 data[id]['info']) for id in data]
+
+    def __assert_str(self, name, value):
+        if not isinstance(value, str):
+            raise TypeError(name + ' ' + str(value) +
+                            ' must be of type ' + str(str) +
+                            ' not ' + str(type(value)))
+
+    def __get_descriptor(self):
+        if self.descriptor:
+            return self.descriptor
+
+        response = self.__request_json('/controllers/metric_explorer.php',
+                                       {'operation': 'get_dw_descripter'})
+
+        if response['totalCount'] != 1:
+            raise RuntimeError('Retrieving XDMoD data descriptor')
+
+        self.descriptor = response['data'][0]
+
+        return self.descriptor
+
+    def get_realms(self):
+        descriptor = self.__get_descriptor()
+        return tuple([*descriptor['realms']])
+
+    def __validate_str(self, key, value):
+        self.__assert_str(key, value)
+        if value not in self.VALID_VALUES[key]:
+            raise KeyError('Invalid ' + key + ' \'' + value +
+                           '\'. Valid values are: ' + str(self.VALID_VALUES[key]))
 
     def get_filters(self, realm, dimension):
         path = '/controllers/metric_explorer.php'
@@ -446,11 +392,47 @@ class DataWareHouse:
             index='id')
         return df
 
+    def __get_indexed_data_frame(self, data, columns, index):
+        df = pd.DataFrame(data=data, columns=columns)
+        df = df.set_index('id')
+        return df
+
     def get_usagedata(self, config):
         response = self.__request('/controllers/user_interface.php',
                                   config)
 
         return response
+
+    def xdmodcsvtopandas(self, rd):
+        groups = []
+        data = []
+        for line_num, line in enumerate(rd):
+            if line_num == 5:
+                start, end = line
+            elif line_num == 7:
+                group, metric = line
+            elif line_num > 7 and len(line) > 1:
+                groups.append(html.unescape(line[0]))
+                data.append(numpy.float64(line[1]))
+
+        if len(data) == 0:
+            return pd.Series(dtype='float64')
+
+        return pd.Series(data=data, index=groups, name=metric)
+
+    def get_metrics(self, realm):
+        self.__assert_str('realm', realm)
+        return self.__get_descriptor_data_frame(realm, 'metrics')
+
+    def __get_descriptor_data_frame(self, realm, key):
+        df = self.__get_indexed_data_frame(
+            data=self.__get_descriptor_id_text_info_list(realm, key),
+            columns=('id', 'label', 'description'),
+            index='id')
+        return df
+
+    def get_dimensions(self, realm):
+        return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def rawdata(self, realm, start, end, filters, stats):
         config = {
@@ -474,22 +456,33 @@ class DataWareHouse:
 
         return pd.DataFrame(result['data'], columns=result['stats'], dtype=numpy.float64)
 
-    def xdmodcsvtopandas(self, rd):
-        groups = []
-        data = []
-        for line_num, line in enumerate(rd):
-            if line_num == 5:
-                start, end = line
-            elif line_num == 7:
-                group, metric = line
-            elif line_num > 7 and len(line) > 1:
-                groups.append(html.unescape(line[0]))
-                data.append(numpy.float64(line[1]))
+    def whoami(self):
+        if self.logged_in:
+            return self.logged_in
+        return 'Not logged in'
 
-        if len(data) == 0:
-            return pd.Series(dtype='float64')
+    def compliance(self, timeframe):
+        """ retrieve compliance reports """
 
-        return pd.Series(data=data, index=groups, name=metric)
+        response = self.__request_json('/controllers/compliance.php',
+                                       {'timeframe_mode': timeframe})
+
+        return response
+
+    def resources(self):
+        names = []
+        types = []
+        resource_ids = []
+
+        cdata = self.compliance('to_date')
+        for resource in cdata['metaData']['fields']:
+            if resource['name'] == 'requirement':
+                continue
+            names.append(resource['header'][:-7].split('>')[1].replace('-', ' '))
+            types.append(resource['status'].split('|')[0].strip())
+            resource_ids.append(resource['resource_id'])
+
+        return pd.Series(data=types, index=names)
 
     def get_qualitydata(self, params, is_numpy=False):
         type_to_title = {'gpu': '% of jobs with GPU information',
@@ -518,3 +511,10 @@ class DataWareHouse:
             df = pd.DataFrame(data=quality, index=jobs, columns=dates)
             df.name = type_to_title[params['type']]
             return df
+
+    def __exit__(self, tpe, value, tb):
+        if self.cookiefile:
+            os.unlink(self.cookiefile)
+        if self.crl:
+            self.crl.close()
+        self.logged_in = None
