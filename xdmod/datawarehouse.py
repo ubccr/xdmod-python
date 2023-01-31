@@ -77,24 +77,24 @@ class DataWareHouse:
         return 'Not logged in'
 
     def realms(self):
-        info = self.get_descriptor()
+        info = self.__get_descriptor()
         return [*info['realms']]
 
     def metrics(self, realm):
-        info = self.get_descriptor()
+        info = self.__get_descriptor()
         output = []
         for metric, minfo in info['realms'][realm]['metrics'].items():
             output.append((metric, minfo['text'] + ': ' + minfo['info']))
         return output
 
     def dimensions(self, realm):
-        info = self.get_descriptor()
+        info = self.__get_descriptor()
         output = []
         for dimension, dinfo in info['realms'][realm]['dimensions'].items():
             output.append((dimension, dinfo['text'] + ': ' + dinfo['info']))
         return output
 
-    def get_descriptor(self):
+    def __get_descriptor(self):
         if self.descriptor:
             return self.descriptor
 
