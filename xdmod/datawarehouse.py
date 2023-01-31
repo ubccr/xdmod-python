@@ -104,18 +104,17 @@ class DataWareHouse:
         return tuple([*descriptor['realms']])
 
     def get_metrics(self, realm):
-        info = self.__get_descriptor()
-        output = []
-        for metric, minfo in info['realms'][realm]['metrics'].items():
-            output.append((metric, minfo['text'] + ': ' + minfo['info']))
-        return output
+        return self.__get_descriptor_data_frame(realm, 'metrics')
+
+    def __get_descriptor_data_frame(self, realm, key):
+        df = self.__get_indexed_data_frame(
+            data=self.__get_descriptor_id_text_info_list(realm, key),
+            columns=('id', 'label', 'description'),
+            index='id')
+        return df
 
     def get_dimensions(self, realm):
-        info = self.__get_descriptor()
-        output = []
-        for dimension, dinfo in info['realms'][realm]['dimensions'].items():
-            output.append((dimension, dinfo['text'] + ': ' + dinfo['info']))
-        return output
+        return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def __get_descriptor(self):
         if self.descriptor:
