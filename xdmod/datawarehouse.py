@@ -228,6 +228,22 @@ class DataWareHouse:
             'format': 'csv'
         }
 
+        for dimension in filters:
+            dimension_id = self.__get_id_from_descriptor(realm, 'dimensions', dimension)
+            valid_filters = self.get_filters(realm, dimension_id)
+            filter_values = []
+            for filter in filters[dimension]:
+                self.__assert_str('filter value', filter)
+                if filter in valid_filters.index:
+                    filter_value = filter
+                elif filter in valid_filters['label'].values:
+                    filter_value = valid_filters.index[valid_filters['label'] == filter].tolist()[0]
+                else:
+                    raise KeyError('Filter value \'' + filter + '\' not found in \'' +
+                                   dimension + '\' dimension of \'' + realm + '\' realm')
+                filter_values.append(filter_value)
+            config[dimension_id + '_filter'] = ','.join(filter_values)
+
         response = self.get_usagedata(config)
 
         csvdata = csv.reader(response.splitlines())
@@ -289,6 +305,21 @@ class DataWareHouse:
         if output is None:
             raise KeyError(key + ' key \'' + id + '\' not found in \'' + realm + '\' realm')
         return output
+
+    def get_filters(self, realm, dimension):
+        path = '/controllers/metric_explorer.php'
+        dimension_id = self.__get_id_from_descriptor(realm, 'dimensions', dimension)
+        config = {
+            'operation': 'get_dimension',
+            'dimension_id': dimension_id,
+            'realm': realm
+        }
+        response = self.__request_json(path, config)
+        df = self.__get_indexed_data_frame(
+            data=[(datum['id'], datum['name']) for datum in response['data']],
+            columns=('id', 'label'),
+            index='id')
+        return df
 
     def get_usagedata(self, config):
         response = self.__request('/controllers/user_interface.php',
