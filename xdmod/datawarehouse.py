@@ -163,7 +163,7 @@ class DataWarehouse:
                 self.crl.setopt(pycurl.HTTPHEADER, self.headers)
                 self.logged_in = response['results']['name']
             else:
-                raise RuntimeError('Access Denied')
+                raise RuntimeError('Access Denied.')
 
         return self
 
@@ -190,8 +190,8 @@ class DataWarehouse:
         body_text = body_bytes.decode('utf8')
         if code != 200:
             body_json = json.loads(body_text)
-            raise RuntimeError('Error ' + str(code) + ': \'' +
-                               body_json['message'] + '\'')
+            raise RuntimeError('Error ' + str(code) + ': `'
+                               + body_json['message'] + '`.')
         response = body_text
         return response
 
@@ -215,9 +215,9 @@ class DataWarehouse:
             if len(duration) == 2:
                 (start, end) = duration
             else:
-                raise RuntimeError('If duration is of type '
+                raise RuntimeError('If duration is of type `'
                                    + str(type(duration))
-                                   + ', it must be of size 2'
+                                   + '`, it must be of size 2'
                                    + ' (start and end times)')
         else:
             self.__validate_str('duration', duration)
@@ -276,10 +276,10 @@ class DataWarehouse:
                     filter_value = valid_filters.index[valid_filters['label']
                                                        == filter].tolist()[0]
                 else:
-                    raise KeyError('Filter value \'' + filter
-                                   + '\' not found in \'' + dimension
-                                   + '\' dimension of \'' + realm
-                                   + '\' realm')
+                    raise KeyError('Filter value `' + filter
+                                   + '` not found in `' + dimension
+                                   + '` dimension of `' + realm
+                                   + '` realm.')
                 filter_values.append(filter_value)
             config[dimension_id + '_filter'] = ','.join(filter_values)
 
@@ -328,13 +328,14 @@ class DataWarehouse:
                             month = '10'
                         else:
                             raise Exception('Unsupported date quarter'
-                                            + ' specification ' + line[0])
+                                            + ' specification ' + line[0]
+                                            + '.')
                         date_string = year + '-' + month + '-01'
                         format = '%Y-%m-%d'
                     else:
                         # TODO handle other date cases
                         raise Exception('Unsupported date specification '
-                                        + line[0])
+                                        + line[0] + '.')
                     timestamps.append(datetime.strptime(date_string, format))
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
 
@@ -347,8 +348,8 @@ class DataWarehouse:
         output = next((i for (i, text, info) in list if id == i or id == text),
                       None)
         if output is None:
-            raise KeyError(key + ' key \'' + id + '\' not found in \'' + realm
-                           + '\' realm')
+            raise KeyError(key + ' key `' + id + '` not found in `' + realm
+                           + '` realm.')
         return output
 
     def __get_descriptor_id_text_info_list(self, realm, key):
@@ -358,22 +359,22 @@ class DataWarehouse:
         try:
             realm_desc = descriptor['realms'][realm]
         except KeyError:
-            raise KeyError('Invalid realm \'' + realm + '\'. '
+            raise KeyError('Invalid realm `' + realm + '`. '
                            + 'Valid realms are '
-                           + str(self.get_realms())) from None
+                           + str(self.get_realms()) + '.') from None
         try:
             data = realm_desc[key]
         except KeyError:
-            raise KeyError('Invalid key \'' + key + '\'') from None
+            raise KeyError('Invalid key `' + key + '`.') from None
         return [(id,
                  data[id]['text'],
                  data[id]['info']) for id in data]
 
     def __assert_str(self, name, value):
         if not isinstance(value, str):
-            raise TypeError(name + ' ' + str(value)
-                            + ' must be of type ' + str(str)
-                            + ' not ' + str(type(value)))
+            raise TypeError(name + ' `' + str(value)
+                            + '` must be of type ' + str(str)
+                            + ' not ' + str(type(value)) + '.')
 
     def __get_descriptor(self):
         if self.descriptor:
@@ -383,7 +384,7 @@ class DataWarehouse:
                                        {'operation': 'get_dw_descripter'})
 
         if response['totalCount'] != 1:
-            raise RuntimeError('Retrieving XDMoD data descriptor')
+            raise RuntimeError('Retrieving XDMoD data descriptor.')
 
         self.descriptor = response['data'][0]
 
@@ -396,9 +397,9 @@ class DataWarehouse:
     def __validate_str(self, key, value):
         self.__assert_str(key, value)
         if value not in self.VALID_VALUES[key]:
-            raise KeyError('Invalid ' + key + ' \'' + value
-                           + '\'. Valid values are: '
-                           + str(self.VALID_VALUES[key]))
+            raise KeyError('Invalid ' + key + ' `' + value
+                           + '`. Valid values are: '
+                           + str(self.VALID_VALUES[key]) + '.')
 
     def get_filters(self, realm, dimension):
         path = '/controllers/metric_explorer.php'
