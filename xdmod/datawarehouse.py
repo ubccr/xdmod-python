@@ -18,7 +18,7 @@ class DataWarehouse:
     def __init__(self, xdmod_host, api_key=None, ssl_verify=True):
         self.xdmod_host = xdmod_host
         self.api_key = api_key
-        self.logged_in = None
+        self.username = None
         self.crl = None
         self.cookie_file = None
         self.descriptor = None
@@ -117,18 +117,18 @@ class DataWarehouse:
             'Previous quarter': (last_quarter_start, last_quarter_end),
             'Year to date': (this_year_start, today),
             'Previous year': (previous_year_start, previous_year_end),
-            '1 year': (self.__date_add_year(today, -1), today),
-            '2 year': (self.__date_add_year(today, -2), today),
-            '3 year': (self.__date_add_year(today, -3), today),
-            '5 year': (self.__date_add_year(today, -5), today),
-            '10 year': (self.__date_add_year(today, -10), today)
+            '1 year': (self.__date_add_years(today, -1), today),
+            '2 year': (self.__date_add_years(today, -2), today),
+            '3 year': (self.__date_add_years(today, -3), today),
+            '5 year': (self.__date_add_years(today, -5), today),
+            '10 year': (self.__date_add_years(today, -10), today)
         }
 
     # When adding (or subtracting years), make dates behave like Ext.JS,
     # i.e., if a date is specified with a day value that is too big,
     # add days to the last valid day in that month,
     # e.g., 2023-02-31 becomes 2023-03-03
-    def __date_add_year(self, old_date, year_delta):
+    def __date_add_years(self, old_date, year_delta):
         new_date_year = old_date.year + year_delta
         new_date_day = old_date.day
         days_above = 0
@@ -161,7 +161,7 @@ class DataWarehouse:
                 token = response['results']['token']
                 self.headers = ['Token: ' + token]
                 self.crl.setopt(pycurl.HTTPHEADER, self.headers)
-                self.logged_in = response['results']['name']
+                self.username = response['results']['name']
             else:
                 raise RuntimeError('Access Denied.')
 
@@ -457,7 +457,7 @@ class DataWarehouse:
     def get_dimensions(self, realm):
         return self.__get_descriptor_data_frame(realm, 'dimensions')
 
-    def rawdata(self, realm, start, end, filters, stats):
+    def get_raw_data(self, realm, start, end, filters, stats):
         config = { 'realm': realm,
             'start_date': start,
             'end_date': end,
@@ -481,8 +481,8 @@ class DataWarehouse:
                             dtype=numpy.float64)
 
     def whoami(self):
-        if self.logged_in:
-            return self.logged_in
+        if self.username:
+            return self.username
         return 'Not logged in'
 
     def compliance(self, timeframe):
@@ -548,4 +548,4 @@ class DataWarehouse:
             os.unlink(self.cookie_file)
         if self.crl:
             self.crl.close()
-        self.logged_in = None
+        self.username = None
