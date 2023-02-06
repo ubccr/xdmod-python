@@ -202,6 +202,9 @@ class DataWarehouse:
                     filters={},
                     dataset_type='timeseries',
                     aggregation_unit='Auto'):
+
+        (start, end) = self.__get_start_end_from_duration(duration)
+
         metric_id = self.__get_id_from_descriptor(realm,
                                                   'metrics',
                                                   metric)
@@ -209,18 +212,6 @@ class DataWarehouse:
         dimension_id = self.__get_id_from_descriptor(realm,
                                                      'dimensions',
                                                      dimension)
-
-        if isinstance(duration, (tuple, list)):
-            if len(duration) == 2:
-                (start, end) = duration
-            else:
-                raise RuntimeError('If duration is of type `'
-                                   + str(type(duration))
-                                   + '`, it must be of size 2'
-                                   + ' (start and end times)')
-        else:
-            self.__validate_str('duration', duration)
-            (start, end) = self.__DURATION_TO_START_END[duration]
 
         self.__validate_str('dataset_type', dataset_type)
         self.__validate_str('aggregation_unit', aggregation_unit)
@@ -350,6 +341,18 @@ class DataWarehouse:
             raise KeyError(key + ' key `' + id + '` not found in `' + realm
                            + '` realm.')
         return output
+
+    def __get_start_end_from_duration(self, duration):
+        if isinstance(duration, str):
+            self.__validate_str('duration', duration)
+            (start, end) = self.__DURATION_TO_START_END[duration]
+        else:
+            try:
+                (start, end) = duration
+            except (TypeError, ValueError) as error:
+                raise type(error)('Duration must be a string'
+                                  + ' or an object with 2 items.') from None
+        return (start, end)
 
     def __get_descriptor_id_text_info_list(self, realm, key):
         self.__assert_str('realm', realm)
