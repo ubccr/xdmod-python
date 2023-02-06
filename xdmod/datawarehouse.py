@@ -281,12 +281,12 @@ class DataWarehouse:
                 filter_values.append(filter_value)
             config[dimension_id + '_filter'] = ','.join(filter_values)
 
-        response = self.__get_usagedata(config)
+        response = self.__get_usage_data(config)
 
         csvdata = csv.reader(response.splitlines())
 
         if dataset_type == 'aggregate':
-            return self.__xdmodcsvtopandas(csvdata)
+            return self.__xdmod_csv_to_pandas(csvdata)
         else:
             labelre = re.compile(r'\[([^\]]+)\].*')
             timestamps = []
@@ -420,13 +420,13 @@ class DataWarehouse:
         df = df.set_index('id')
         return df
 
-    def get_usagedata(self, config):
+    def __get_usage_data(self, config):
         response = self.__request('/controllers/user_interface.php',
                                   config)
 
         return response
 
-    def xdmodcsvtopandas(self, rd):
+    def __xdmod_csv_to_pandas(self, rd):
         groups = []
         data = []
         for line_num, line in enumerate(rd):
