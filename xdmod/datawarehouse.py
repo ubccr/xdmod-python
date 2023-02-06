@@ -197,7 +197,7 @@ class DataWarehouse:
         response = body_text
         return response
 
-    def __assert_inside_context_manager():
+    def __assert_inside_context_manager(self):
         if not self.__inside_context_manager:
             raise RuntimeError('Method is being called outside of the context'
                                + ' manager. Make sure this method is only'
