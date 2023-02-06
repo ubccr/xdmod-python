@@ -15,6 +15,7 @@ class DataWarehouse:
     """ Access the XDMoD datawarehouse via XDMoD's network API """
 
     def __init__(self, xdmod_host, api_key=None, ssl_verify=True):
+        self.__inside_context_manager = False
         self.__xdmod_host = xdmod_host
         self.__api_key = api_key
         self.__username = None
@@ -142,6 +143,7 @@ class DataWarehouse:
         return new_date + timedelta(days=days_above)
 
     def __enter__(self):
+        self.__inside_context_manager = True
         self.__crl = pycurl.Curl()
 
         if not self.__ssl_verify:
@@ -171,6 +173,7 @@ class DataWarehouse:
         return json.loads(response)
 
     def __request(self, path, config, headers=None, content_type=None):
+        self.__assert_inside_context_manager()
         if headers is None:
             headers = self.__headers
         if content_type == 'JSON':
@@ -193,6 +196,13 @@ class DataWarehouse:
                                + body_json['message'] + '`.')
         response = body_text
         return response
+
+    def __assert_inside_context_manager():
+        if not self.__inside_context_manager:
+            raise RuntimeError('Method is being called outside of the context'
+                               + ' manager. Make sure this method is only'
+                               + ' called within the body of a `with`'
+                               + ' statement.')
 
     def get_dataset(self,
                     duration='Previous month',
@@ -553,3 +563,4 @@ class DataWarehouse:
         if self.__crl:
             self.__crl.close()
         self.__username = None
+        self.__inside_context_manager = False
