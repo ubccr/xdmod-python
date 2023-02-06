@@ -223,8 +223,6 @@ class DataWarehouse:
             self.__validate_str('duration', duration)
             (start, end) = self.__DURATION_TO_START_END[duration]
 
-        # TODO: validate start and end
-
         self.__validate_str('dataset_type', dataset_type)
         self.__validate_str('aggregation_unit', aggregation_unit)
 
@@ -333,7 +331,6 @@ class DataWarehouse:
                         date_string = year + '-' + month + '-01'
                         format = '%Y-%m-%d'
                     else:
-                        # TODO handle other date cases
                         raise Exception('Unsupported date specification '
                                         + line[0] + '.')
                     timestamps.append(datetime.strptime(date_string, format))
