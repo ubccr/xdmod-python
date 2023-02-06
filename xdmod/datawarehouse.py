@@ -16,14 +16,14 @@ class DataWarehouse:
     """ Access the XDMoD datawarehouse via XDMoD's network API """
 
     def __init__(self, xdmod_host, api_key=None, ssl_verify=True):
-        self.xdmod_host = xdmod_host
-        self.api_key = api_key
-        self.username = None
-        self.crl = None
-        self.cookie_file = None
-        self.descriptor = None
-        self.ssl_verify = ssl_verify
-        self.headers = []
+        self.__xdmod_host = xdmod_host
+        self.__api_key = api_key
+        self.__username = None
+        self.__crl = None
+        self.__cookie_file = None
+        self.__descriptor = None
+        self.__ssl_verify = ssl_verify
+        self.__headers = []
 
         this_year = date.today().year
         six_years_ago = this_year - 6
@@ -58,9 +58,9 @@ class DataWarehouse:
 
         self.__init_dates()
 
-        if not self.api_key:
+        if not self.__api_key:
             try:
-                self.api_key = {
+                self.__api_key = {
                     'username': os.environ['XDMOD_USER'],
                     'password': os.environ['XDMOD_PASS']
                 }
@@ -143,25 +143,25 @@ class DataWarehouse:
         return new_date + timedelta(days=days_above)
 
     def __enter__(self):
-        self.crl = pycurl.Curl()
+        self.__crl = pycurl.Curl()
 
-        if not self.ssl_verify:
-            self.crl.setopt(pycurl.SSL_VERIFYPEER, 0)
-            self.crl.setopt(pycurl.SSL_VERIFYHOST, 0)
+        if not self.__ssl_verify:
+            self.__crl.setopt(pycurl.SSL_VERIFYPEER, 0)
+            self.__crl.setopt(pycurl.SSL_VERIFYHOST, 0)
 
-        if self.api_key:
-            _, self.cookie_file = tempfile.mkstemp()
-            self.crl.setopt(pycurl.COOKIEJAR, self.cookie_file)
-            self.crl.setopt(pycurl.COOKIEFILE, self.cookie_file)
+        if self.__api_key:
+            _, self.__cookie_file = tempfile.mkstemp()
+            self.__crl.setopt(pycurl.COOKIEJAR, self.__cookie_file)
+            self.__crl.setopt(pycurl.COOKIEFILE, self.__cookie_file)
 
             response = self.__request_json('/rest/auth/login',
-                                           self.api_key)
+                                           self.__api_key)
 
             if response['success'] is True:
                 token = response['results']['token']
-                self.headers = ['Token: ' + token]
-                self.crl.setopt(pycurl.HTTPHEADER, self.headers)
-                self.username = response['results']['name']
+                self.__headers = ['Token: ' + token]
+                self.__crl.setopt(pycurl.HTTPHEADER, self.__headers)
+                self.__username = response['results']['name']
             else:
                 raise RuntimeError('Access Denied.')
 
@@ -173,20 +173,20 @@ class DataWarehouse:
 
     def __request(self, path, config, headers=None, content_type=None):
         if headers is None:
-            headers = self.headers
+            headers = self.__headers
         if content_type == 'JSON':
             pf = config
         else:
             pf = urlencode(config)
         b_obj = io.BytesIO()
-        self.crl.reset()
-        self.crl.setopt(pycurl.URL, self.xdmod_host + path)
-        self.crl.setopt(pycurl.HTTPHEADER, headers)
-        self.crl.setopt(pycurl.WRITEDATA, b_obj)
-        self.crl.setopt(pycurl.POSTFIELDS, pf)
-        self.crl.perform()
+        self.__crl.reset()
+        self.__crl.setopt(pycurl.URL, self.__xdmod_host + path)
+        self.__crl.setopt(pycurl.HTTPHEADER, headers)
+        self.__crl.setopt(pycurl.WRITEDATA, b_obj)
+        self.__crl.setopt(pycurl.POSTFIELDS, pf)
+        self.__crl.perform()
         body_bytes = b_obj.getvalue()
-        code = self.crl.getinfo(pycurl.RESPONSE_CODE)
+        code = self.__crl.getinfo(pycurl.RESPONSE_CODE)
         body_text = body_bytes.decode('utf8')
         if code != 200:
             body_json = json.loads(body_text)
@@ -281,12 +281,12 @@ class DataWarehouse:
                 filter_values.append(filter_value)
             config[dimension_id + '_filter'] = ','.join(filter_values)
 
-        response = self.get_usagedata(config)
+        response = self.__get_usagedata(config)
 
         csvdata = csv.reader(response.splitlines())
 
         if dataset_type == 'aggregate':
-            return self.xdmodcsvtopandas(csvdata)
+            return self.__xdmodcsvtopandas(csvdata)
         else:
             labelre = re.compile(r'\[([^\]]+)\].*')
             timestamps = []
@@ -374,8 +374,8 @@ class DataWarehouse:
                             + ' not ' + str(type(value)) + '.')
 
     def __get_descriptor(self):
-        if self.descriptor:
-            return self.descriptor
+        if self.__descriptor:
+            return self.__descriptor
 
         response = self.__request_json('/controllers/metric_explorer.php',
                                        {'operation': 'get_dw_descripter'})
@@ -383,9 +383,9 @@ class DataWarehouse:
         if response['totalCount'] != 1:
             raise RuntimeError('Retrieving XDMoD data descriptor.')
 
-        self.descriptor = response['data'][0]
+        self.__descriptor = response['data'][0]
 
-        return self.descriptor
+        return self.__descriptor
 
     def get_realms(self):
         descriptor = self.__get_descriptor()
@@ -467,9 +467,9 @@ class DataWarehouse:
 
         request = json.dumps(config)
 
-        headers = self.headers + ['Accept: application/json',
-                                  'Content-Type: application/json',
-                                  'charset: utf-8']
+        headers = self.__headers + ['Accept: application/json',
+                                    'Content-Type: application/json',
+                                    'charset: utf-8']
 
         result = self.__request_json('/rest/v1/warehouse/rawdata',
                                      request,
@@ -481,8 +481,8 @@ class DataWarehouse:
                             dtype=numpy.float64)
 
     def whoami(self):
-        if self.username:
-            return self.username
+        if self.__username:
+            return self.__username
         return 'Not logged in'
 
     def compliance(self, timeframe):
@@ -544,8 +544,8 @@ class DataWarehouse:
             return df
 
     def __exit__(self, tpe, value, tb):
-        if self.cookie_file:
-            os.unlink(self.cookie_file)
-        if self.crl:
-            self.crl.close()
-        self.username = None
+        if self.__cookie_file:
+            os.unlink(self.__cookie_file)
+        if self.__crl:
+            self.__crl.close()
+        self.__username = None
