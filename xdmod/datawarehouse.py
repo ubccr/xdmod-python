@@ -12,7 +12,7 @@ import tempfile
 from urllib.parse import urlencode
 
 
-class DataWareHouse:
+class DataWarehouse:
     """ Access the XDMoD datawarehouse via XDMoD's network API """
 
     def __init__(self, xdmodhost, apikey=None, sslverify=True):
