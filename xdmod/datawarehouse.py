@@ -43,8 +43,9 @@ class DataWarehouse:
                 '2 year',
                 '3 year',
                 '5 year',
-                '10 year') +
-                tuple(map(str, reversed(range(six_years_ago, this_year + 1))))),
+                '10 year')
+                + tuple(map(str, reversed(range(six_years_ago,
+                                                this_year + 1))))),
             'dataset_type': (
                 'timeseries',
                 'aggregate'),
@@ -87,7 +88,9 @@ class DataWarehouse:
             1)
 
         last_full_month_end = this_month_start + timedelta(days=-1)
-        this_quarter_start = date(today.year, ((today.month - 1) // 3) * 3 + 1, 1)
+        this_quarter_start = date(today.year,
+                                  ((today.month - 1) // 3) * 3 + 1,
+                                  1)
 
         if today.month < 4:
             last_quarter_start_year = today.year - 1
@@ -200,15 +203,22 @@ class DataWarehouse:
                     filters={},
                     dataset_type='timeseries',
                     aggregation_unit='Auto'):
-        metric_id = self.__get_id_from_descriptor(realm, 'metrics', metric)
-        dimension_id = self.__get_id_from_descriptor(realm, 'dimensions', dimension)
+        metric_id = self.__get_id_from_descriptor(realm,
+                                                  'metrics',
+                                                  metric)
+
+        dimension_id = self.__get_id_from_descriptor(realm,
+                                                     'dimensions',
+                                                     dimension)
 
         if isinstance(duration, (tuple, list)):
             if len(duration) == 2:
                 (start, end) = duration
             else:
-                raise RuntimeError('If duration is of type ' + str(type(duration)) +
-                                   ', it must be of size 2 (start and end times)')
+                raise RuntimeError('If duration is of type '
+                                   + str(type(duration))
+                                   + ', it must be of size 2'
+                                   + ' (start and end times)')
         else:
             self.__validate_str('duration', duration)
             (start, end) = self.__DURATION_TO_START_END[duration]
@@ -253,7 +263,9 @@ class DataWarehouse:
         }
 
         for dimension in filters:
-            dimension_id = self.__get_id_from_descriptor(realm, 'dimensions', dimension)
+            dimension_id = self.__get_id_from_descriptor(realm,
+                                                         'dimensions',
+                                                         dimension)
             valid_filters = self.get_filters(realm, dimension_id)
             filter_values = []
             for filter in filters[dimension]:
@@ -261,10 +273,13 @@ class DataWarehouse:
                 if filter in valid_filters.index:
                     filter_value = filter
                 elif filter in valid_filters['label'].values:
-                    filter_value = valid_filters.index[valid_filters['label'] == filter].tolist()[0]
+                    filter_value = valid_filters.index[valid_filters['label']
+                                                       == filter].tolist()[0]
                 else:
-                    raise KeyError('Filter value \'' + filter + '\' not found in \'' +
-                                   dimension + '\' dimension of \'' + realm + '\' realm')
+                    raise KeyError('Filter value \'' + filter
+                                   + '\' not found in \'' + dimension
+                                   + '\' dimension of \'' + realm
+                                   + '\' realm')
                 filter_values.append(filter_value)
             config[dimension_id + '_filter'] = ','.join(filter_values)
 
@@ -312,22 +327,28 @@ class DataWarehouse:
                         elif quarter == 'Q4':
                             month = '10'
                         else:
-                            raise Exception('Unsupported date quarter specification ' + line[0])
+                            raise Exception('Unsupported date quarter'
+                                            + ' specification ' + line[0])
                         date_string = year + '-' + month + '-01'
                         format = '%Y-%m-%d'
                     else:
                         # TODO handle other date cases
-                        raise Exception('Unsupported date specification ' + line[0])
+                        raise Exception('Unsupported date specification '
+                                        + line[0])
                     timestamps.append(datetime.strptime(date_string, format))
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
 
-            return pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions)
+            return pd.DataFrame(data=data,
+                                index=pd.Series(data=timestamps, name='Time'),
+                                columns=dimensions)
 
     def __get_id_from_descriptor(self, realm, key, id):
         list = self.__get_descriptor_id_text_info_list(realm, key)
-        output = next((i for (i, text, info) in list if id == i or id == text), None)
+        output = next((i for (i, text, info) in list if id == i or id == text),
+                      None)
         if output is None:
-            raise KeyError(key + ' key \'' + id + '\' not found in \'' + realm + '\' realm')
+            raise KeyError(key + ' key \'' + id + '\' not found in \'' + realm
+                           + '\' realm')
         return output
 
     def __get_descriptor_id_text_info_list(self, realm, key):
@@ -337,8 +358,9 @@ class DataWarehouse:
         try:
             realm_desc = descriptor['realms'][realm]
         except KeyError:
-            raise KeyError('Invalid realm \'' + realm + '\'. ' +
-                           'Valid realms are ' + str(self.get_realms())) from None
+            raise KeyError('Invalid realm \'' + realm + '\'. '
+                           + 'Valid realms are '
+                           + str(self.get_realms())) from None
         try:
             data = realm_desc[key]
         except KeyError:
@@ -349,9 +371,9 @@ class DataWarehouse:
 
     def __assert_str(self, name, value):
         if not isinstance(value, str):
-            raise TypeError(name + ' ' + str(value) +
-                            ' must be of type ' + str(str) +
-                            ' not ' + str(type(value)))
+            raise TypeError(name + ' ' + str(value)
+                            + ' must be of type ' + str(str)
+                            + ' not ' + str(type(value)))
 
     def __get_descriptor(self):
         if self.descriptor:
@@ -374,12 +396,15 @@ class DataWarehouse:
     def __validate_str(self, key, value):
         self.__assert_str(key, value)
         if value not in self.VALID_VALUES[key]:
-            raise KeyError('Invalid ' + key + ' \'' + value +
-                           '\'. Valid values are: ' + str(self.VALID_VALUES[key]))
+            raise KeyError('Invalid ' + key + ' \'' + value
+                           + '\'. Valid values are: '
+                           + str(self.VALID_VALUES[key]))
 
     def get_filters(self, realm, dimension):
         path = '/controllers/metric_explorer.php'
-        dimension_id = self.__get_id_from_descriptor(realm, 'dimensions', dimension)
+        dimension_id = self.__get_id_from_descriptor(realm,
+                                                     'dimensions',
+                                                     dimension)
         config = {
             'operation': 'get_dimension',
             'dimension_id': dimension_id,
@@ -435,8 +460,7 @@ class DataWarehouse:
         return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def rawdata(self, realm, start, end, filters, stats):
-        config = {
-            'realm': realm,
+        config = { 'realm': realm,
             'start_date': start,
             'end_date': end,
             'params': filters,
@@ -454,7 +478,9 @@ class DataWarehouse:
                                      headers,
                                      content_type='JSON')
 
-        return pd.DataFrame(result['data'], columns=result['stats'], dtype=numpy.float64)
+        return pd.DataFrame(result['data'],
+                            columns=result['stats'],
+                            dtype=numpy.float64)
 
     def whoami(self):
         if self.logged_in:
@@ -478,32 +504,39 @@ class DataWarehouse:
         for resource in cdata['metaData']['fields']:
             if resource['name'] == 'requirement':
                 continue
-            names.append(resource['header'][:-7].split('>')[1].replace('-', ' '))
+            names.append(resource['header'][:-7].split('>')[1].replace('-',
+                                                                       ' '))
             types.append(resource['status'].split('|')[0].strip())
             resource_ids.append(resource['resource_id'])
 
         return pd.Series(data=types, index=names)
 
     def get_qualitydata(self, params, is_numpy=False):
-        type_to_title = {'gpu': '% of jobs with GPU information',
-                         'hardware': '% of jobs with hardware perf information',
-                         'cpu': '% of jobs with cpu usage information',
-                         'script': '% of jobs with Job Batch Script information',
-                         'realms': '% of jobs in the SUPReMM realm compared to Jobs realm'}
+        type_to_title = {
+            'gpu': '% of jobs with GPU information',
+            'hardware': '% of jobs with hardware perf information',
+            'cpu': '% of jobs with cpu usage information',
+            'script': '% of jobs with Job Batch Script information',
+            'realms': '% of jobs in the SUPReMM realm compared to Jobs realm'}
 
         response = self.__request_json('/rest/supremm_dataflow/quality',
                                        params)
 
         if response['success']:
-            jobs = [job for job in response['result']]
-            dates = [date.strftime('%Y-%m-%d') for date in pd.date_range(params['start'], params['end'], freq='D').date]
+            result = response['result']
+            jobs = [job for job in result]
+            dates = [date.strftime('%Y-%m-%d') for date
+                     in pd.date_range(params['start'],
+                                      params['end'],
+                                      freq='D').date]
 
             quality = numpy.empty((len(jobs), len(dates)))
 
             for i in range(len(jobs)):
                 for j in range(len(dates)):
-                    if response['result'][jobs[i]].get(dates[j], numpy.nan) != 'N/A':
-                        quality[i, j] = response['result'][jobs[i]].get(dates[j], numpy.nan)
+                    job_i = result[jobs[i]]
+                    if job_i.get(dates[j], numpy.nan) != 'N/A':
+                        quality[i, j] = job_i.get(dates[j], numpy.nan)
                     else:
                         quality[i, j] = numpy.nan
             if is_numpy:
