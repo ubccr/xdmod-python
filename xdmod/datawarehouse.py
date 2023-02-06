@@ -11,7 +11,6 @@ import re
 import tempfile
 from urllib.parse import urlencode
 
-
 class DataWarehouse:
     """ Access the XDMoD datawarehouse via XDMoD's network API """
 
@@ -342,8 +341,11 @@ class DataWarehouse:
 
     def __get_id_from_descriptor(self, realm, key, id):
         list = self.__get_descriptor_id_text_info_list(realm, key)
-        output = next((i for (i, text, info) in list if id == i or id == text),
-                      None)
+        output = None
+        for (i, text, info) in list:
+            if i == id or text == id:
+                output = i
+                break
         if output is None:
             raise KeyError(key + ' key `' + id + '` not found in `' + realm
                            + '` realm.')
@@ -409,10 +411,10 @@ class DataWarehouse:
             'realm': realm
         }
         response = self.__request_json(path, config)
-        df = self.__get_indexed_data_frame(
-            data=[(datum['id'], datum['name']) for datum in response['data']],
-            columns=('id', 'label'),
-            index='id')
+        data = [(datum['id'], datum['name']) for datum in response['data']]
+        df = self.__get_indexed_data_frame(data=data,
+                                           columns=('id', 'label'),
+                                           index='id')
         return df
 
     def __get_indexed_data_frame(self, data, columns, index):
@@ -448,35 +450,34 @@ class DataWarehouse:
         return self.__get_descriptor_data_frame(realm, 'metrics')
 
     def __get_descriptor_data_frame(self, realm, key):
-        df = self.__get_indexed_data_frame(
-            data=self.__get_descriptor_id_text_info_list(realm, key),
-            columns=('id', 'label', 'description'),
-            index='id')
+        data = self.__get_descriptor_id_text_info_list(realm, key)
+        df = self.__get_indexed_data_frame(data=data,
+                                           columns=('id',
+                                                    'label',
+                                                    'description'),
+                                           index='id')
         return df
 
     def get_dimensions(self, realm):
         return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def get_raw_data(self, realm, start, end, filters, stats):
-        config = { 'realm': realm,
-            'start_date': start,
-            'end_date': end,
-            'params': filters,
-            'stats': stats
-        }
+        config = json.dumps({ 'realm': realm,        
+                              'start_date': start,   
+                              'end_date': end,       
+                              'params': filters,     
+                              'stats': stats })
 
-        request = json.dumps(config)
-
-        headers = self.__headers + ['Accept: application/json',
+        headers = self.__headers + ['Accept: application/json',     
                                     'Content-Type: application/json',
                                     'charset: utf-8']
 
-        result = self.__request_json('/rest/v1/warehouse/rawdata',
-                                     request,
-                                     headers,
+        result = self.__request_json(path='/rest/v1/warehouse/rawdata',
+                                     config=config,
+                                     headers=headers,
                                      content_type='JSON')
 
-        return pd.DataFrame(result['data'],
+        return pd.DataFrame(data=result['data'],
                             columns=result['stats'],
                             dtype=numpy.float64)
 
