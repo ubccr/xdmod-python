@@ -15,14 +15,14 @@ from urllib.parse import urlencode
 class DataWarehouse:
     """ Access the XDMoD datawarehouse via XDMoD's network API """
 
-    def __init__(self, xdmodhost, apikey=None, sslverify=True):
-        self.xdmodhost = xdmodhost
-        self.apikey = apikey
+    def __init__(self, xdmod_host, api_key=None, ssl_verify=True):
+        self.xdmod_host = xdmod_host
+        self.api_key = api_key
         self.logged_in = None
         self.crl = None
-        self.cookiefile = None
+        self.cookie_file = None
         self.descriptor = None
-        self.sslverify = sslverify
+        self.ssl_verify = ssl_verify
         self.headers = []
 
         this_year = date.today().year
@@ -57,9 +57,9 @@ class DataWarehouse:
 
         self.__init_dates()
 
-        if not self.apikey:
+        if not self.api_key:
             try:
-                self.apikey = {
+                self.api_key = {
                     'username': os.environ['XDMOD_USER'],
                     'password': os.environ['XDMOD_PASS']
                 }
@@ -142,17 +142,17 @@ class DataWarehouse:
     def __enter__(self):
         self.crl = pycurl.Curl()
 
-        if not self.sslverify:
+        if not self.ssl_verify:
             self.crl.setopt(pycurl.SSL_VERIFYPEER, 0)
             self.crl.setopt(pycurl.SSL_VERIFYHOST, 0)
 
-        if self.apikey:
-            _, self.cookiefile = tempfile.mkstemp()
-            self.crl.setopt(pycurl.COOKIEJAR, self.cookiefile)
-            self.crl.setopt(pycurl.COOKIEFILE, self.cookiefile)
+        if self.api_key:
+            _, self.cookie_file = tempfile.mkstemp()
+            self.crl.setopt(pycurl.COOKIEJAR, self.cookie_file)
+            self.crl.setopt(pycurl.COOKIEFILE, self.cookie_file)
 
             response = self.__request_json('/rest/auth/login',
-                                           self.apikey)
+                                           self.api_key)
 
             if response['success'] is True:
                 token = response['results']['token']
@@ -164,20 +164,20 @@ class DataWarehouse:
 
         return self
 
-    def __request_json(self, path, config, headers=None, contentType=None):
-        response = self.__request(path, config, headers, contentType)
+    def __request_json(self, path, config, headers=None, content_type=None):
+        response = self.__request(path, config, headers, content_type)
         return json.loads(response)
 
-    def __request(self, path, config, headers=None, contentType=None):
+    def __request(self, path, config, headers=None, content_type=None):
         if headers is None:
             headers = self.headers
-        if contentType == 'JSON':
+        if content_type == 'JSON':
             pf = config
         else:
             pf = urlencode(config)
         b_obj = io.BytesIO()
         self.crl.reset()
-        self.crl.setopt(pycurl.URL, self.xdmodhost + path)
+        self.crl.setopt(pycurl.URL, self.xdmod_host + path)
         self.crl.setopt(pycurl.HTTPHEADER, headers)
         self.crl.setopt(pycurl.WRITEDATA, b_obj)
         self.crl.setopt(pycurl.POSTFIELDS, pf)
@@ -452,7 +452,7 @@ class DataWarehouse:
         result = self.__request_json('/rest/v1/warehouse/rawdata',
                                      request,
                                      headers,
-                                     contentType='JSON')
+                                     content_type='JSON')
 
         return pd.DataFrame(result['data'], columns=result['stats'], dtype=numpy.float64)
 
@@ -513,8 +513,8 @@ class DataWarehouse:
             return df
 
     def __exit__(self, tpe, value, tb):
-        if self.cookiefile:
-            os.unlink(self.cookiefile)
+        if self.cookie_file:
+            os.unlink(self.cookie_file)
         if self.crl:
             self.crl.close()
         self.logged_in = None
