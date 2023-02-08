@@ -13,8 +13,35 @@ from urllib.parse import urlencode
 
 
 class DataWarehouse:
-    """ Access the XDMoD datawarehouse via XDMoD's network API """
+    """Access the XDMoD data warehouse via XDMoD's network API.
 
+       Methods must be called within a runtime context using the ``with``
+       keyword, e.g.,
+
+       >>> with DataWarehouse(XDMOD_URL, XDMOD_API_KEY) as x:
+       ...     x.get_dataset()
+
+       Parameters
+       ----------
+       xdmod_host : str
+           The URL of the XDMoD server.
+       api_key : str, optional
+           The API key used to connect. If not provided, the
+           `XDMOD_USER` and `XDMOD_PASS` environment variables must be
+           set.
+
+       Raises
+       ------
+       KeyError
+           If `api_key` is None and either or both of the environment
+           variables `XDMOD_USER` and `XDMOD_PASS` have not been set.
+       TypeError
+           If `xdmod_host` is not a string or if `api_key` is not None and is
+           not a string.
+       RuntimeError
+           If a connection cannot be made to the XDMoD server specified by
+           `xdmod_host`.
+    """
     def __init__(self, xdmod_host, api_key=None):
         self.__assert_str('xdmod_host', xdmod_host)
         self.__xdmod_host = xdmod_host
@@ -269,10 +296,44 @@ class DataWarehouse:
         return result
 
     def get_realms(self):
+        """Get a tuple containing the valid realms in the data warehouse.
+
+           Returns
+           -------
+           3-tuple of str
+               The valid realms.
+
+           Raises
+           ------
+           RuntimeError
+               If this method is called outside the runtime context.
+        """
         self.__assert_runtime_context()
         return tuple(self.__descriptor)
 
     def get_metrics(self, realm):
+        """Get a DataFrame containing the valid metrics for the given realm.
+
+           Parameters
+           ----------
+           realm : str
+               A realm in the data warehouse.
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the ID, label, and description
+               of each metric.
+
+           Raises
+           ------
+           KeyError
+               If `realm` is not one of the values from `get_realms()`.
+           TypeError
+               If `realm` is not a string.
+           RuntimeError
+               If this method is called outside the runtime context.
+        """
         self.__assert_runtime_context()
         self.__assert_realm(realm)
         return self.__get_descriptor_data_frame(realm, 'metrics')
@@ -302,11 +363,59 @@ class DataWarehouse:
         return df
 
     def get_dimensions(self, realm):
+        """Get a DataFrame containing the valid dimensions for the given realm.
+
+           Parameters
+           ----------
+           realm : str
+               A realm in the data warehouse.
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the ID, label, and description
+               of each dimension.
+
+           Raises
+           ------
+           KeyError
+               If `realm` is not one of the values from `get_realms()`.
+           TypeError
+               If `realm` is not a string.
+           RuntimeError
+               If this method is called outside the runtime context.
+        """
         self.__assert_runtime_context()
         self.__assert_realm(realm)
         return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def get_filters(self, realm, dimension):
+        """Get a DataFrame containing the valid filters for the given dimension
+           of the given realm.
+
+           Parameters
+           ----------
+           realm : str
+               A realm in the data warehouse.
+           dimension : str
+               A dimension of the given realm in the data warehouse.
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the ID and label of each filter.
+
+           Raises
+           ------
+           KeyError
+               If `realm` is not one of the values from `get_realms()` or
+               `dimension` is not one of the IDs or labels from
+               `get_dimensions()`
+           TypeError
+               If `realm` or `dimension` are not strings.
+           RuntimeError
+               If this method is called outside the runtime context.
+        """
         self.__assert_runtime_context()
         self.__assert_realm(realm)
         self.__assert_str('dimension', dimension)
@@ -329,6 +438,24 @@ class DataWarehouse:
         return df
 
     def get_valid_values(self, parameter):
+        """Get a collection of valid values for a given parameter.
+
+           Parameters
+           ----------
+           parameter : str
+               The name of the parameter.
+
+           Returns
+           -------
+           tuple of str
+               The collection of valid values.
+
+           Raises
+           ------
+           KeyError
+               If the given parameter does not have a collection of valid
+               values.
+        """
         if parameter not in self.__valid_values:
             raise KeyError('Parameter \'' + parameter
                            + '\' does not have a list of valid values.')
@@ -351,6 +478,46 @@ class DataWarehouse:
                     filters={},
                     dataset_type='timeseries',
                     aggregation_unit='Auto'):
+        """Get a DataFrame containing a dataset from the data warehouse.
+
+           Parameters
+           ----------
+           duration : str or object of length 2 of str, optional
+               ...
+           realm : str, optional
+               ...
+           metric : str, optional
+               ...
+           dimension : str, optional
+               ...
+           filters : dict of str, optional
+               ...
+           dataset_type : str, optional
+               ...
+           aggregation_unit : str, optional
+               ...
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the dataset...
+
+           Raises
+           ------
+           KeyError
+               If any of the parameters have invalid values. Valid realms
+               come from `get_realms()`; valid metrics come from
+               `get_metrics()`; valid dimensions and filters come from
+               `get_dimensions()`; and valid durations, dataset types, and
+               aggregation units come from `get_valid_values()`.
+           RuntimeError
+               If this method is called outside the runtime context or if
+               there is an error requesting data from the warehouse.
+           TypeError
+               If any of the arguments are of the wrong type.
+           ValueError
+               If `duration` is an object but not of length 2.
+        """
         self.__assert_runtime_context()
 
         (start, end) = self.__get_start_end_from_duration(duration)
@@ -547,8 +714,6 @@ class DataWarehouse:
         return 'Not logged in'
 
     def compliance(self, timeframe):
-        """ retrieve compliance reports """
-
         response = self.__request_json('/controllers/compliance.php',
                                        {'timeframe_mode': timeframe})
 
