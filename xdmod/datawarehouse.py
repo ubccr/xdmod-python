@@ -187,27 +187,42 @@ class DataWarehouse:
 
     def __request(self, path, post_fields, headers=None, content_type=None):
         self.__assert_runtime_context()
-        if headers is None:
-            headers = self.__headers
+        self.__crl.reset()
+
+        url = self.__xdmod_host + path
+        self.__crl.setopt(pycurl.URL, url)
+
         if content_type == 'JSON':
             pf = post_fields
         else:
             pf = urlencode(post_fields)
-        b_obj = io.BytesIO()
-        self.__crl.reset()
-        self.__crl.setopt(pycurl.URL, self.__xdmod_host + path)
-        self.__crl.setopt(pycurl.HTTPHEADER, headers)
-        self.__crl.setopt(pycurl.WRITEDATA, b_obj)
         self.__crl.setopt(pycurl.POSTFIELDS, pf)
-        self.__crl.perform()
-        body_bytes = b_obj.getvalue()
+
+        if headers is None:
+            headers = self.__headers
+        self.__crl.setopt(pycurl.HTTPHEADER, headers)
+
+        buffer = io.BytesIO()
+        self.__crl.setopt(pycurl.WRITEDATA, buffer)
+
+        try:
+            self.__crl.perform()
+        except pycurl.error as e:
+            code, msg = e.args
+            if code == pycurl.E_URL_MALFORMAT:
+                msg = 'Malformed URL: ' + url + '.'
+            raise RuntimeError(msg) from None
+
+        response = buffer.getvalue().decode()
         code = self.__crl.getinfo(pycurl.RESPONSE_CODE)
-        body_text = body_bytes.decode('utf8')
         if code != 200:
-            body_json = json.loads(body_text)
-            raise RuntimeError('Error ' + str(code) + ': `'
-                               + body_json['message'] + '`.')
-        response = body_text
+            msg = ''
+            try:
+                response_json = json.loads(response)
+                msg = ': ' + response_json['message']
+            except json.JSONDecodeError:
+                pass
+            raise RuntimeError('Error ' + str(code) + msg) from None
         return response
 
     def __assert_runtime_context(self):
