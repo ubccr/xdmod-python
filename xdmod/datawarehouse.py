@@ -229,8 +229,7 @@ class DataWarehouse:
 
     def __assert_str(self, name, value):
         if not isinstance(value, str):
-            raise TypeError('`' + name + '` must be of type ' + str(str)
-                            + ' not ' + str(type(value)) + '.')
+            raise TypeError('`' + name + '` must be a string.')
 
     def __request_descriptor(self):
         response = self.__request_json('/controllers/metric_explorer.php',
