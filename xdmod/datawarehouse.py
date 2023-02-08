@@ -47,36 +47,38 @@ class DataWarehouse:
         return value
 
     def __init_valid_values(self):
+        self.VALID_VALUES = {}
+
         this_year = date.today().year
         six_years_ago = this_year - 6
-        self.VALID_VALUES = {
-            'duration': ((
-                'Yesterday',
-                '7 day',
-                '30 day',
-                '90 day',
-                'Month to date',
-                'Previous month',
-                'Quarter to date',
-                'Previous quarter',
-                'Year to date',
-                'Previous year',
-                '1 year',
-                '2 year',
-                '3 year',
-                '5 year',
-                '10 year')
-                + tuple(map(str, reversed(range(six_years_ago,
-                                                this_year + 1))))),
-            'dataset_type': (
-                'timeseries',
-                'aggregate'),
-            'aggregation_unit': (
-                'Auto',
-                'Day',
-                'Month',
-                'Quarter',
-                'Year')}
+        last_seven_years = tuple(map(str, reversed(range(six_years_ago,
+                                                         this_year + 1))))
+
+        self.VALID_VALUES['duration'] = (('Yesterday',
+                                          '7 day',
+                                          '30 day',
+                                          '90 day',
+                                          'Month to date',
+                                          'Previous month',
+                                          'Quarter to date',
+                                          'Previous quarter',
+                                          'Year to date',
+                                          'Previous year',
+                                          '1 year',
+                                          '2 year',
+                                          '3 year',
+                                          '5 year',
+                                          '10 year')
+                                         + last_seven_years)
+
+        self.VALID_VALUES['dataset_type'] = ('timeseries',
+                                             'aggregate')
+
+        self.VALID_VALUES['aggregation_unit'] = ('Auto',
+                                                 'Day',
+                                                 'Month',
+                                                 'Quarter',
+                                                 'Year')
 
     def __init_dates(self):
         today = date.today()
@@ -93,10 +95,9 @@ class DataWarehouse:
             last_full_month_start_year = today.year
             last_full_month_start_month = today.month - 1
 
-        last_full_month_start = date(
-            last_full_month_start_year,
-            last_full_month_start_month,
-            1)
+        last_full_month_start = date(last_full_month_start_year,
+                                     last_full_month_start_month,
+                                     1)
 
         last_full_month_end = this_month_start + timedelta(days=-1)
         this_quarter_start = date(today.year,
@@ -291,11 +292,11 @@ class DataWarehouse:
                                                     dimension)
 
         path = '/controllers/metric_explorer.php'
-        post_fields = {
-            'operation': 'get_dimension',
-            'dimension_id': dimension_id,
-            'realm': realm
-        }
+
+        post_fields = {'operation': 'get_dimension',
+                       'dimension_id': dimension_id,
+                       'realm': realm}
+
         response = self.__request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
         df = self.__get_indexed_data_frame(data=data,
@@ -334,39 +335,37 @@ class DataWarehouse:
         self.__validate_str('dataset_type', dataset_type)
         self.__validate_str('aggregation_unit', aggregation_unit)
 
-        post_fields = {
-            'operation': 'get_data',
-            'start_date': start,
-            'end_date': end,
-            'realm': realm,
-            'statistic': metric_id,
-            'group_by': dimension_id,
-            'dataset_type': dataset_type,
-            'aggregation_unit': aggregation_unit,
-            'public_user': 'true',
-            'timeframe_label': '2016',
-            'scale': '1',
-            'thumbnail': 'n',
-            'query_group': 'po_usage',
-            'display_type': 'line',
-            'combine_type': 'side',
-            'limit': '10',
-            'offset': '0',
-            'log_scale': 'n',
-            'show_guide_lines': 'y',
-            'show_trend_line': 'y',
-            'show_percent_alloc': 'n',
-            'show_error_bars': 'y',
-            'show_aggregate_labels': 'n',
-            'show_error_labels': 'n',
-            'show_title': 'y',
-            'width': '916',
-            'height': '484',
-            'legend_type': 'bottom_center',
-            'font_size': '3',
-            'inline': 'n',
-            'format': 'csv'
-        }
+        post_fields = {'operation': 'get_data',
+                       'start_date': start,
+                       'end_date': end,
+                       'realm': realm,
+                       'statistic': metric_id,
+                       'group_by': dimension_id,
+                       'dataset_type': dataset_type,
+                       'aggregation_unit': aggregation_unit,
+                       'public_user': 'true',
+                       'timeframe_label': '2016',
+                       'scale': '1',
+                       'thumbnail': 'n',
+                       'query_group': 'po_usage',
+                       'display_type': 'line',
+                       'combine_type': 'side',
+                       'limit': '10',
+                       'offset': '0',
+                       'log_scale': 'n',
+                       'show_guide_lines': 'y',
+                       'show_trend_line': 'y',
+                       'show_percent_alloc': 'n',
+                       'show_error_bars': 'y',
+                       'show_aggregate_labels': 'n',
+                       'show_error_labels': 'n',
+                       'show_title': 'y',
+                       'width': '916',
+                       'height': '484',
+                       'legend_type': 'bottom_center',
+                       'font_size': '3',
+                       'inline': 'n',
+                       'format': 'csv'}
 
         for dimension in filters:
             dimension_id = self.__find_id_in_descriptor(realm,
