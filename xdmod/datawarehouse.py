@@ -28,13 +28,10 @@ class DataWarehouse:
         self.__headers = []
 
         if not self.__api_key:
-            try:
-                self.__api_key = {
-                    'username': os.environ['XDMOD_USER'],
-                    'password': os.environ['XDMOD_PASS']
-                }
-            except KeyError:
-                pass
+            username = self.__get_environment_variable('XDMOD_USER')
+            password = self.__get_environment_variable('XDMOD_PASS')
+            self.__api_key = {'username': username,
+                              'password': password}
 
         this_year = date.today().year
         six_years_ago = this_year - 6
@@ -68,6 +65,14 @@ class DataWarehouse:
                 'Year')}
 
         self.__init_dates()
+
+    def __get_environment_variable(self, name):
+        try:
+            value = os.environ[name]
+        except KeyError:
+            raise KeyError(name + ' environment variable'
+                           + ' has not been set.') from None
+        return value
 
     def __init_dates(self):
         today = date.today()
