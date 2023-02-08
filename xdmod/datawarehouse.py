@@ -216,6 +216,11 @@ class DataWarehouse:
                                + ' called within the body of a `with`'
                                + ' statement.')
 
+    def __assert_str(self, name, value):
+        if not isinstance(value, str):
+            raise TypeError('`' + name + '` must be of type ' + str(str)
+                            + ' not ' + str(type(value)) + '.')
+
     def __request_descriptor(self):
         response = self.__request_json('/controllers/metric_explorer.php',
                                        {'operation': 'get_dw_descripter'})
@@ -237,6 +242,74 @@ class DataWarehouse:
                                          field_descriptor[id]['info'])
                                         for id in field_descriptor]
         return result
+
+    def get_realms(self):
+        self.__assert_runtime_context()
+        return tuple(self.__descriptor)
+
+    def get_metrics(self, realm):
+        self.__assert_runtime_context()
+        self.__assert_realm(realm)
+        return self.__get_descriptor_data_frame(realm, 'metrics')
+
+    def __assert_realm(self, realm):
+        self.__assert_str('realm', realm)
+        self.__assert_str_in_sequence(realm, self.get_realms(), 'realms',
+                                      'Invalid realm \'' + realm + '\'')
+
+    def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
+        if string not in sequence:
+            raise KeyError(msg_prologue + '. Valid ' + label + ' are: \''
+                           + '\', \''.join(sequence)
+                           + '\'.') from None
+
+    def __get_descriptor_data_frame(self, realm, field):
+        return self.__get_indexed_data_frame(data=self.__descriptor[realm]
+                                                                   [field],
+                                             columns=('id',
+                                                      'label',
+                                                      'description'),
+                                             index='id')
+
+    def __get_indexed_data_frame(self, data, columns, index):
+        df = pd.DataFrame(data=data, columns=columns)
+        df = df.set_index('id')
+        return df
+
+    def get_dimensions(self, realm):
+        self.__assert_runtime_context()
+        self.__assert_realm(realm)
+        return self.__get_descriptor_data_frame(realm, 'dimensions')
+
+    def get_filters(self, realm, dimension):
+        self.__assert_runtime_context()
+        self.__assert_realm(realm)
+        self.__assert_str('dimension', dimension)
+
+        dimension_id = self.__find_id_in_descriptor(realm,
+                                                    'dimensions',
+                                                    dimension)
+
+        path = '/controllers/metric_explorer.php'
+        post_fields = {
+            'operation': 'get_dimension',
+            'dimension_id': dimension_id,
+            'realm': realm
+        }
+        response = self.__request_json(path, post_fields)
+        data = [(datum['id'], datum['name']) for datum in response['data']]
+        df = self.__get_indexed_data_frame(data=data,
+                                           columns=('id', 'label'),
+                                           index='id')
+        return df
+
+    def __find_id_in_descriptor(self, realm, field, search_str):
+        for (id_, text, info) in self.__descriptor[realm][field]:
+            if id_ == search_str or text == search_str:
+                return id_
+
+        raise KeyError(search_str + '\' not found in ' + field
+                       + ' of \'' + realm + '\' realm.')
 
     def get_dataset(self,
                     duration='Previous month',
@@ -375,14 +448,6 @@ class DataWarehouse:
                                 index=pd.Series(data=timestamps, name='Time'),
                                 columns=dimensions)
 
-    def __find_id_in_descriptor(self, realm, field, search_str):
-        for (id_, text, info) in self.__descriptor[realm][field]:
-            if id_ == search_str or text == search_str:
-                return id_
-
-        raise KeyError(search_str + '\' not found in ' + field
-                       + ' of \'' + realm + '\' realm.')
-
     def __get_start_end_from_duration(self, duration):
         if isinstance(duration, str):
             self.__validate_str('duration', duration)
@@ -395,58 +460,11 @@ class DataWarehouse:
                                   + ' or an object with 2 items.') from None
         return (start, end)
 
-    def __assert_str(self, name, value):
-        if not isinstance(value, str):
-            raise TypeError('`' + name + '` must be of type ' + str(str)
-                            + ' not ' + str(type(value)) + '.')
-
-    def get_realms(self):
-        self.__assert_runtime_context()
-        return tuple(self.__descriptor)
-
     def __validate_str(self, key, value):
         self.__assert_str(key, value)
         self.__assert_str_in_sequence(value, self.VALID_VALUES[key], 'values',
                                       'Invalid value for `' + key + '`: \''
                                       + value + '\'')
-
-    def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
-        if string not in sequence:
-            raise KeyError(msg_prologue + '. Valid ' + label + ' are: \''
-                           + '\', \''.join(sequence)
-                           + '\'.') from None
-
-    def get_filters(self, realm, dimension):
-        self.__assert_runtime_context()
-        self.__assert_realm(realm)
-        self.__assert_str('dimension', dimension)
-
-        dimension_id = self.__find_id_in_descriptor(realm,
-                                                    'dimensions',
-                                                    dimension)
-
-        path = '/controllers/metric_explorer.php'
-        post_fields = {
-            'operation': 'get_dimension',
-            'dimension_id': dimension_id,
-            'realm': realm
-        }
-        response = self.__request_json(path, post_fields)
-        data = [(datum['id'], datum['name']) for datum in response['data']]
-        df = self.__get_indexed_data_frame(data=data,
-                                           columns=('id', 'label'),
-                                           index='id')
-        return df
-
-    def __assert_realm(self, realm):
-        self.__assert_str('realm', realm)
-        self.__assert_str_in_sequence(realm, self.get_realms(), 'realms',
-                                      'Invalid realm \'' + realm + '\'')
-
-    def __get_indexed_data_frame(self, data, columns, index):
-        df = pd.DataFrame(data=data, columns=columns)
-        df = df.set_index('id')
-        return df
 
     def __get_usage_data(self, post_fields):
         response = self.__request('/controllers/user_interface.php',
@@ -470,24 +488,6 @@ class DataWarehouse:
             return pd.Series(dtype='float64')
 
         return pd.Series(data=data, index=groups, name=metric)
-
-    def get_metrics(self, realm):
-        self.__assert_runtime_context()
-        self.__assert_realm(realm)
-        return self.__get_descriptor_data_frame(realm, 'metrics')
-
-    def __get_descriptor_data_frame(self, realm, field):
-        return self.__get_indexed_data_frame(data=self.__descriptor[realm]
-                                                                   [field],
-                                             columns=('id',
-                                                      'label',
-                                                      'description'),
-                                             index='id')
-
-    def get_dimensions(self, realm):
-        self.__assert_runtime_context()
-        self.__assert_realm(realm)
-        return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def get_raw_data(self, realm, start, end, filters, stats):
         post_fields = json.dumps({'realm': realm,
