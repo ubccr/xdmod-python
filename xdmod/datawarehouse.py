@@ -171,6 +171,8 @@ class DataWarehouse:
             else:
                 raise RuntimeError('Access Denied.')
 
+        self.__descriptor = self.__request_descriptor()
+
         return self
 
     def __request_json(self, path, post_fields, headers=None,
@@ -210,6 +212,28 @@ class DataWarehouse:
                                + ' called within the body of a `with`'
                                + ' statement.')
 
+    def __request_descriptor(self):
+        response = self.__request_json('/controllers/metric_explorer.php',
+                                       {'operation': 'get_dw_descripter'})
+
+        if response['totalCount'] != 1:
+            raise RuntimeError('Descriptor received with unexpected'
+                               + ' structure.')
+
+        return self.__deserialize_descriptor(response['data'][0]['realms'])
+
+    def __deserialize_descriptor(self, serialized_descriptor):
+        result = {}
+        for realm in serialized_descriptor:
+            result[realm] = {}
+            for field in ('metrics', 'dimensions'):
+                field_descriptor = serialized_descriptor[realm][field]
+                result[realm][field] = [(id,
+                                         field_descriptor[id]['text'],
+                                         field_descriptor[id]['info'])
+                                        for id in field_descriptor]
+        return result
+
     def get_dataset(self,
                     duration='Previous month',
                     realm='Jobs',
@@ -221,13 +245,13 @@ class DataWarehouse:
 
         (start, end) = self.__get_start_end_from_duration(duration)
 
-        metric_id = self.__get_id_from_descriptor(realm,
-                                                  'metrics',
-                                                  metric)
+        metric_id = self.__find_id_in_descriptor(realm,
+                                                 'metrics',
+                                                 metric)
 
-        dimension_id = self.__get_id_from_descriptor(realm,
-                                                     'dimensions',
-                                                     dimension)
+        dimension_id = self.__find_id_in_descriptor(realm,
+                                                    'dimensions',
+                                                    dimension)
 
         self.__validate_str('dataset_type', dataset_type)
         self.__validate_str('aggregation_unit', aggregation_unit)
@@ -267,9 +291,9 @@ class DataWarehouse:
         }
 
         for dimension in filters:
-            dimension_id = self.__get_id_from_descriptor(realm,
-                                                         'dimensions',
-                                                         dimension)
+            dimension_id = self.__find_id_in_descriptor(realm,
+                                                        'dimensions',
+                                                        dimension)
             valid_filters = self.get_filters(realm, dimension_id)
             filter_values = []
             for filter in filters[dimension]:
@@ -346,17 +370,13 @@ class DataWarehouse:
                                 index=pd.Series(data=timestamps, name='Time'),
                                 columns=dimensions)
 
-    def __get_id_from_descriptor(self, realm, key, id):
-        list = self.__get_descriptor_id_text_info_list(realm, key)
-        output = None
-        for (i, text, info) in list:
-            if i == id or text == id:
-                output = i
-                break
-        if output is None:
-            raise KeyError(key + ' key `' + id + '` not found in `' + realm
-                           + '` realm.')
-        return output
+    def __find_id_in_descriptor(self, realm, field, search_str):
+        for (id_, text, info) in self.__descriptor[realm][field]:
+            if id_ == search_str or text == search_str:
+                return id_
+
+        raise KeyError(search_str + '\' not found in ' + field
+                       + ' of \'' + realm + '\' realm.')
 
     def __get_start_end_from_duration(self, duration):
         if isinstance(duration, str):
@@ -370,47 +390,14 @@ class DataWarehouse:
                                   + ' or an object with 2 items.') from None
         return (start, end)
 
-    def __get_descriptor_id_text_info_list(self, realm, key):
-        self.__assert_str('realm', realm)
-        self.__assert_str('key', key)
-        descriptor = self.__get_descriptor()
-        try:
-            realm_desc = descriptor['realms'][realm]
-        except KeyError:
-            raise KeyError('Invalid realm `' + realm + '`. '
-                           + 'Valid realms are '
-                           + str(self.get_realms()) + '.') from None
-        try:
-            data = realm_desc[key]
-        except KeyError:
-            raise KeyError('Invalid key `' + key + '`.') from None
-        return [(id,
-                 data[id]['text'],
-                 data[id]['info']) for id in data]
-
     def __assert_str(self, name, value):
         if not isinstance(value, str):
             raise TypeError(name + ' `' + str(value)
                             + '` must be of type ' + str(str)
                             + ' not ' + str(type(value)) + '.')
 
-    def __get_descriptor(self):
-        if self.__descriptor:
-            return self.__descriptor
-
-        response = self.__request_json('/controllers/metric_explorer.php',
-                                       {'operation': 'get_dw_descripter'})
-
-        if response['totalCount'] != 1:
-            raise RuntimeError('Retrieving XDMoD data descriptor.')
-
-        self.__descriptor = response['data'][0]
-
-        return self.__descriptor
-
     def get_realms(self):
-        descriptor = self.__get_descriptor()
-        return tuple([*descriptor['realms']])
+        return tuple(self.__descriptor)
 
     def __validate_str(self, key, value):
         self.__assert_str(key, value)
@@ -421,9 +408,9 @@ class DataWarehouse:
 
     def get_filters(self, realm, dimension):
         path = '/controllers/metric_explorer.php'
-        dimension_id = self.__get_id_from_descriptor(realm,
-                                                     'dimensions',
-                                                     dimension)
+        dimension_id = self.__find_id_in_descriptor(realm,
+                                                    'dimensions',
+                                                    dimension)
         post_fields = {
             'operation': 'get_dimension',
             'dimension_id': dimension_id,
@@ -468,14 +455,13 @@ class DataWarehouse:
         self.__assert_str('realm', realm)
         return self.__get_descriptor_data_frame(realm, 'metrics')
 
-    def __get_descriptor_data_frame(self, realm, key):
-        data = self.__get_descriptor_id_text_info_list(realm, key)
-        df = self.__get_indexed_data_frame(data=data,
-                                           columns=('id',
-                                                    'label',
-                                                    'description'),
-                                           index='id')
-        return df
+    def __get_descriptor_data_frame(self, realm, field):
+        return self.__get_indexed_data_frame(data=self.__descriptor[realm]
+                                                                   [field],
+                                             columns=('id',
+                                                      'label',
+                                                      'description'),
+                                             index='id')
 
     def get_dimensions(self, realm):
         return self.__get_descriptor_data_frame(realm, 'dimensions')
