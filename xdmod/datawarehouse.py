@@ -173,18 +173,19 @@ class DataWarehouse:
 
         return self
 
-    def __request_json(self, path, config, headers=None, content_type=None):
-        response = self.__request(path, config, headers, content_type)
+    def __request_json(self, path, post_fields, headers=None,
+                       content_type=None):
+        response = self.__request(path, post_fields, headers, content_type)
         return json.loads(response)
 
-    def __request(self, path, config, headers=None, content_type=None):
+    def __request(self, path, post_fields, headers=None, content_type=None):
         self.__assert_runtime_context()
         if headers is None:
             headers = self.__headers
         if content_type == 'JSON':
-            pf = config
+            pf = post_fields
         else:
-            pf = urlencode(config)
+            pf = urlencode(post_fields)
         b_obj = io.BytesIO()
         self.__crl.reset()
         self.__crl.setopt(pycurl.URL, self.__xdmod_host + path)
@@ -231,7 +232,7 @@ class DataWarehouse:
         self.__validate_str('dataset_type', dataset_type)
         self.__validate_str('aggregation_unit', aggregation_unit)
 
-        config = {
+        post_fields = {
             'operation': 'get_data',
             'start_date': start,
             'end_date': end,
@@ -284,9 +285,9 @@ class DataWarehouse:
                                    + '` dimension of `' + realm
                                    + '` realm.')
                 filter_values.append(filter_value)
-            config[dimension_id + '_filter'] = ','.join(filter_values)
+            post_fields[dimension_id + '_filter'] = ','.join(filter_values)
 
-        response = self.__get_usage_data(config)
+        response = self.__get_usage_data(post_fields)
 
         csvdata = csv.reader(response.splitlines())
 
@@ -423,12 +424,12 @@ class DataWarehouse:
         dimension_id = self.__get_id_from_descriptor(realm,
                                                      'dimensions',
                                                      dimension)
-        config = {
+        post_fields = {
             'operation': 'get_dimension',
             'dimension_id': dimension_id,
             'realm': realm
         }
-        response = self.__request_json(path, config)
+        response = self.__request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
         df = self.__get_indexed_data_frame(data=data,
                                            columns=('id', 'label'),
@@ -440,9 +441,9 @@ class DataWarehouse:
         df = df.set_index('id')
         return df
 
-    def __get_usage_data(self, config):
+    def __get_usage_data(self, post_fields):
         response = self.__request('/controllers/user_interface.php',
-                                  config)
+                                  post_fields)
 
         return response
 
@@ -480,18 +481,18 @@ class DataWarehouse:
         return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def get_raw_data(self, realm, start, end, filters, stats):
-        config = json.dumps({'realm': realm,
-                             'start_date': start,
-                             'end_date': end,
-                             'params': filters,
-                             'stats': stats})
+        post_fields = json.dumps({'realm': realm,
+                                  'start_date': start,
+                                  'end_date': end,
+                                  'params': filters,
+                                  'stats': stats})
 
         headers = self.__headers + ['Accept: application/json',
                                     'Content-Type: application/json',
                                     'charset: utf-8']
 
         result = self.__request_json(path='/rest/v1/warehouse/rawdata',
-                                     config=config,
+                                     post_fields=post_fields,
                                      headers=headers,
                                      content_type='JSON')
 
