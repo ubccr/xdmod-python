@@ -242,6 +242,7 @@ class DataWarehouse:
                     filters={},
                     dataset_type='timeseries',
                     aggregation_unit='Auto'):
+        self.__assert_runtime_context()
 
         (start, end) = self.__get_start_end_from_duration(duration)
 
@@ -392,25 +393,35 @@ class DataWarehouse:
 
     def __assert_str(self, name, value):
         if not isinstance(value, str):
-            raise TypeError(name + ' `' + str(value)
-                            + '` must be of type ' + str(str)
+            raise TypeError('`' + name + '` must be of type ' + str(str)
                             + ' not ' + str(type(value)) + '.')
 
     def get_realms(self):
+        self.__assert_runtime_context()
         return tuple(self.__descriptor)
 
     def __validate_str(self, key, value):
         self.__assert_str(key, value)
-        if value not in self.VALID_VALUES[key]:
-            raise KeyError('Invalid ' + key + ' `' + value
-                           + '`. Valid values are: '
-                           + str(self.VALID_VALUES[key]) + '.')
+        self.__assert_str_in_sequence(value, self.VALID_VALUES[key], 'values',
+                                      'Invalid value for `' + key + '`: \''
+                                      + value + '\'')
+
+    def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
+        if string not in sequence:
+            raise KeyError(msg_prologue + '. Valid ' + label + ' are: \''
+                           + '\', \''.join(sequence)
+                           + '\'.') from None
 
     def get_filters(self, realm, dimension):
-        path = '/controllers/metric_explorer.php'
+        self.__assert_runtime_context()
+        self.__assert_realm(realm)
+        self.__assert_str('dimension', dimension)
+
         dimension_id = self.__find_id_in_descriptor(realm,
                                                     'dimensions',
                                                     dimension)
+
+        path = '/controllers/metric_explorer.php'
         post_fields = {
             'operation': 'get_dimension',
             'dimension_id': dimension_id,
@@ -422,6 +433,11 @@ class DataWarehouse:
                                            columns=('id', 'label'),
                                            index='id')
         return df
+
+    def __assert_realm(self, realm):
+        self.__assert_str('realm', realm)
+        self.__assert_str_in_sequence(realm, self.get_realms(), 'realms',
+                                      'Invalid realm \'' + realm + '\'')
 
     def __get_indexed_data_frame(self, data, columns, index):
         df = pd.DataFrame(data=data, columns=columns)
@@ -452,7 +468,8 @@ class DataWarehouse:
         return pd.Series(data=data, index=groups, name=metric)
 
     def get_metrics(self, realm):
-        self.__assert_str('realm', realm)
+        self.__assert_runtime_context()
+        self.__assert_realm(realm)
         return self.__get_descriptor_data_frame(realm, 'metrics')
 
     def __get_descriptor_data_frame(self, realm, field):
@@ -464,6 +481,8 @@ class DataWarehouse:
                                              index='id')
 
     def get_dimensions(self, realm):
+        self.__assert_runtime_context()
+        self.__assert_realm(realm)
         return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def get_raw_data(self, realm, start, end, filters, stats):
