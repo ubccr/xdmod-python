@@ -54,38 +54,38 @@ class DataWarehouse:
         return value
 
     def __init_valid_values(self):
-        self.VALID_VALUES = {}
+        self.__valid_values = {}
 
         this_year = date.today().year
         six_years_ago = this_year - 6
         last_seven_years = tuple(map(str, reversed(range(six_years_ago,
                                                          this_year + 1))))
 
-        self.VALID_VALUES['duration'] = (('Yesterday',
-                                          '7 day',
-                                          '30 day',
-                                          '90 day',
-                                          'Month to date',
-                                          'Previous month',
-                                          'Quarter to date',
-                                          'Previous quarter',
-                                          'Year to date',
-                                          'Previous year',
-                                          '1 year',
-                                          '2 year',
-                                          '3 year',
-                                          '5 year',
-                                          '10 year')
-                                         + last_seven_years)
+        self.__valid_values['duration'] = (('Yesterday',
+                                            '7 day',
+                                            '30 day',
+                                            '90 day',
+                                            'Month to date',
+                                            'Previous month',
+                                            'Quarter to date',
+                                            'Previous quarter',
+                                            'Year to date',
+                                            'Previous year',
+                                            '1 year',
+                                            '2 year',
+                                            '3 year',
+                                            '5 year',
+                                            '10 year')
+                                           + last_seven_years)
 
-        self.VALID_VALUES['dataset_type'] = ('timeseries',
-                                             'aggregate')
+        self.__valid_values['dataset_type'] = ('timeseries',
+                                               'aggregate')
 
-        self.VALID_VALUES['aggregation_unit'] = ('Auto',
-                                                 'Day',
-                                                 'Month',
-                                                 'Quarter',
-                                                 'Year')
+        self.__valid_values['aggregation_unit'] = ('Auto',
+                                                   'Day',
+                                                   'Month',
+                                                   'Quarter',
+                                                   'Year')
 
     def __init_dates(self):
         today = date.today()
@@ -328,6 +328,13 @@ class DataWarehouse:
                                            index='id')
         return df
 
+    def get_valid_values(self, parameter):
+        if parameter not in self.__valid_values:
+            raise KeyError('Parameter \'' + parameter
+                           + '\' does not have a list of valid values.')
+
+        return self.__valid_values[parameter]
+
     def __find_id_in_descriptor(self, realm, field, search_str):
         for (id_, text, info) in self.__descriptor[realm][field]:
             if id_ == search_str or text == search_str:
@@ -487,9 +494,9 @@ class DataWarehouse:
 
     def __validate_str(self, key, value):
         self.__assert_str(key, value)
-        self.__assert_str_in_sequence(value, self.VALID_VALUES[key], 'values',
-                                      'Invalid value for `' + key + '`: \''
-                                      + value + '\'')
+        self.__assert_str_in_sequence(value, self.__valid_values[key],
+                                      'values', 'Invalid value for `' + key
+                                                + '`: \'' + value + '\'')
 
     def __get_usage_data(self, post_fields):
         response = self.__request('/controllers/user_interface.php',
