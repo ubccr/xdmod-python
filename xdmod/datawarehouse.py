@@ -11,19 +11,30 @@ import re
 import tempfile
 from urllib.parse import urlencode
 
+
 class DataWarehouse:
     """ Access the XDMoD datawarehouse via XDMoD's network API """
 
     def __init__(self, xdmod_host, api_key=None, ssl_verify=True):
-        self.__inside_context_manager = False
         self.__xdmod_host = xdmod_host
         self.__api_key = api_key
+        self.__ssl_verify = ssl_verify
+
+        self.__inside_context_manager = False
         self.__username = None
         self.__crl = None
         self.__cookie_file = None
         self.__descriptor = None
-        self.__ssl_verify = ssl_verify
         self.__headers = []
+
+        if not self.__api_key:
+            try:
+                self.__api_key = {
+                    'username': os.environ['XDMOD_USER'],
+                    'password': os.environ['XDMOD_PASS']
+                }
+            except KeyError:
+                pass
 
         this_year = date.today().year
         six_years_ago = this_year - 6
@@ -57,15 +68,6 @@ class DataWarehouse:
                 'Year')}
 
         self.__init_dates()
-
-        if not self.__api_key:
-            try:
-                self.__api_key = {
-                    'username': os.environ['XDMOD_USER'],
-                    'password': os.environ['XDMOD_PASS']
-                }
-            except KeyError:
-                pass
 
     def __init_dates(self):
         today = date.today()
