@@ -15,10 +15,9 @@ from urllib.parse import urlencode
 class DataWarehouse:
     """ Access the XDMoD datawarehouse via XDMoD's network API """
 
-    def __init__(self, xdmod_host, api_key=None, ssl_verify=True):
+    def __init__(self, xdmod_host, api_key=None):
         self.__xdmod_host = xdmod_host
         self.__api_key = api_key
-        self.__ssl_verify = ssl_verify
 
         self.__in_runtime_context = False
         self.__username = None
@@ -155,10 +154,6 @@ class DataWarehouse:
     def __enter__(self):
         self.__in_runtime_context = True
         self.__crl = pycurl.Curl()
-
-        if not self.__ssl_verify:
-            self.__crl.setopt(pycurl.SSL_VERIFYPEER, 0)
-            self.__crl.setopt(pycurl.SSL_VERIFYHOST, 0)
 
         if self.__api_key:
             _, self.__cookie_file = tempfile.mkstemp()
