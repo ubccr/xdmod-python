@@ -128,14 +128,12 @@ class DataWarehouse:
             '2 year': (self.__date_add_years(today, -2), today),
             '3 year': (self.__date_add_years(today, -3), today),
             '5 year': (self.__date_add_years(today, -5), today),
-            '10 year': (self.__date_add_years(today, -10), today)
-        }
+            '10 year': (self.__date_add_years(today, -10), today)}
 
-    # When adding (or subtracting years), make dates behave like Ext.JS,
-    # i.e., if a date is specified with a day value that is too big,
-    # add days to the last valid day in that month,
-    # e.g., 2023-02-31 becomes 2023-03-03
     def __date_add_years(self, old_date, year_delta):
+        # Make dates behave like Ext.JS, i.e., if a date is specified
+        # with a day value that is too big, add days to the last valid
+        # day in that month, e.g., 2023-02-31 becomes 2023-03-03.
         new_date_year = old_date.year + year_delta
         new_date_day = old_date.day
         days_above = 0
@@ -482,13 +480,13 @@ class DataWarehouse:
         return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def get_raw_data(self, realm, start, end, filters, stats):
-        config = json.dumps({ 'realm': realm,        
-                              'start_date': start,   
-                              'end_date': end,       
-                              'params': filters,     
-                              'stats': stats })
+        config = json.dumps({'realm': realm,
+                             'start_date': start,
+                             'end_date': end,
+                             'params': filters,
+                             'stats': stats})
 
-        headers = self.__headers + ['Accept: application/json',     
+        headers = self.__headers + ['Accept: application/json',
                                     'Content-Type: application/json',
                                     'charset: utf-8']
 
