@@ -348,6 +348,8 @@ class DataWarehouse:
 
         (start, end) = self.__get_start_end_from_duration(duration)
 
+        self.__assert_realm(realm)
+
         metric_id = self.__find_id_in_descriptor(realm,
                                                  'metrics',
                                                  metric)
