@@ -34,6 +34,10 @@ class DataWarehouse:
         self.__init_valid_values()
         self.__init_dates()
 
+    def __assert_str(self, name, value):
+        if not isinstance(value, str):
+            raise TypeError('`' + name + '` must be a string.')
+
     def __init_api_key(self):
         if not self.__api_key:
             username = self.__get_environment_variable('XDMOD_USER')
@@ -159,6 +163,8 @@ class DataWarehouse:
         self.__in_runtime_context = True
         self.__crl = pycurl.Curl()
 
+        self.__attempt_to_reach_xdmod_host()
+
         if self.__api_key:
             _, self.__cookie_file = tempfile.mkstemp()
             self.__crl.setopt(pycurl.COOKIEJAR, self.__cookie_file)
@@ -179,12 +185,20 @@ class DataWarehouse:
 
         return self
 
+    def __attempt_to_reach_xdmod_host(self):
+        try:
+            self.__request()
+        except RuntimeError as e:
+            raise RuntimeError('Could not reach xdmod_host \''
+                               + self.__xdmod_host + '\': ' + str(e)) from None
+
     def __request_json(self, path, post_fields, headers=None,
                        content_type=None):
         response = self.__request(path, post_fields, headers, content_type)
         return json.loads(response)
 
-    def __request(self, path, post_fields, headers=None, content_type=None):
+    def __request(self, path='', post_fields={}, headers=None,
+                  content_type=None):
         self.__assert_runtime_context()
         self.__crl.reset()
 
@@ -195,7 +209,8 @@ class DataWarehouse:
             pf = post_fields
         else:
             pf = urlencode(post_fields)
-        self.__crl.setopt(pycurl.POSTFIELDS, pf)
+        if pf:
+            self.__crl.setopt(pycurl.POSTFIELDS, pf)
 
         if headers is None:
             headers = self.__headers
@@ -209,7 +224,7 @@ class DataWarehouse:
         except pycurl.error as e:
             code, msg = e.args
             if code == pycurl.E_URL_MALFORMAT:
-                msg = 'Malformed URL: ' + url + '.'
+                msg = 'Malformed URL.'
             raise RuntimeError(msg) from None
 
         response = buffer.getvalue().decode()
@@ -230,10 +245,6 @@ class DataWarehouse:
                                + ' context. Make sure this method is only'
                                + ' called within the body of a `with`'
                                + ' statement.')
-
-    def __assert_str(self, name, value):
-        if not isinstance(value, str):
-            raise TypeError('`' + name + '` must be a string.')
 
     def __request_descriptor(self):
         response = self.__request_json('/controllers/metric_explorer.php',
