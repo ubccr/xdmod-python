@@ -20,7 +20,7 @@ class DataWarehouse:
         self.__api_key = api_key
         self.__ssl_verify = ssl_verify
 
-        self.__inside_context_manager = False
+        self.__in_runtime_context = False
         self.__username = None
         self.__crl = None
         self.__cookie_file = None
@@ -145,7 +145,7 @@ class DataWarehouse:
         return new_date + timedelta(days=days_above)
 
     def __enter__(self):
-        self.__inside_context_manager = True
+        self.__in_runtime_context = True
         self.__crl = pycurl.Curl()
 
         if not self.__ssl_verify:
@@ -175,7 +175,7 @@ class DataWarehouse:
         return json.loads(response)
 
     def __request(self, path, config, headers=None, content_type=None):
-        self.__assert_inside_context_manager()
+        self.__assert_runtime_context()
         if headers is None:
             headers = self.__headers
         if content_type == 'JSON':
@@ -199,10 +199,10 @@ class DataWarehouse:
         response = body_text
         return response
 
-    def __assert_inside_context_manager(self):
-        if not self.__inside_context_manager:
-            raise RuntimeError('Method is being called outside of the context'
-                               + ' manager. Make sure this method is only'
+    def __assert_runtime_context(self):
+        if not self.__in_runtime_context:
+            raise RuntimeError('Method is being called outside of the runtime'
+                               + ' context. Make sure this method is only'
                                + ' called within the body of a `with`'
                                + ' statement.')
 
@@ -565,4 +565,4 @@ class DataWarehouse:
         if self.__crl:
             self.__crl.close()
         self.__username = None
-        self.__inside_context_manager = False
+        self.__in_runtime_context = False
