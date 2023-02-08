@@ -163,7 +163,7 @@ class DataWarehouse:
         self.__in_runtime_context = True
         self.__crl = pycurl.Curl()
 
-        self.__attempt_to_reach_xdmod_host()
+        self.__assert_connection_to_xdmod_host()
 
         if self.__api_key:
             _, self.__cookie_file = tempfile.mkstemp()
@@ -185,11 +185,11 @@ class DataWarehouse:
 
         return self
 
-    def __attempt_to_reach_xdmod_host(self):
+    def __assert_connection_to_xdmod_host(self):
         try:
             self.__request()
         except RuntimeError as e:
-            raise RuntimeError('Could not reach xdmod_host \''
+            raise RuntimeError('Could not connect to xdmod_host \''
                                + self.__xdmod_host + '\': ' + str(e)) from None
 
     def __request_json(self, path, post_fields, headers=None,
