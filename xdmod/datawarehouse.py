@@ -16,7 +16,11 @@ class DataWarehouse:
     """ Access the XDMoD datawarehouse via XDMoD's network API """
 
     def __init__(self, xdmod_host, api_key=None):
+        self.__assert_str('xdmod_host', xdmod_host)
         self.__xdmod_host = xdmod_host
+
+        if api_key:
+            self.__assert_str('api_key', api_key)
         self.__api_key = api_key
 
         self.__in_runtime_context = False
