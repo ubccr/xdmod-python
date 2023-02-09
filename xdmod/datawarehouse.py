@@ -300,7 +300,7 @@ class DataWarehouse:
 
            Returns
            -------
-           3-tuple of str
+           Tuple of str
                The valid realms.
 
            Raises

@@ -65,6 +65,20 @@ class TestDataWarehouse(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.__valid_dw.get_realms()
 
+    def test_get_metrics_KeyError(self):
+        with self.__valid_dw:
+            with self.assertRaises(KeyError):
+                self.__valid_dw.get_realms('asdfasd')
+
+    def test_get_metrics_TypeError(self):
+        with self.__valid_dw:
+            with self.assertRaises(TypeError):
+                self.__valid_dw.get_realms(2)
+
+    def test_get_metrics_RuntimeError_outside_context(self):
+        with self.assertRaises(RuntimeError):
+            self.__valid_dw.get_metrics()
+
     def test_get_dataset_KeyError_duration(self):
         with self.__valid_dw:
             with self.assertRaises(KeyError):
