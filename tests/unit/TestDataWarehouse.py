@@ -72,15 +72,15 @@ class TestDataWarehouse(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.__valid_dw.get_realms()
 
-    def test_get_metrics_KeyError(self):
-        with self.__valid_dw:
-            with self.assertRaises(KeyError):
-                self.__valid_dw.get_metrics(self.__INVALID_STR)
-
     def test_get_metrics_return_type(self):
         with self.__valid_dw:
             self.assertIsInstance(self.__valid_dw.get_metrics(self.__VALID_REALM),
                                                               pandas.core.frame.DataFrame)
+
+    def test_get_metrics_KeyError(self):
+        with self.__valid_dw:
+            with self.assertRaises(KeyError):
+                self.__valid_dw.get_metrics(self.__INVALID_STR)
 
     def test_get_metrics_TypeError(self):
         with self.__valid_dw:
@@ -90,6 +90,25 @@ class TestDataWarehouse(unittest.TestCase):
     def test_get_metrics_RuntimeError_outside_context(self):
         with self.assertRaises(RuntimeError):
             self.__valid_dw.get_metrics(self.__VALID_REALM)
+
+    def test_get_dimensions_return_type(self):
+        with self.__valid_dw:
+            self.assertIsInstance(self.__valid_dw.get_dimensions(self.__VALID_REALM),
+                                                                 pandas.core.frame.DataFrame)
+
+    def test_get_dimensions_KeyError(self):
+        with self.__valid_dw:
+            with self.assertRaises(KeyError):
+                self.__valid_dw.get_dimensions(self.__INVALID_STR)
+
+    def test_get_dimensions_TypeError(self):
+        with self.__valid_dw:
+            with self.assertRaises(TypeError):
+                self.__valid_dw.get_realms(2)
+
+    def test_get_dimensions_RuntimeError_outside_context(self):
+        with self.assertRaises(RuntimeError):
+            self.__valid_dw.get_dimensions(self.__VALID_REALM)
 
     def test_get_dataset_KeyError_duration(self):
         with self.__valid_dw:
