@@ -2,6 +2,7 @@ import unittest
 import os
 import xdmod.datawarehouse as xdw
 
+
 class TestDataWarehouse(unittest.TestCase):
     __XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org'
 
@@ -24,7 +25,7 @@ class TestDataWarehouse(unittest.TestCase):
     def test___init___KeyError_XDMOD_PASS(self):
         old_environ = dict(os.environ)
         os.environ.clear()
-        os.environ['XDMOD_USER'] = 'sdfjlksdf';
+        os.environ['XDMOD_USER'] = 'sdfjlksdf'
         try:
             with self.assertRaises(KeyError):
                 xdw.DataWarehouse(self.__XDMOD_URL)
@@ -62,7 +63,6 @@ class TestDataWarehouse(unittest.TestCase):
 
     def test_get_realms_RuntimeError_outside_context(self):
         with self.assertRaises(RuntimeError):
-            x = xdw.DataWarehouse(self.__XDMOD_URL)
             self.__valid_dw.get_realms()
 
     def test_get_dataset_KeyError_duration(self):
@@ -153,6 +153,7 @@ class TestDataWarehouse(unittest.TestCase):
         with self.__valid_dw:
             with self.assertRaises(RuntimeError):
                 self.__valid_dw.get_dataset(duration=('2022-01-01', 'asdf'))
+
 
 if __name__ == '__main__':
     unittest.main()
