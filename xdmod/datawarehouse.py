@@ -18,37 +18,37 @@ class DataWarehouse:
        Methods must be called within a runtime context using the ``with``
        keyword, e.g.,
 
-       >>> with DataWarehouse(XDMOD_URL, XDMOD_API_KEY) as x:
+       >>> with DataWarehouse(XDMOD_URL, XDMOD_API_TOKEN) as x:
        ...     x.get_dataset()
 
        Parameters
        ----------
        xdmod_host : str
            The URL of the XDMoD server.
-       api_key : str, optional
-           The API key used to connect. If not provided, the
+       api_token : str, optional
+           The API token used to connect. If not provided, the
            `XDMOD_USER` and `XDMOD_PASS` environment variables must be
            set.
 
        Raises
        ------
        KeyError
-           If `api_key` is None and either or both of the environment
+           If `api_token` is None and either or both of the environment
            variables `XDMOD_USER` and `XDMOD_PASS` have not been set.
        TypeError
-           If `xdmod_host` is not a string or if `api_key` is not None and is
+           If `xdmod_host` is not a string or if `api_token` is not None and is
            not a string.
        RuntimeError
            If a connection cannot be made to the XDMoD server specified by
            `xdmod_host`.
     """
-    def __init__(self, xdmod_host, api_key=None):
+    def __init__(self, xdmod_host, api_token=None):
         self.__assert_str('xdmod_host', xdmod_host)
         self.__xdmod_host = xdmod_host
 
-        if api_key:
-            self.__assert_str('api_key', api_key)
-        self.__api_key = api_key
+        if api_token:
+            self.__assert_str('api_token', api_token)
+        self.__api_token = api_token
 
         self.__in_runtime_context = False
         self.__username = None
@@ -57,7 +57,7 @@ class DataWarehouse:
         self.__descriptor = None
         self.__headers = []
 
-        self.__init_api_key()
+        self.__init_api_token()
         self.__init_valid_values()
         self.__init_dates()
 
@@ -65,12 +65,12 @@ class DataWarehouse:
         if not isinstance(value, str):
             raise TypeError('`' + name + '` must be a string.')
 
-    def __init_api_key(self):
-        if not self.__api_key:
+    def __init_api_token(self):
+        if not self.__api_token:
             username = self.__get_environment_variable('XDMOD_USER')
             password = self.__get_environment_variable('XDMOD_PASS')
-            self.__api_key = {'username': username,
-                              'password': password}
+            self.__api_token = {'username': username,
+                                'password': password}
 
     def __get_environment_variable(self, name):
         try:
@@ -192,13 +192,13 @@ class DataWarehouse:
 
         self.__assert_connection_to_xdmod_host()
 
-        if self.__api_key:
+        if self.__api_token:
             _, self.__cookie_file = tempfile.mkstemp()
             self.__crl.setopt(pycurl.COOKIEJAR, self.__cookie_file)
             self.__crl.setopt(pycurl.COOKIEFILE, self.__cookie_file)
 
             response = self.__request_json('/rest/auth/login',
-                                           self.__api_key)
+                                           self.__api_token)
 
             if response['success'] is True:
                 token = response['results']['token']

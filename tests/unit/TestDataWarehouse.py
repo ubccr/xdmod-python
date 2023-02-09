@@ -40,7 +40,7 @@ class TestDataWarehouse(unittest.TestCase):
         with self.assertRaises(TypeError):
             xdw.DataWarehouse(2)
 
-    def test___init___TypeError_api_key(self):
+    def test___init___TypeError_api_token(self):
         with self.assertRaises(TypeError):
             xdw.DataWarehouse(self.__XDMOD_URL, 2)
 
@@ -75,7 +75,7 @@ class TestDataWarehouse(unittest.TestCase):
     def test_get_metrics_return_type(self):
         with self.__valid_dw:
             self.assertIsInstance(self.__valid_dw.get_metrics(self.__VALID_REALM),
-                                                              pandas.core.frame.DataFrame)
+                                  pandas.core.frame.DataFrame)
 
     def test_get_metrics_KeyError(self):
         with self.__valid_dw:
@@ -94,7 +94,7 @@ class TestDataWarehouse(unittest.TestCase):
     def test_get_dimensions_return_type(self):
         with self.__valid_dw:
             self.assertIsInstance(self.__valid_dw.get_dimensions(self.__VALID_REALM),
-                                                                 pandas.core.frame.DataFrame)
+                                  pandas.core.frame.DataFrame)
 
     def test_get_dimensions_KeyError(self):
         with self.__valid_dw:
