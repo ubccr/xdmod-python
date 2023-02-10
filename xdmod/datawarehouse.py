@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 import csv
 from datetime import date, datetime, timedelta
 import html
@@ -467,7 +468,7 @@ class DataWarehouse:
             if id_ == search_str or text == search_str:
                 return id_
 
-        raise KeyError(search_str + '\' not found in ' + field
+        raise KeyError('\'' + search_str + '\' not found in ' + field
                        + ' of \'' + realm + '\' realm.')
 
     def get_dataset(self,
@@ -524,14 +525,17 @@ class DataWarehouse:
 
         self.__assert_realm(realm)
 
+        self.__assert_str('metric', metric)
         metric_id = self.__find_id_in_descriptor(realm,
                                                  'metrics',
                                                  metric)
 
+        self.__assert_str('dimension', dimension)
         dimension_id = self.__find_id_in_descriptor(realm,
                                                     'dimensions',
                                                     dimension)
 
+        self.__assert_dict_of_str('filters', filters)
         self.__validate_str('dataset_type', dataset_type)
         self.__validate_str('aggregation_unit', aggregation_unit)
 
@@ -573,15 +577,15 @@ class DataWarehouse:
                                                         dimension)
             valid_filters = self.get_filters(realm, dimension_id)
             filter_values = []
-            for filter in filters[dimension]:
-                self.__assert_str('filter value', filter)
-                if filter in valid_filters.index:
-                    filter_value = filter
-                elif filter in valid_filters['label'].values:
+            for filter_ in filters[dimension]:
+                self.__assert_str('filter value', filter_)
+                if filter_ in valid_filters.index:
+                    filter_value = filter_
+                elif filter_ in valid_filters['label'].values:
                     filter_value = valid_filters.index[valid_filters['label']
-                                                       == filter].tolist()[0]
+                                                       == filter_].tolist()[0]
                 else:
-                    raise KeyError('Filter value `' + filter
+                    raise KeyError('Filter value `' + filter_
                                    + '` not found in `' + dimension
                                    + '` dimension of `' + realm
                                    + '` realm.')
@@ -655,7 +659,7 @@ class DataWarehouse:
             try:
                 (start, end) = duration
             except (TypeError, ValueError) as error:
-                raise type(error)('Duration must be a string'
+                raise type(error)('`duration` must be a string'
                                   + ' or an object with 2 items.') from None
         return (start, end)
 
@@ -664,6 +668,16 @@ class DataWarehouse:
         self.__assert_str_in_sequence(value, self.__valid_values[key],
                                       'values', 'Invalid value for `' + key
                                                 + '`: \'' + value + '\'')
+
+    def __assert_dict_of_str(self, name, obj):
+        type_error_msg = '`' + name + '` must be a dictionary of strings.'
+
+        if not isinstance(obj, Mapping):
+            raise TypeError(type_error_msg)
+
+        for key in obj:
+            if not isinstance(obj[key], str):
+                raise TypeError(type_error_msg)
 
     def __get_usage_data(self, post_fields):
         response = self.__request('/controllers/user_interface.php',
