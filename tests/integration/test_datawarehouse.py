@@ -1,4 +1,3 @@
-import os
 import pandas
 import pytest
 import xdmod.datawarehouse as xdw
