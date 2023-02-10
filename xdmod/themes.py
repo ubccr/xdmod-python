@@ -99,6 +99,7 @@ pio.templates["timeseries"] = go.layout.Template(
             'linecolor': '#c0cfe0',
             'zerolinecolor': '#c0cfe1',
             'showline': True,
+            'rangemode': 'tozero',
             'zerolinewidth': 4
         },
         'title': {
