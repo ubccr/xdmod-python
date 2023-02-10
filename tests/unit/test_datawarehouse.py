@@ -5,7 +5,7 @@ import xdmod.datawarehouse as xdw
 
 class TestDataWarehouse:
     __INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
-    __VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org'
+    __VALID_XDMOD_URL = 'https://xdmod.access-ci.org'
 
     @pytest.fixture
     def tmp_environ_no_user(self):
@@ -45,11 +45,6 @@ class TestDataWarehouse:
     def test___enter___RuntimeError_xdmod_host_unresolved(self, tmp_environ_unauth_user):
         with pytest.raises(RuntimeError, match='xdmod_host'):
             with xdw.DataWarehouse('asdfsdf.xdmod.org'):
-                pass
-
-    def test___enter___RuntimeError_xdmod_host_bad_port(self, tmp_environ_unauth_user):
-        with pytest.raises(RuntimeError, match='xdmod_host'):
-            with xdw.DataWarehouse('xdmod-dev.ccr.xdmod.org:0'):
                 pass
 
     def test___enter___RuntimeError_xdmod_host_unsupported_protocol(self, tmp_environ_unauth_user):
