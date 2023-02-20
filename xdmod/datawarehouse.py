@@ -333,10 +333,10 @@ class DataWarehouse:
                If this method is called outside the runtime context.
         """
         self.__assert_runtime_context()
-        self.__assert_realm(realm)
+        self.__validate_realm(realm)
         return self.__get_descriptor_data_frame(realm, 'metrics')
 
-    def __assert_realm(self, realm):
+    def __validate_realm(self, realm):
         self.__assert_str('realm', realm)
         self.__assert_str_in_sequence(realm, self.get_realms(), 'realms',
                                       'Invalid realm \'' + realm + '\'')
@@ -384,7 +384,7 @@ class DataWarehouse:
                If this method is called outside the runtime context.
         """
         self.__assert_runtime_context()
-        self.__assert_realm(realm)
+        self.__validate_realm(realm)
         return self.__get_descriptor_data_frame(realm, 'dimensions')
 
     def get_filters(self, realm, dimension):
@@ -415,7 +415,7 @@ class DataWarehouse:
                If this method is called outside the runtime context.
         """
         self.__assert_runtime_context()
-        self.__assert_realm(realm)
+        self.__validate_realm(realm)
         self.__assert_str('dimension', dimension)
 
         dimension_id = self.__find_id_in_descriptor(realm,
@@ -520,7 +520,7 @@ class DataWarehouse:
 
         (start, end) = self.__get_start_end_from_duration(duration)
 
-        self.__assert_realm(realm)
+        self.__validate_realm(realm)
 
         self.__assert_str('metric', metric)
         metric_id = self.__find_id_in_descriptor(realm,
