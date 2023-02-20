@@ -20,7 +20,7 @@ class DataWarehouse:
        keyword, e.g.,
 
        >>> with DataWarehouse(XDMOD_URL, XDMOD_API_TOKEN) as x:
-       ...     x.get_dataset()
+       ...     x.get_aggregate_data()
 
        Parameters
        ----------
@@ -105,9 +105,6 @@ class DataWarehouse:
                                             '5 year',
                                             '10 year')
                                            + last_seven_years)
-
-        self.__valid_values['dataset_type'] = ('timeseries',
-                                               'aggregate')
 
         self.__valid_values['aggregation_unit'] = ('Auto',
                                                    'Day',
@@ -471,15 +468,15 @@ class DataWarehouse:
         raise KeyError('\'' + search_str + '\' not found in ' + field
                        + ' of \'' + realm + '\' realm.')
 
-    def get_dataset(self,
-                    duration='Previous month',
-                    realm='Jobs',
-                    metric='CPU Hours: Total',
-                    dimension='None',
-                    filters={},
-                    dataset_type='timeseries',
-                    aggregation_unit='Auto'):
-        """Get a DataFrame containing a dataset from the data warehouse.
+    def get_aggregate_data(self,
+                           duration='Previous month',
+                           realm='Jobs',
+                           metric='CPU Hours: Total',
+                           dimension='None',
+                           filters={},
+                           timeseries=True,
+                           aggregation_unit='Auto'):
+        """Get a DataFrame containing aggregate data from the warehouse.
 
            Parameters
            ----------
@@ -493,7 +490,7 @@ class DataWarehouse:
                ...
            filters : dict of str, optional
                ...
-           dataset_type : str, optional
+           timeseries : bool, optional
                ...
            aggregation_unit : str, optional
                ...
@@ -501,7 +498,7 @@ class DataWarehouse:
            Returns
            -------
            pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the dataset...
+               A Pandas DataFrame containing the data...
 
            Raises
            ------
@@ -509,8 +506,8 @@ class DataWarehouse:
                If any of the parameters have invalid values. Valid realms
                come from `get_realms()`; valid metrics come from
                `get_metrics()`; valid dimensions and filters come from
-               `get_dimensions()`; and valid durations, dataset types, and
-               aggregation units come from `get_valid_values()`.
+               `get_dimensions()`; and valid durations and aggregation units
+               come from `get_valid_values()`.
            RuntimeError
                If this method is called outside the runtime context or if
                there is an error requesting data from the warehouse.
@@ -536,7 +533,7 @@ class DataWarehouse:
                                                     dimension)
 
         self.__assert_dict_of_str('filters', filters)
-        self.__validate_str('dataset_type', dataset_type)
+        self.__assert_bool('timeseries', timeseries)
         self.__validate_str('aggregation_unit', aggregation_unit)
 
         post_fields = {'operation': 'get_data',
@@ -545,7 +542,8 @@ class DataWarehouse:
                        'realm': realm,
                        'statistic': metric_id,
                        'group_by': dimension_id,
-                       'dataset_type': dataset_type,
+                       'dataset_type': 'timeseries' if timeseries
+                                       else 'aggregate',
                        'aggregation_unit': aggregation_unit,
                        'public_user': 'true',
                        'timeframe_label': '2016',
@@ -596,7 +594,7 @@ class DataWarehouse:
 
         csvdata = csv.reader(response.splitlines())
 
-        if dataset_type == 'aggregate':
+        if not timeseries:
             return self.__xdmod_csv_to_pandas(csvdata)
         else:
             labelre = re.compile(r'\[([^\]]+)\].*')
@@ -678,6 +676,10 @@ class DataWarehouse:
         for key in obj:
             if not isinstance(obj[key], str):
                 raise TypeError(type_error_msg)
+
+    def __assert_bool(self, name, obj):
+        if not isinstance(obj, bool):
+            raise TypeError('`' + name + '` must be a Boolean.')
 
     def __get_usage_data(self, post_fields):
         response = self.__request('/controllers/user_interface.php',
