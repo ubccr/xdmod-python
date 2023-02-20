@@ -488,7 +488,7 @@ class DataWarehouse:
                ...
            dimension : str, optional
                ...
-           filters : dict of str, optional
+           filters : mapping with str values, optional
                ...
            timeseries : bool, optional
                ...
@@ -532,7 +532,7 @@ class DataWarehouse:
                                                     'dimensions',
                                                     dimension)
 
-        self.__assert_dict_of_str('filters', filters)
+        self.__assert_mapping_with_str_values('filters', filters)
         self.__assert_bool('timeseries', timeseries)
         self.__validate_str('aggregation_unit', aggregation_unit)
 
@@ -667,8 +667,8 @@ class DataWarehouse:
                                       'values', 'Invalid value for `' + key
                                                 + '`: \'' + value + '\'')
 
-    def __assert_dict_of_str(self, name, obj):
-        type_error_msg = '`' + name + '` must be a dictionary of strings.'
+    def __assert_mapping_with_str_values(self, name, obj):
+        type_error_msg = '`' + name + '` must be a mapping with string values.'
 
         if not isinstance(obj, Mapping):
             raise TypeError(type_error_msg)
