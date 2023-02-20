@@ -488,7 +488,7 @@ class DataWarehouse:
                ...
            dimension : str, optional
                ...
-           filters : mapping with str values, optional
+           filters : mapping, optional
                ...
            timeseries : bool, optional
                ...
@@ -532,8 +532,10 @@ class DataWarehouse:
                                                     'dimensions',
                                                     dimension)
 
-        self.__assert_mapping_with_str_values('filters', filters)
+        filters = self.__validate_filters(realm, filters)
+
         self.__assert_bool('timeseries', timeseries)
+
         self.__validate_str('aggregation_unit', aggregation_unit)
 
         post_fields = {'operation': 'get_data',
@@ -570,25 +572,7 @@ class DataWarehouse:
                        'format': 'csv'}
 
         for dimension in filters:
-            dimension_id = self.__find_id_in_descriptor(realm,
-                                                        'dimensions',
-                                                        dimension)
-            valid_filters = self.get_filters(realm, dimension_id)
-            filter_values = []
-            for filter_ in filters[dimension]:
-                self.__assert_str('filter value', filter_)
-                if filter_ in valid_filters.index:
-                    filter_value = filter_
-                elif filter_ in valid_filters['label'].values:
-                    filter_value = valid_filters.index[valid_filters['label']
-                                                       == filter_].tolist()[0]
-                else:
-                    raise KeyError('Filter value `' + filter_
-                                   + '` not found in `' + dimension
-                                   + '` dimension of `' + realm
-                                   + '` realm.')
-                filter_values.append(filter_value)
-            post_fields[dimension_id + '_filter'] = ','.join(filter_values)
+            post_fields[dimension + '_filter'] = ','.join(filters[dimension])
 
         response = self.__get_usage_data(post_fields)
 
@@ -667,15 +651,52 @@ class DataWarehouse:
                                       'values', 'Invalid value for `' + key
                                                 + '`: \'' + value + '\'')
 
-    def __assert_mapping_with_str_values(self, name, obj):
-        type_error_msg = '`' + name + '` must be a mapping with string values.'
+    def __validate_filters(self, realm, filters):
+        type_error_msg = ('`filters` must be a mapping whose values are'
+                          + ' strings or sequences of strings.')
 
-        if not isinstance(obj, Mapping):
+        if not isinstance(filters, Mapping):
             raise TypeError(type_error_msg)
 
-        for key in obj:
-            if not isinstance(obj[key], str):
-                raise TypeError(type_error_msg)
+        new_filters = {}
+
+        for dimension in filters:
+            dimension_id = self.__find_id_in_descriptor(realm,
+                                                        'dimensions',
+                                                        dimension)
+            filter_values = filters[dimension]
+
+            if isinstance(filter_values, str):
+                filter_values = [filter_values]
+
+            try:
+                new_filters[dimension_id] = []
+                for filter_value in filter_values:
+                    self.__assert_str('filter value', filter_value)
+
+                    new_filter_value = self.__find_filter_value(realm,
+                                                                dimension_id,
+                                                                filter_value)
+
+                    new_filters[dimension_id].append(new_filter_value)
+
+            except TypeError:
+                raise TypeError(type_error_msg) from None
+
+        return new_filters
+
+    def __find_filter_value(self, realm, dimension, filter_value):
+        valid_filters = self.get_filters(realm, dimension)
+        if filter_value in valid_filters.index:
+            return filter_value
+        elif filter_value in valid_filters['label'].values:
+            return valid_filters.index[valid_filters['label']
+                                       == filter_value].tolist()[0]
+        else:
+            raise KeyError('Filter value \'' + filter_value
+                           + '\' not found in \'' + dimension
+                           + '\' dimension of \'' + realm
+                           + '\' realm.')
 
     def __assert_bool(self, name, obj):
         if not isinstance(obj, bool):
