@@ -77,7 +77,6 @@ class DataWarehouse:
                 self.__username = response['results']['name']
             else:
                 raise RuntimeError('Access Denied.')
-        self.__descriptor = self.__request_descriptor()
         return self
 
     def __exit__(self, tpe, value, tb):
@@ -497,14 +496,14 @@ class DataWarehouse:
 
     def __get_realm_id(self, search_str):
         self.__assert_str('realm', search_str)
-        descriptor = self.__descriptor
+        descriptor = self.__get_descriptor()
         for id_ in descriptor:
             if id_ == search_str or descriptor[id_]['label'] == search_str:
                 return id_
         raise KeyError('Invalid realm \'' + search_str + '\'.')
 
     def __find_id_in_descriptor(self, realm, field, search_str):
-        for (id_, text, info) in self.__descriptor[realm][field]:
+        for (id_, text, info) in self.__get_descriptor()[realm][field]:
             if id_ == search_str or text == search_str:
                 return id_
         raise KeyError(
@@ -610,12 +609,12 @@ class DataWarehouse:
         return df
 
     def __get_realms(self):
-        d = self.__descriptor
+        d = self.__get_descriptor()
         return [(realm_id, d[realm_id]['label']) for realm_id in d]
 
     def __get_descriptor_data_frame(self, realm, field):
         return self.__get_indexed_data_frame(
-            data=self.__descriptor[realm][field],
+            data=self.__get_descriptor()[realm][field],
             columns=('id', 'label', 'description'),
             index='id')
 
@@ -694,11 +693,10 @@ class DataWarehouse:
                     for id_ in field_descriptor]
         return result
 
-    def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
-        if string not in sequence:
-            raise KeyError(
-                msg_prologue + '. Valid ' + label + ' are: \''
-                + '\', \''.join(sequence) + '\'.') from None
+    def __get_descriptor(self):
+        if self.__descriptor is None:
+            self.__descriptor = self.__request_descriptor()
+        return self.__descriptor
 
     def __find_filter_value(self, realm, dimension, filter_value):
         valid_filters = self.get_filters(realm, dimension)
@@ -711,6 +709,12 @@ class DataWarehouse:
             raise KeyError(
                 'Filter value \'' + filter_value + '\' not found in \''
                 + dimension + '\' dimension of \'' + realm + '\' realm.')
+
+    def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
+        if string not in sequence:
+            raise KeyError(
+                msg_prologue + '. Valid ' + label + ' are: \''
+                + '\', \''.join(sequence) + '\'.') from None
 
     def whoami(self):
         if self.__username:
