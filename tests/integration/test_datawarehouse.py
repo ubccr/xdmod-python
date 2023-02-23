@@ -22,8 +22,9 @@ class TestDataWarehouse:
 
     def test_get_metrics_return_type(self, valid_dw):
         with valid_dw:
-            assert isinstance(valid_dw.get_metrics(self.__VALID_REALM),
-                              pandas.core.frame.DataFrame)
+            assert isinstance(
+                valid_dw.get_metrics(self.__VALID_REALM),
+                pandas.core.frame.DataFrame)
 
     def test_get_metrics_KeyError(self, valid_dw):
         with valid_dw:
@@ -41,8 +42,9 @@ class TestDataWarehouse:
 
     def test_get_dimensions_return_type(self, valid_dw):
         with valid_dw:
-            assert isinstance(valid_dw.get_dimensions(self.__VALID_REALM),
-                              pandas.core.frame.DataFrame)
+            assert isinstance(
+                valid_dw.get_dimensions(self.__VALID_REALM),
+                pandas.core.frame.DataFrame)
 
     def test_get_dimensions_KeyError(self, valid_dw):
         with valid_dw:
@@ -81,12 +83,14 @@ class TestDataWarehouse:
     def test_get_aggregate_data_KeyError_filters(self, valid_dw):
         with valid_dw:
             with pytest.raises(KeyError, match='not found in dimensions'):
-                valid_dw.get_aggregate_data(filters={self.__INVALID_STR: self.__INVALID_STR})
+                valid_dw.get_aggregate_data(
+                    filters={self.__INVALID_STR: self.__INVALID_STR})
 
     def test_get_aggregate_data_KeyError_aggregation_unit(self, valid_dw):
         with valid_dw:
             with pytest.raises(KeyError, match='aggregation_unit'):
-                valid_dw.get_aggregate_data(aggregation_unit=self.__INVALID_STR)
+                valid_dw.get_aggregate_data(
+                    aggregation_unit=self.__INVALID_STR)
 
     def test_get_aggregate_data_RuntimeError_outside_context(self, valid_dw):
         with pytest.raises(RuntimeError, match='runtime context'):
@@ -132,12 +136,16 @@ class TestDataWarehouse:
             with pytest.raises(ValueError, match='duration'):
                 valid_dw.get_aggregate_data(duration=('1', '2', '3'))
 
-    def test_get_aggregate_data_RuntimeError_start_date_malformed(self, valid_dw):
+    def test_get_aggregate_data_RuntimeError_start_date_malformed(
+            self, valid_dw):
         with valid_dw:
             with pytest.raises(RuntimeError, match='start_date'):
-                valid_dw.get_aggregate_data(duration=(self.__INVALID_STR, '2022-01-01'))
+                valid_dw.get_aggregate_data(
+                    duration=(self.__INVALID_STR, '2022-01-01'))
 
-    def test_get_aggregate_data_RuntimeError_end_date_malformed(self, valid_dw):
+    def test_get_aggregate_data_RuntimeError_end_date_malformed(
+            self, valid_dw):
         with valid_dw:
             with pytest.raises(RuntimeError, match='end_date'):
-                valid_dw.get_aggregate_data(duration=('2022-01-01', self.__INVALID_STR))
+                valid_dw.get_aggregate_data(
+                    duration=('2022-01-01', self.__INVALID_STR))
