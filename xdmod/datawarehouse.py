@@ -67,44 +67,44 @@ class DataWarehouse:
         if not self.__api_token:
             username = self.__get_environment_variable('XDMOD_USER')
             password = self.__get_environment_variable('XDMOD_PASS')
-            self.__api_token = {'username': username,
-                                'password': password}
+            self.__api_token = {
+                'username': username,
+                'password': password}
 
     def __get_environment_variable(self, name):
         try:
             value = os.environ[name]
         except KeyError:
-            raise KeyError(name + ' environment variable'
-                           + ' has not been set.') from None
+            raise KeyError(
+                name + ' environment variable has not been set.') from None
         return value
 
     def __init_valid_values(self):
         self.__valid_values = {}
         this_year = date.today().year
         six_years_ago = this_year - 6
-        last_seven_years = tuple(map(str, reversed(range(six_years_ago,
-                                                         this_year + 1))))
-        self.__valid_values['duration'] = (('Yesterday',
-                                            '7 day',
-                                            '30 day',
-                                            '90 day',
-                                            'Month to date',
-                                            'Previous month',
-                                            'Quarter to date',
-                                            'Previous quarter',
-                                            'Year to date',
-                                            'Previous year',
-                                            '1 year',
-                                            '2 year',
-                                            '3 year',
-                                            '5 year',
-                                            '10 year')
-                                           + last_seven_years)
-        self.__valid_values['aggregation_unit'] = ('Auto',
-                                                   'Day',
-                                                   'Month',
-                                                   'Quarter',
-                                                   'Year')
+        last_seven_years = tuple(
+            map(str, reversed(range(six_years_ago, this_year + 1))))
+        self.__valid_values['duration'] = (
+            (
+                'Yesterday',
+                '7 day',
+                '30 day',
+                '90 day',
+                'Month to date',
+                'Previous month',
+                'Quarter to date',
+                'Previous quarter',
+                'Year to date',
+                'Previous year',
+                '1 year',
+                '2 year',
+                '3 year',
+                '5 year',
+                '10 year')
+            + last_seven_years)
+        self.__valid_values['aggregation_unit'] = (
+            'Auto', 'Day', 'Month', 'Quarter', 'Year')
 
     def __init_dates(self):
         today = date.today()
@@ -119,13 +119,15 @@ class DataWarehouse:
         else:
             last_full_month_start_year = today.year
             last_full_month_start_month = today.month - 1
-        last_full_month_start = date(last_full_month_start_year,
-                                     last_full_month_start_month,
-                                     1)
+        last_full_month_start = date(
+            last_full_month_start_year,
+            last_full_month_start_month,
+            1)
         last_full_month_end = this_month_start + timedelta(days=-1)
-        this_quarter_start = date(today.year,
-                                  ((today.month - 1) // 3) * 3 + 1,
-                                  1)
+        this_quarter_start = date(
+            today.year,
+            ((today.month - 1) // 3) * 3 + 1,
+            1)
         if today.month < 4:
             last_quarter_start_year = today.year - 1
         else:
@@ -180,8 +182,8 @@ class DataWarehouse:
             _, self.__cookie_file = tempfile.mkstemp()
             self.__crl.setopt(pycurl.COOKIEJAR, self.__cookie_file)
             self.__crl.setopt(pycurl.COOKIEFILE, self.__cookie_file)
-            response = self.__request_json('/rest/auth/login',
-                                           self.__api_token)
+            response = self.__request_json(
+                '/rest/auth/login', self.__api_token)
             if response['success'] is True:
                 token = response['results']['token']
                 self.__headers = ['Token: ' + token]
@@ -196,16 +198,17 @@ class DataWarehouse:
         try:
             self.__request()
         except RuntimeError as e:
-            raise RuntimeError('Could not connect to xdmod_host \''
-                               + self.__xdmod_host + '\': ' + str(e)) from None
+            raise RuntimeError(
+                'Could not connect to xdmod_host \'' + self.__xdmod_host
+                + '\': ' + str(e)) from None
 
-    def __request_json(self, path, post_fields, headers=None,
-                       content_type=None):
+    def __request_json(
+            self, path, post_fields, headers=None, content_type=None):
         response = self.__request(path, post_fields, headers, content_type)
         return json.loads(response)
 
-    def __request(self, path='', post_fields={}, headers=None,
-                  content_type=None):
+    def __request(
+            self, path='', post_fields={}, headers=None, content_type=None):
         self.__assert_runtime_context()
         self.__crl.reset()
         url = self.__xdmod_host + path
@@ -242,17 +245,18 @@ class DataWarehouse:
 
     def __assert_runtime_context(self):
         if not self.__in_runtime_context:
-            raise RuntimeError('Method is being called outside of the runtime'
-                               + ' context. Make sure this method is only'
-                               + ' called within the body of a `with`'
-                               + ' statement.')
+            raise RuntimeError(
+                'Method is being called outside of the runtime context.'
+                + ' Make sure this method is only called within the body'
+                + ' of a `with` statement.')
 
     def __request_descriptor(self):
-        response = self.__request_json('/controllers/metric_explorer.php',
-                                       {'operation': 'get_dw_descripter'})
+        response = self.__request_json(
+            '/controllers/metric_explorer.php',
+            {'operation': 'get_dw_descripter'})
         if response['totalCount'] != 1:
-            raise RuntimeError('Descriptor received with unexpected'
-                               + ' structure.')
+            raise RuntimeError(
+                'Descriptor received with unexpected structure.')
         return self.__deserialize_descriptor(response['data'][0]['realms'])
 
     def __deserialize_descriptor(self, serialized_descriptor):
@@ -261,10 +265,12 @@ class DataWarehouse:
             result[realm] = {}
             for field in ('metrics', 'dimensions'):
                 field_descriptor = serialized_descriptor[realm][field]
-                result[realm][field] = [(id,
-                                         field_descriptor[id]['text'],
-                                         field_descriptor[id]['info'])
-                                        for id in field_descriptor]
+                result[realm][field] = [
+                    (
+                        id,
+                        field_descriptor[id]['text'],
+                        field_descriptor[id]['info'])
+                    for id in field_descriptor]
         return result
 
     def get_realms(self):
@@ -312,22 +318,21 @@ class DataWarehouse:
 
     def __validate_realm(self, realm):
         self.__assert_str('realm', realm)
-        self.__assert_str_in_sequence(realm, self.get_realms(), 'realms',
-                                      'Invalid realm \'' + realm + '\'')
+        self.__assert_str_in_sequence(
+            realm, self.get_realms(), 'realms',
+            'Invalid realm \'' + realm + '\'')
 
     def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
         if string not in sequence:
-            raise KeyError(msg_prologue + '. Valid ' + label + ' are: \''
-                           + '\', \''.join(sequence)
-                           + '\'.') from None
+            raise KeyError(
+                msg_prologue + '. Valid ' + label + ' are: \''
+                + '\', \''.join(sequence) + '\'.') from None
 
     def __get_descriptor_data_frame(self, realm, field):
-        return self.__get_indexed_data_frame(data=self.__descriptor[realm]
-                                                                   [field],
-                                             columns=('id',
-                                                      'label',
-                                                      'description'),
-                                             index='id')
+        return self.__get_indexed_data_frame(
+            data=self.__descriptor[realm][field],
+            columns=('id', 'label', 'description'),
+            index='id')
 
     def __get_indexed_data_frame(self, data, columns, index):
         df = pd.DataFrame(data=data, columns=columns)
@@ -391,18 +396,17 @@ class DataWarehouse:
         self.__assert_runtime_context()
         self.__validate_realm(realm)
         self.__assert_str('dimension', dimension)
-        dimension_id = self.__find_id_in_descriptor(realm,
-                                                    'dimensions',
-                                                    dimension)
+        dimension_id = self.__find_id_in_descriptor(
+            realm, 'dimensions', dimension)
         path = '/controllers/metric_explorer.php'
-        post_fields = {'operation': 'get_dimension',
-                       'dimension_id': dimension_id,
-                       'realm': realm}
+        post_fields = {
+            'operation': 'get_dimension',
+            'dimension_id': dimension_id,
+            'realm': realm}
         response = self.__request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
-        df = self.__get_indexed_data_frame(data=data,
-                                           columns=('id', 'label'),
-                                           index='id')
+        df = self.__get_indexed_data_frame(
+            data=data, columns=('id', 'label'), index='id')
         return df
 
     def get_valid_values(self, parameter):
@@ -425,25 +429,23 @@ class DataWarehouse:
                values.
         """
         if parameter not in self.__valid_values:
-            raise KeyError('Parameter \'' + parameter
-                           + '\' does not have a list of valid values.')
+            raise KeyError(
+                'Parameter \'' + parameter + '\' does not have a list of'
+                + ' valid values.')
         return self.__valid_values[parameter]
 
     def __find_id_in_descriptor(self, realm, field, search_str):
         for (id_, text, info) in self.__descriptor[realm][field]:
             if id_ == search_str or text == search_str:
                 return id_
-        raise KeyError('\'' + search_str + '\' not found in ' + field
-                       + ' of \'' + realm + '\' realm.')
+        raise KeyError(
+            '\'' + search_str + '\' not found in ' + field + ' of \'' + realm
+            + '\' realm.')
 
-    def get_aggregate_data(self,
-                           duration='Previous month',
-                           realm='Jobs',
-                           metric='CPU Hours: Total',
-                           dimension='None',
-                           filters={},
-                           timeseries=True,
-                           aggregation_unit='Auto'):
+    def get_aggregate_data(
+            self, duration='Previous month', realm='Jobs',
+            metric='CPU Hours: Total', dimension='None', filters={},
+            timeseries=True, aggregation_unit='Auto'):
         """Get a DataFrame containing aggregate data from the warehouse.
 
            Parameters
@@ -488,48 +490,46 @@ class DataWarehouse:
         (start, end) = self.__get_start_end_from_duration(duration)
         self.__validate_realm(realm)
         self.__assert_str('metric', metric)
-        metric_id = self.__find_id_in_descriptor(realm,
-                                                 'metrics',
-                                                 metric)
+        metric_id = self.__find_id_in_descriptor(
+            realm, 'metrics', metric)
         self.__assert_str('dimension', dimension)
-        dimension_id = self.__find_id_in_descriptor(realm,
-                                                    'dimensions',
-                                                    dimension)
+        dimension_id = self.__find_id_in_descriptor(
+            realm, 'dimensions', dimension)
         filters = self.__validate_filters(realm, filters)
         self.__assert_bool('timeseries', timeseries)
         self.__validate_str('aggregation_unit', aggregation_unit)
-        post_fields = {'operation': 'get_data',
-                       'start_date': start,
-                       'end_date': end,
-                       'realm': realm,
-                       'statistic': metric_id,
-                       'group_by': dimension_id,
-                       'dataset_type': 'timeseries' if timeseries
-                                       else 'aggregate',
-                       'aggregation_unit': aggregation_unit,
-                       'public_user': 'true',
-                       'timeframe_label': '2016',
-                       'scale': '1',
-                       'thumbnail': 'n',
-                       'query_group': 'po_usage',
-                       'display_type': 'line',
-                       'combine_type': 'side',
-                       'limit': '10',
-                       'offset': '0',
-                       'log_scale': 'n',
-                       'show_guide_lines': 'y',
-                       'show_trend_line': 'y',
-                       'show_percent_alloc': 'n',
-                       'show_error_bars': 'y',
-                       'show_aggregate_labels': 'n',
-                       'show_error_labels': 'n',
-                       'show_title': 'y',
-                       'width': '916',
-                       'height': '484',
-                       'legend_type': 'bottom_center',
-                       'font_size': '3',
-                       'inline': 'n',
-                       'format': 'csv'}
+        post_fields = {
+            'operation': 'get_data',
+            'start_date': start,
+            'end_date': end,
+            'realm': realm,
+            'statistic': metric_id,
+            'group_by': dimension_id,
+            'dataset_type': 'timeseries' if timeseries else 'aggregate',
+            'aggregation_unit': aggregation_unit,
+            'public_user': 'true',
+            'timeframe_label': '2016',
+            'scale': '1',
+            'thumbnail': 'n',
+            'query_group': 'po_usage',
+            'display_type': 'line',
+            'combine_type': 'side',
+            'limit': '10',
+            'offset': '0',
+            'log_scale': 'n',
+            'show_guide_lines': 'y',
+            'show_trend_line': 'y',
+            'show_percent_alloc': 'n',
+            'show_error_bars': 'y',
+            'show_aggregate_labels': 'n',
+            'show_error_labels': 'n',
+            'show_title': 'y',
+            'width': '916',
+            'height': '484',
+            'legend_type': 'bottom_center',
+            'font_size': '3',
+            'inline': 'n',
+            'format': 'csv'}
         for dimension in filters:
             post_fields[dimension + '_filter'] = ','.join(filters[dimension])
         response = self.__get_usage_data(post_fields)
@@ -574,19 +574,20 @@ class DataWarehouse:
                         elif quarter == 'Q4':
                             month = '10'
                         else:
-                            raise Exception('Unsupported date quarter'
-                                            + ' specification ' + line[0]
-                                            + '.')
+                            raise Exception(
+                                'Unsupported date quarter specification '
+                                + line[0] + '.')
                         date_string = year + '-' + month + '-01'
                         format = '%Y-%m-%d'
                     else:
-                        raise Exception('Unsupported date specification '
-                                        + line[0] + '.')
+                        raise Exception(
+                            'Unsupported date specification ' + line[0] + '.')
                     timestamps.append(datetime.strptime(date_string, format))
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
-            return pd.DataFrame(data=data,
-                                index=pd.Series(data=timestamps, name='Time'),
-                                columns=dimensions)
+            return pd.DataFrame(
+                data=data,
+                index=pd.Series(data=timestamps, name='Time'),
+                columns=dimensions)
 
     def __get_start_end_from_duration(self, duration):
         if isinstance(duration, str):
@@ -596,26 +597,27 @@ class DataWarehouse:
             try:
                 (start, end) = duration
             except (TypeError, ValueError) as error:
-                raise type(error)('`duration` must be a string'
-                                  + ' or an object with 2 items.') from None
+                raise type(error)(
+                    '`duration` must be a string or an object'
+                    + ' with 2 items.') from None
         return (start, end)
 
     def __validate_str(self, key, value):
         self.__assert_str(key, value)
-        self.__assert_str_in_sequence(value, self.__valid_values[key],
-                                      'values', 'Invalid value for `' + key
-                                                + '`: \'' + value + '\'')
+        self.__assert_str_in_sequence(
+            value, self.__valid_values[key], 'values',
+            'Invalid value for `' + key + '`: \'' + value + '\'')
 
     def __validate_filters(self, realm, filters):
-        type_error_msg = ('`filters` must be a mapping whose values are'
-                          + ' strings or sequences of strings.')
+        type_error_msg = (
+            '`filters` must be a mapping whose values are strings or'
+            + ' sequences of strings.')
         if not isinstance(filters, Mapping):
             raise TypeError(type_error_msg)
         new_filters = {}
         for dimension in filters:
-            dimension_id = self.__find_id_in_descriptor(realm,
-                                                        'dimensions',
-                                                        dimension)
+            dimension_id = self.__find_id_in_descriptor(
+                realm, 'dimensions', dimension)
             filter_values = filters[dimension]
             if isinstance(filter_values, str):
                 filter_values = [filter_values]
@@ -623,9 +625,8 @@ class DataWarehouse:
                 new_filters[dimension_id] = []
                 for filter_value in filter_values:
                     self.__assert_str('filter value', filter_value)
-                    new_filter_value = self.__find_filter_value(realm,
-                                                                dimension_id,
-                                                                filter_value)
+                    new_filter_value = self.__find_filter_value(
+                        realm, dimension_id, filter_value)
                     new_filters[dimension_id].append(new_filter_value)
             except TypeError:
                 raise TypeError(type_error_msg) from None
@@ -636,21 +637,20 @@ class DataWarehouse:
         if filter_value in valid_filters.index:
             return filter_value
         elif filter_value in valid_filters['label'].values:
-            return valid_filters.index[valid_filters['label']
-                                       == filter_value].tolist()[0]
+            return valid_filters.index[
+                valid_filters['label'] == filter_value].tolist()[0]
         else:
-            raise KeyError('Filter value \'' + filter_value
-                           + '\' not found in \'' + dimension
-                           + '\' dimension of \'' + realm
-                           + '\' realm.')
+            raise KeyError(
+                'Filter value \'' + filter_value + '\' not found in \''
+                + dimension + '\' dimension of \'' + realm + '\' realm.')
 
     def __assert_bool(self, name, obj):
         if not isinstance(obj, bool):
             raise TypeError('`' + name + '` must be a Boolean.')
 
     def __get_usage_data(self, post_fields):
-        response = self.__request('/controllers/user_interface.php',
-                                  post_fields)
+        response = self.__request(
+            '/controllers/user_interface.php', post_fields)
         return response
 
     def __xdmod_csv_to_pandas(self, rd):
@@ -669,21 +669,21 @@ class DataWarehouse:
         return pd.Series(data=data, index=groups, name=metric)
 
     def get_raw_data(self, realm, start, end, filters, stats):
-        post_fields = json.dumps({'realm': realm,
-                                  'start_date': start,
-                                  'end_date': end,
-                                  'params': filters,
-                                  'stats': stats})
-        headers = self.__headers + ['Accept: application/json',
-                                    'Content-Type: application/json',
-                                    'charset: utf-8']
-        result = self.__request_json(path='/rest/v1/warehouse/rawdata',
-                                     post_fields=post_fields,
-                                     headers=headers,
-                                     content_type='JSON')
-        return pd.DataFrame(data=result['data'],
-                            columns=result['stats'],
-                            dtype=numpy.float64)
+        post_fields = json.dumps({
+            'realm': realm,
+            'start_date': start,
+            'end_date': end,
+            'params': filters,
+            'stats': stats})
+        headers = self.__headers + [
+            'Accept: application/json',
+            'Content-Type: application/json',
+            'charset: utf-8']
+        result = self.__request_json(
+            path='/rest/v1/warehouse/rawdata', post_fields=post_fields,
+            headers=headers, content_type='JSON')
+        return pd.DataFrame(
+            data=result['data'], columns=result['stats'], dtype=numpy.float64)
 
     def whoami(self):
         if self.__username:
@@ -691,8 +691,9 @@ class DataWarehouse:
         return 'Not logged in'
 
     def compliance(self, timeframe):
-        response = self.__request_json('/controllers/compliance.php',
-                                       {'timeframe_mode': timeframe})
+        response = self.__request_json(
+            '/controllers/compliance.php',
+            {'timeframe_mode': timeframe})
         return response
 
     def resources(self):
@@ -703,8 +704,8 @@ class DataWarehouse:
         for resource in cdata['metaData']['fields']:
             if resource['name'] == 'requirement':
                 continue
-            names.append(resource['header'][:-7].split('>')[1].replace('-',
-                                                                       ' '))
+            names.append(
+                resource['header'][:-7].split('>')[1].replace('-', ' '))
             types.append(resource['status'].split('|')[0].strip())
             resource_ids.append(resource['resource_id'])
         return pd.Series(data=types, index=names)
@@ -716,15 +717,13 @@ class DataWarehouse:
             'cpu': '% of jobs with cpu usage information',
             'script': '% of jobs with Job Batch Script information',
             'realms': '% of jobs in the SUPReMM realm compared to Jobs realm'}
-        response = self.__request_json('/rest/supremm_dataflow/quality',
-                                       params)
+        response = self.__request_json(
+            '/rest/supremm_dataflow/quality', params)
         if response['success']:
             result = response['result']
             jobs = [job for job in result]
-            dates = [date.strftime('%Y-%m-%d') for date
-                     in pd.date_range(params['start'],
-                                      params['end'],
-                                      freq='D').date]
+            dates = [date.strftime('%Y-%m-%d') for date in pd.date_range(
+                params['start'], params['end'], freq='D').date]
             quality = numpy.empty((len(jobs), len(dates)))
             for i in range(len(jobs)):
                 for j in range(len(dates)):
