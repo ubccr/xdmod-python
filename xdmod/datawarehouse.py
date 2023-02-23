@@ -134,7 +134,7 @@ class DataWarehouse:
                If `duration` is an object but not of length 2.
         """
         self.__assert_runtime_context()
-        (start, end) = self.__get_start_end_from_duration(duration)
+        (start_date, end_date) = self.__get_dates_from_duration(duration)
         self.__validate_realm(realm)
         self.__assert_str('metric', metric)
         metric_id = self.__find_id_in_descriptor(
@@ -147,8 +147,8 @@ class DataWarehouse:
         self.__validate_str('aggregation_unit', aggregation_unit)
         post_fields = {
             'operation': 'get_data',
-            'start_date': start,
-            'end_date': end,
+            'start_date': start_date,
+            'end_date': end_date,
             'realm': realm,
             'statistic': metric_id,
             'group_by': dimension_id,
@@ -189,7 +189,7 @@ class DataWarehouse:
             data = []
             for line_num, line in enumerate(csvdata):
                 if line_num == 5:
-                    start, end = line
+                    start_date, end_date = line
                 elif line_num == 7:
                     dimensions = []
                     for label in line[1:]:
@@ -236,11 +236,11 @@ class DataWarehouse:
                 index=pd.Series(data=timestamps, name='Time'),
                 columns=dimensions)
 
-    def get_raw_data(self, realm, start, end, filters, stats):
+    def get_raw_data(self, realm, start_date, end_date, filters, stats):
         post_fields = json.dumps({
             'realm': realm,
-            'start_date': start,
-            'end_date': end,
+            'start_date': start_date,
+            'end_date': end_date,
             'params': filters,
             'stats': stats})
         headers = self.__headers + [
@@ -510,18 +510,18 @@ class DataWarehouse:
                 + ' Make sure this method is only called within the body'
                 + ' of a `with` statement.')
 
-    def __get_start_end_from_duration(self, duration):
+    def __get_dates_from_duration(self, duration):
         if isinstance(duration, str):
             self.__validate_str('duration', duration)
-            (start, end) = self.__DURATION_TO_START_END[duration]
+            (start_date, end_date) = self.__DURATION_TO_START_END[duration]
         else:
             try:
-                (start, end) = duration
+                (start_date, end_date) = duration
             except (TypeError, ValueError) as error:
                 raise type(error)(
                     '`duration` must be a string or an object'
                     + ' with 2 items.') from None
-        return (start, end)
+        return (start_date, end_date)
 
     def __validate_realm(self, realm):
         self.__assert_str('realm', realm)
@@ -581,7 +581,7 @@ class DataWarehouse:
         data = []
         for line_num, line in enumerate(rd):
             if line_num == 5:
-                start, end = line
+                start_date, end_date = line
             elif line_num == 7:
                 group, metric = line
             elif line_num > 7 and len(line) > 1:
