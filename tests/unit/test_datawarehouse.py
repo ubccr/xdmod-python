@@ -37,17 +37,20 @@ class TestDataWarehouse:
         with pytest.raises(TypeError, match='api_token'):
             xdw.DataWarehouse('', 2)
 
-    def test___enter___RuntimeError_xdmod_host_malformed(self, tmp_environ_unauth_user):
+    def test___enter___RuntimeError_xdmod_host_malformed(
+            self, tmp_environ_unauth_user):
         with pytest.raises(RuntimeError, match='xdmod_host'):
             with xdw.DataWarehouse(''):
                 pass
 
-    def test___enter___RuntimeError_xdmod_host_unresolved(self, tmp_environ_unauth_user):
+    def test___enter___RuntimeError_xdmod_host_unresolved(
+            self, tmp_environ_unauth_user):
         with pytest.raises(RuntimeError, match='xdmod_host'):
             with xdw.DataWarehouse('asdfsdf.xdmod.org'):
                 pass
 
-    def test___enter___RuntimeError_xdmod_host_unsupported_protocol(self, tmp_environ_unauth_user):
+    def test___enter___RuntimeError_xdmod_host_unsupported_protocol(
+            self, tmp_environ_unauth_user):
         with pytest.raises(RuntimeError, match='xdmod_host'):
             with xdw.DataWarehouse('asdklsdfj://sdlkfs'):
                 pass
