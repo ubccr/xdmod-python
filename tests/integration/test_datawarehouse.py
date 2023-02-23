@@ -150,3 +150,9 @@ class TestDataWarehouse:
             with pytest.raises(RuntimeError, match='end_date'):
                 valid_dw.get_aggregate_data(
                     duration=('2022-01-01', self.__INVALID_STR))
+
+    def test_get_valid_values_TypeError(self, valid_dw):
+        with valid_dw:
+            with pytest.raises(
+                    TypeError, match='`parameter` must be a string.'):
+                valid_dw.get_valid_values(2)

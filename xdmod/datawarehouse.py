@@ -351,7 +351,10 @@ class DataWarehouse:
            KeyError
                If the given parameter does not have a collection of valid
                values.
+           TypeError
+               If the given parameter is not a string.
         """
+        self.__assert_str('parameter', parameter)
         if parameter not in self.__valid_values:
             raise KeyError(
                 'Parameter \'' + parameter
