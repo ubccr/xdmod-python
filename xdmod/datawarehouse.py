@@ -267,10 +267,10 @@ class DataWarehouse:
                 field_descriptor = serialized_descriptor[realm][field]
                 result[realm][field] = [
                     (
-                        id,
-                        field_descriptor[id]['text'],
-                        field_descriptor[id]['info'])
-                    for id in field_descriptor]
+                        id_,
+                        field_descriptor[id_]['text'],
+                        field_descriptor[id_]['info'])
+                    for id_ in field_descriptor]
         return result
 
     def get_realms(self):
