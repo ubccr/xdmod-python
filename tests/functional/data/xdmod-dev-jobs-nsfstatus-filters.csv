@@ -1,0 +1,17 @@
+id,label
+1,Center Non-Researcher Staff
+2,Center Researcher Staff
+3,Faculty
+4,Government User
+5,Graduate Student
+6,High School Student
+7,High School Teacher
+8,Industrial User
+10,Nonprofit User
+11,Other User
+12,Postdoctorate
+9,Unaffiliated User
+13,Undergraduate Student
+15,University Non-Research Staff
+16,University Research Staff (excluding postdoctorates)
+14,Unknown

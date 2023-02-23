@@ -12,18 +12,30 @@ class TestDataWarehouse:
     def valid_dw(self):
         yield xdw.DataWarehouse(self.__XDMOD_URL)
 
+    def __assert_dfs_equal(self, data_file, actual):
+        expected = pandas.read_csv(
+            self.__DATA_DIR + '/' + data_file, dtype='object')
+        expected = expected.set_index('id')
+        assert expected.equals(actual)
+
     def test_get_realms(self, valid_dw):
         with valid_dw:
-            expected = pandas.read_csv(
-                self.__DATA_DIR + '/xdmod-dev-realms.csv')
-            expected = expected.set_index('id')
-            actual = valid_dw.get_realms()
-            assert expected.equals(actual)
+            self.__assert_dfs_equal(
+                'xdmod-dev-realms.csv', valid_dw.get_realms())
 
     def test_get_metrics(self, valid_dw):
         with valid_dw:
-            expected = pandas.read_csv(
-                self.__DATA_DIR + '/xdmod-dev-jobs-metrics.csv')
-            expected = expected.set_index('id')
-            actual = valid_dw.get_metrics('Jobs')
-            assert expected.equals(actual)
+            self.__assert_dfs_equal(
+                'xdmod-dev-jobs-metrics.csv', valid_dw.get_metrics('Jobs'))
+
+    def test_get_dimensions(self, valid_dw):
+        with valid_dw:
+            self.__assert_dfs_equal(
+                'xdmod-dev-jobs-dimensions.csv',
+                valid_dw.get_dimensions('Jobs'))
+
+    def test_get_filters(self, valid_dw):
+        with valid_dw:
+            self.__assert_dfs_equal(
+                'xdmod-dev-jobs-nsfstatus-filters.csv',
+                valid_dw.get_filters('Jobs', 'nsfstatus'))
