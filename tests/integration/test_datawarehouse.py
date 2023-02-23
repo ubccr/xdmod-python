@@ -49,7 +49,7 @@ class TestDataWarehouse:
 
     def test_get_dimensions_KeyError(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='realm'):
+            with pytest.raises(KeyError, match='Invalid realm'):
                 valid_dw.get_dimensions(self.__INVALID_STR)
 
     def test_get_dimensions_TypeError(self, valid_dw):
@@ -68,7 +68,7 @@ class TestDataWarehouse:
 
     def test_get_aggregate_data_KeyError_realm(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='realm'):
+            with pytest.raises(KeyError, match='Invalid realm'):
                 valid_dw.get_aggregate_data(realm=self.__INVALID_STR)
 
     def test_get_aggregate_data_KeyError_metric(self, valid_dw):
