@@ -329,9 +329,8 @@ class DataWarehouse:
             'realm': realm_id}
         response = self.__request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
-        df = self.__get_indexed_data_frame(
+        return self.__get_indexed_data_frame(
             data=data, columns=('id', 'label'), index='id')
-        return df
 
     def get_valid_values(self, parameter):
         """Get a collection of valid values for a given parameter.
@@ -354,8 +353,8 @@ class DataWarehouse:
         """
         if parameter not in self.__valid_values:
             raise KeyError(
-                'Parameter \'' + parameter + '\' does not have a list of'
-                + ' valid values.')
+                'Parameter \'' + parameter
+                + '\' does not have a list of valid values.')
         return self.__valid_values[parameter]
 
     def __assert_str(self, name, value):
@@ -489,12 +488,12 @@ class DataWarehouse:
                 return id_
         raise KeyError('Invalid realm \'' + search_str + '\'.')
 
-    def __find_id_in_descriptor(self, realm, field, search_str):
-        for (id_, text, info) in self.__get_descriptor()[realm][field]:
-            if id_ == search_str or text == search_str:
+    def __find_id_in_descriptor(self, realm, m_or_d, search_str):
+        for (id_, label, _) in self.__get_descriptor()[realm][m_or_d]:
+            if id_ == search_str or label == search_str:
                 return id_
         raise KeyError(
-            '\'' + search_str + '\' not found in ' + field + ' of \'' + realm
+            '\'' + search_str + '\' not found in ' + m_or_d + ' of \'' + realm
             + '\' realm.')
 
     def __validate_filters(self, realm, filters):
@@ -606,11 +605,10 @@ class DataWarehouse:
 
     def __get_environment_variable(self, name):
         try:
-            value = os.environ[name]
+            return os.environ[name]
         except KeyError:
             raise KeyError(
                 name + ' environment variable has not been set.') from None
-        return value
 
     def __date_add_years(self, old_date, year_delta):
         # Make dates behave like Ext.JS, i.e., if a date is specified
@@ -707,14 +705,14 @@ class DataWarehouse:
         result = {}
         for realm in serialized_descriptor:
             result[realm] = {'label': serialized_descriptor[realm]['category']}
-            for field in ('metrics', 'dimensions'):
-                field_descriptor = serialized_descriptor[realm][field]
-                result[realm][field] = [
+            for m_or_d in ('metrics', 'dimensions'):
+                m_or_d_descriptor = serialized_descriptor[realm][m_or_d]
+                result[realm][m_or_d] = [
                     (
                         id_,
-                        field_descriptor[id_]['text'],
-                        field_descriptor[id_]['info'])
-                    for id_ in field_descriptor]
+                        m_or_d_descriptor[id_]['text'],
+                        m_or_d_descriptor[id_]['info'])
+                    for id_ in m_or_d_descriptor]
         return result
 
     def whoami(self):
@@ -754,8 +752,9 @@ class DataWarehouse:
         if response['success']:
             result = response['result']
             jobs = [job for job in result]
-            dates = [date.strftime('%Y-%m-%d') for date in pd.date_range(
-                params['start'], params['end'], freq='D').date]
+            dates = [
+                date.strftime('%Y-%m-%d') for date in pd.date_range(
+                    params['start'], params['end'], freq='D').date]
             quality = numpy.empty((len(jobs), len(dates)))
             for i in range(len(jobs)):
                 for j in range(len(dates)):
