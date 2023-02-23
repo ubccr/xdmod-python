@@ -145,40 +145,9 @@ class DataWarehouse:
         filters = self.__validate_filters(realm, filters)
         self.__assert_bool('timeseries', timeseries)
         self.__validate_str('aggregation_unit', aggregation_unit)
-        post_fields = {
-            'operation': 'get_data',
-            'start_date': start_date,
-            'end_date': end_date,
-            'realm': realm,
-            'statistic': metric_id,
-            'group_by': dimension_id,
-            'dataset_type': 'timeseries' if timeseries else 'aggregate',
-            'aggregation_unit': aggregation_unit,
-            'public_user': 'true',
-            'timeframe_label': '2016',
-            'scale': '1',
-            'thumbnail': 'n',
-            'query_group': 'po_usage',
-            'display_type': 'line',
-            'combine_type': 'side',
-            'limit': '10',
-            'offset': '0',
-            'log_scale': 'n',
-            'show_guide_lines': 'y',
-            'show_trend_line': 'y',
-            'show_percent_alloc': 'n',
-            'show_error_bars': 'y',
-            'show_aggregate_labels': 'n',
-            'show_error_labels': 'n',
-            'show_title': 'y',
-            'width': '916',
-            'height': '484',
-            'legend_type': 'bottom_center',
-            'font_size': '3',
-            'inline': 'n',
-            'format': 'csv'}
-        for dimension in filters:
-            post_fields[dimension + '_filter'] = ','.join(filters[dimension])
+        post_fields = self.__get_aggregate_data_post_fields(
+            start_date, end_date, realm_id, metric_id, dimension_id, filters,
+            timeseries, aggregation_unit)
         response = self.__get_usage_data(post_fields)
         csvdata = csv.reader(response.splitlines())
         if not timeseries:
@@ -570,6 +539,45 @@ class DataWarehouse:
         self.__assert_str_in_sequence(
             value, self.__valid_values[key], 'values',
             'Invalid value for `' + key + '`: \'' + value + '\'')
+
+    def __get_aggregate_data_post_fields(
+            self, start_date, end_date, realm, metric_id, dimension_id, filters,
+            timeseries, aggregation_unit):
+        result = {
+            'operation': 'get_data',
+            'start_date': start_date,
+            'end_date': end_date,
+            'realm': realm,
+            'statistic': metric_id,
+            'group_by': dimension_id,
+            'dataset_type': 'timeseries' if timeseries else 'aggregate',
+            'aggregation_unit': aggregation_unit,
+            'public_user': 'true',
+            'timeframe_label': '2016',
+            'scale': '1',
+            'thumbnail': 'n',
+            'query_group': 'po_usage',
+            'display_type': 'line',
+            'combine_type': 'side',
+            'limit': '10',
+            'offset': '0',
+            'log_scale': 'n',
+            'show_guide_lines': 'y',
+            'show_trend_line': 'y',
+            'show_percent_alloc': 'n',
+            'show_error_bars': 'y',
+            'show_aggregate_labels': 'n',
+            'show_error_labels': 'n',
+            'show_title': 'y',
+            'width': '916',
+            'height': '484',
+            'legend_type': 'bottom_center',
+            'font_size': '3',
+            'inline': 'n',
+            'format': 'csv'}
+        for dimension in filters:
+            result[dimension + '_filter'] = ','.join(filters[dimension])
+        return result
 
     def __get_usage_data(self, post_fields):
         response = self.__request(
