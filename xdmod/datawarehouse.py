@@ -46,18 +46,15 @@ class DataWarehouse:
     def __init__(self, xdmod_host, api_token=None):
         self.__assert_str('xdmod_host', xdmod_host)
         self.__xdmod_host = xdmod_host
-
         if api_token:
             self.__assert_str('api_token', api_token)
         self.__api_token = api_token
-
         self.__in_runtime_context = False
         self.__username = None
         self.__crl = None
         self.__cookie_file = None
         self.__descriptor = None
         self.__headers = []
-
         self.__init_api_token()
         self.__init_valid_values()
         self.__init_dates()
@@ -83,12 +80,10 @@ class DataWarehouse:
 
     def __init_valid_values(self):
         self.__valid_values = {}
-
         this_year = date.today().year
         six_years_ago = this_year - 6
         last_seven_years = tuple(map(str, reversed(range(six_years_ago,
                                                          this_year + 1))))
-
         self.__valid_values['duration'] = (('Yesterday',
                                             '7 day',
                                             '30 day',
@@ -105,7 +100,6 @@ class DataWarehouse:
                                             '5 year',
                                             '10 year')
                                            + last_seven_years)
-
         self.__valid_values['aggregation_unit'] = ('Auto',
                                                    'Day',
                                                    'Month',
@@ -119,23 +113,19 @@ class DataWarehouse:
         last_month = today + timedelta(days=-30)
         last_quarter = today + timedelta(days=-90)
         this_month_start = date(today.year, today.month, 1)
-
         if today.month == 1:
             last_full_month_start_year = today.year - 1
             last_full_month_start_month = 12
         else:
             last_full_month_start_year = today.year
             last_full_month_start_month = today.month - 1
-
         last_full_month_start = date(last_full_month_start_year,
                                      last_full_month_start_month,
                                      1)
-
         last_full_month_end = this_month_start + timedelta(days=-1)
         this_quarter_start = date(today.year,
                                   ((today.month - 1) // 3) * 3 + 1,
                                   1)
-
         if today.month < 4:
             last_quarter_start_year = today.year - 1
         else:
@@ -144,12 +134,10 @@ class DataWarehouse:
             last_quarter_start_year,
             (((today.month - 1) - ((today.month - 1) % 3) + 9) % 12) + 1,
             1)
-
         last_quarter_end = this_quarter_start + timedelta(days=-1)
         this_year_start = date(today.year, 1, 1)
         previous_year_start = date(today.year - 1, 1, 1)
         previous_year_end = date(today.year - 1, 12, 31)
-
         self.__DURATION_TO_START_END = {
             'Yesterday': (yesterday, yesterday),
             '7 day': (last_week, today),
@@ -187,17 +175,13 @@ class DataWarehouse:
     def __enter__(self):
         self.__in_runtime_context = True
         self.__crl = pycurl.Curl()
-
         self.__assert_connection_to_xdmod_host()
-
         if self.__api_token:
             _, self.__cookie_file = tempfile.mkstemp()
             self.__crl.setopt(pycurl.COOKIEJAR, self.__cookie_file)
             self.__crl.setopt(pycurl.COOKIEFILE, self.__cookie_file)
-
             response = self.__request_json('/rest/auth/login',
                                            self.__api_token)
-
             if response['success'] is True:
                 token = response['results']['token']
                 self.__headers = ['Token: ' + token]
@@ -205,9 +189,7 @@ class DataWarehouse:
                 self.__username = response['results']['name']
             else:
                 raise RuntimeError('Access Denied.')
-
         self.__descriptor = self.__request_descriptor()
-
         return self
 
     def __assert_connection_to_xdmod_host(self):
@@ -226,24 +208,19 @@ class DataWarehouse:
                   content_type=None):
         self.__assert_runtime_context()
         self.__crl.reset()
-
         url = self.__xdmod_host + path
         self.__crl.setopt(pycurl.URL, url)
-
         if content_type == 'JSON':
             pf = post_fields
         else:
             pf = urlencode(post_fields)
         if pf:
             self.__crl.setopt(pycurl.POSTFIELDS, pf)
-
         if headers is None:
             headers = self.__headers
         self.__crl.setopt(pycurl.HTTPHEADER, headers)
-
         buffer = io.BytesIO()
         self.__crl.setopt(pycurl.WRITEDATA, buffer)
-
         try:
             self.__crl.perform()
         except pycurl.error as e:
@@ -251,7 +228,6 @@ class DataWarehouse:
             if code == pycurl.E_URL_MALFORMAT:
                 msg = 'Malformed URL.'
             raise RuntimeError(msg) from None
-
         response = buffer.getvalue().decode()
         code = self.__crl.getinfo(pycurl.RESPONSE_CODE)
         if code != 200:
@@ -274,11 +250,9 @@ class DataWarehouse:
     def __request_descriptor(self):
         response = self.__request_json('/controllers/metric_explorer.php',
                                        {'operation': 'get_dw_descripter'})
-
         if response['totalCount'] != 1:
             raise RuntimeError('Descriptor received with unexpected'
                                + ' structure.')
-
         return self.__deserialize_descriptor(response['data'][0]['realms'])
 
     def __deserialize_descriptor(self, serialized_descriptor):
@@ -417,17 +391,13 @@ class DataWarehouse:
         self.__assert_runtime_context()
         self.__validate_realm(realm)
         self.__assert_str('dimension', dimension)
-
         dimension_id = self.__find_id_in_descriptor(realm,
                                                     'dimensions',
                                                     dimension)
-
         path = '/controllers/metric_explorer.php'
-
         post_fields = {'operation': 'get_dimension',
                        'dimension_id': dimension_id,
                        'realm': realm}
-
         response = self.__request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
         df = self.__get_indexed_data_frame(data=data,
@@ -457,14 +427,12 @@ class DataWarehouse:
         if parameter not in self.__valid_values:
             raise KeyError('Parameter \'' + parameter
                            + '\' does not have a list of valid values.')
-
         return self.__valid_values[parameter]
 
     def __find_id_in_descriptor(self, realm, field, search_str):
         for (id_, text, info) in self.__descriptor[realm][field]:
             if id_ == search_str or text == search_str:
                 return id_
-
         raise KeyError('\'' + search_str + '\' not found in ' + field
                        + ' of \'' + realm + '\' realm.')
 
@@ -517,27 +485,19 @@ class DataWarehouse:
                If `duration` is an object but not of length 2.
         """
         self.__assert_runtime_context()
-
         (start, end) = self.__get_start_end_from_duration(duration)
-
         self.__validate_realm(realm)
-
         self.__assert_str('metric', metric)
         metric_id = self.__find_id_in_descriptor(realm,
                                                  'metrics',
                                                  metric)
-
         self.__assert_str('dimension', dimension)
         dimension_id = self.__find_id_in_descriptor(realm,
                                                     'dimensions',
                                                     dimension)
-
         filters = self.__validate_filters(realm, filters)
-
         self.__assert_bool('timeseries', timeseries)
-
         self.__validate_str('aggregation_unit', aggregation_unit)
-
         post_fields = {'operation': 'get_data',
                        'start_date': start,
                        'end_date': end,
@@ -570,14 +530,10 @@ class DataWarehouse:
                        'font_size': '3',
                        'inline': 'n',
                        'format': 'csv'}
-
         for dimension in filters:
             post_fields[dimension + '_filter'] = ','.join(filters[dimension])
-
         response = self.__get_usage_data(post_fields)
-
         csvdata = csv.reader(response.splitlines())
-
         if not timeseries:
             return self.__xdmod_csv_to_pandas(csvdata)
         else:
@@ -628,7 +584,6 @@ class DataWarehouse:
                                         + line[0] + '.')
                     timestamps.append(datetime.strptime(date_string, format))
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
-
             return pd.DataFrame(data=data,
                                 index=pd.Series(data=timestamps, name='Time'),
                                 columns=dimensions)
@@ -654,35 +609,26 @@ class DataWarehouse:
     def __validate_filters(self, realm, filters):
         type_error_msg = ('`filters` must be a mapping whose values are'
                           + ' strings or sequences of strings.')
-
         if not isinstance(filters, Mapping):
             raise TypeError(type_error_msg)
-
         new_filters = {}
-
         for dimension in filters:
             dimension_id = self.__find_id_in_descriptor(realm,
                                                         'dimensions',
                                                         dimension)
             filter_values = filters[dimension]
-
             if isinstance(filter_values, str):
                 filter_values = [filter_values]
-
             try:
                 new_filters[dimension_id] = []
                 for filter_value in filter_values:
                     self.__assert_str('filter value', filter_value)
-
                     new_filter_value = self.__find_filter_value(realm,
                                                                 dimension_id,
                                                                 filter_value)
-
                     new_filters[dimension_id].append(new_filter_value)
-
             except TypeError:
                 raise TypeError(type_error_msg) from None
-
         return new_filters
 
     def __find_filter_value(self, realm, dimension, filter_value):
@@ -705,7 +651,6 @@ class DataWarehouse:
     def __get_usage_data(self, post_fields):
         response = self.__request('/controllers/user_interface.php',
                                   post_fields)
-
         return response
 
     def __xdmod_csv_to_pandas(self, rd):
@@ -719,10 +664,8 @@ class DataWarehouse:
             elif line_num > 7 and len(line) > 1:
                 groups.append(html.unescape(line[0]))
                 data.append(numpy.float64(line[1]))
-
         if len(data) == 0:
             return pd.Series(dtype='float64')
-
         return pd.Series(data=data, index=groups, name=metric)
 
     def get_raw_data(self, realm, start, end, filters, stats):
@@ -731,16 +674,13 @@ class DataWarehouse:
                                   'end_date': end,
                                   'params': filters,
                                   'stats': stats})
-
         headers = self.__headers + ['Accept: application/json',
                                     'Content-Type: application/json',
                                     'charset: utf-8']
-
         result = self.__request_json(path='/rest/v1/warehouse/rawdata',
                                      post_fields=post_fields,
                                      headers=headers,
                                      content_type='JSON')
-
         return pd.DataFrame(data=result['data'],
                             columns=result['stats'],
                             dtype=numpy.float64)
@@ -753,14 +693,12 @@ class DataWarehouse:
     def compliance(self, timeframe):
         response = self.__request_json('/controllers/compliance.php',
                                        {'timeframe_mode': timeframe})
-
         return response
 
     def resources(self):
         names = []
         types = []
         resource_ids = []
-
         cdata = self.compliance('to_date')
         for resource in cdata['metaData']['fields']:
             if resource['name'] == 'requirement':
@@ -769,7 +707,6 @@ class DataWarehouse:
                                                                        ' '))
             types.append(resource['status'].split('|')[0].strip())
             resource_ids.append(resource['resource_id'])
-
         return pd.Series(data=types, index=names)
 
     def get_qualitydata(self, params, is_numpy=False):
@@ -779,10 +716,8 @@ class DataWarehouse:
             'cpu': '% of jobs with cpu usage information',
             'script': '% of jobs with Job Batch Script information',
             'realms': '% of jobs in the SUPReMM realm compared to Jobs realm'}
-
         response = self.__request_json('/rest/supremm_dataflow/quality',
                                        params)
-
         if response['success']:
             result = response['result']
             jobs = [job for job in result]
@@ -790,9 +725,7 @@ class DataWarehouse:
                      in pd.date_range(params['start'],
                                       params['end'],
                                       freq='D').date]
-
             quality = numpy.empty((len(jobs), len(dates)))
-
             for i in range(len(jobs)):
                 for j in range(len(dates)):
                     job_i = result[jobs[i]]
