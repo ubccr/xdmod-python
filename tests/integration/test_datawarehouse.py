@@ -14,7 +14,8 @@ class TestDataWarehouse:
 
     def test_get_realms_return_type(self, valid_dw):
         with valid_dw:
-            assert isinstance(valid_dw.get_realms(), tuple)
+            assert isinstance(
+                valid_dw.get_realms(), pandas.core.frame.DataFrame)
 
     def test_get_realms_RuntimeError_outside_context(self, valid_dw):
         with pytest.raises(RuntimeError, match='runtime context'):
@@ -54,7 +55,7 @@ class TestDataWarehouse:
     def test_get_dimensions_TypeError(self, valid_dw):
         with valid_dw:
             with pytest.raises(TypeError, match='realm'):
-                valid_dw.get_realms(2)
+                valid_dw.get_dimensions(2)
 
     def test_get_dimensions_RuntimeError_outside_context(self, valid_dw):
         with pytest.raises(RuntimeError, match='runtime context'):
