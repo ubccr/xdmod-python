@@ -461,15 +461,6 @@ class DataWarehouse:
         response = self.__request(path, post_fields, headers, content_type)
         return json.loads(response)
 
-    def __request_descriptor(self):
-        response = self.__request_json(
-            '/controllers/metric_explorer.php',
-            {'operation': 'get_dw_descripter'})
-        if response['totalCount'] != 1:
-            raise RuntimeError(
-                'Descriptor received with unexpected structure.')
-        return self.__deserialize_descriptor(response['data'][0]['realms'])
-
     def __assert_runtime_context(self):
         if not self.__in_runtime_context:
             raise RuntimeError(
@@ -613,12 +604,6 @@ class DataWarehouse:
         realm_id = self.__get_realm_id(realm)
         return self.__get_descriptor_data_frame(realm_id, m_or_d)
 
-    def __get_descriptor_data_frame(self, realm, field):
-        return self.__get_indexed_data_frame(
-            data=self.__get_descriptor()[realm][field],
-            columns=('id', 'label', 'description'),
-            index='id')
-
     def __get_environment_variable(self, name):
         try:
             value = os.environ[name]
@@ -680,20 +665,6 @@ class DataWarehouse:
             raise RuntimeError('Error ' + str(code) + msg) from None
         return response
 
-    def __deserialize_descriptor(self, serialized_descriptor):
-        result = {}
-        for realm in serialized_descriptor:
-            result[realm] = {'label': serialized_descriptor[realm]['category']}
-            for field in ('metrics', 'dimensions'):
-                field_descriptor = serialized_descriptor[realm][field]
-                result[realm][field] = [
-                    (
-                        id_,
-                        field_descriptor[id_]['text'],
-                        field_descriptor[id_]['info'])
-                    for id_ in field_descriptor]
-        return result
-
     def __get_descriptor(self):
         if self.__descriptor is None:
             self.__descriptor = self.__request_descriptor()
@@ -716,6 +687,35 @@ class DataWarehouse:
             raise KeyError(
                 msg_prologue + '. Valid ' + label + ' are: \''
                 + '\', \''.join(sequence) + '\'.') from None
+
+    def __get_descriptor_data_frame(self, realm, field):
+        return self.__get_indexed_data_frame(
+            data=self.__get_descriptor()[realm][field],
+            columns=('id', 'label', 'description'),
+            index='id')
+
+    def __request_descriptor(self):
+        response = self.__request_json(
+            '/controllers/metric_explorer.php',
+            {'operation': 'get_dw_descripter'})
+        if response['totalCount'] != 1:
+            raise RuntimeError(
+                'Descriptor received with unexpected structure.')
+        return self.__deserialize_descriptor(response['data'][0]['realms'])
+
+    def __deserialize_descriptor(self, serialized_descriptor):
+        result = {}
+        for realm in serialized_descriptor:
+            result[realm] = {'label': serialized_descriptor[realm]['category']}
+            for field in ('metrics', 'dimensions'):
+                field_descriptor = serialized_descriptor[realm][field]
+                result[realm][field] = [
+                    (
+                        id_,
+                        field_descriptor[id_]['text'],
+                        field_descriptor[id_]['info'])
+                    for id_ in field_descriptor]
+        return result
 
     def whoami(self):
         if self.__username:
