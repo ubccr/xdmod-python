@@ -263,9 +263,7 @@ class DataWarehouse:
            RuntimeError
                If this method is called outside the runtime context.
         """
-        self.__assert_runtime_context()
-        realm_id = self.__get_realm_id(realm)
-        return self.__get_descriptor_data_frame(realm_id, 'metrics')
+        return self.__get_metrics_or_dimensions(realm, 'metrics')
 
     def get_dimensions(self, realm):
         """Get a DataFrame containing the valid dimensions for the given realm.
@@ -290,9 +288,7 @@ class DataWarehouse:
            RuntimeError
                If this method is called outside the runtime context.
         """
-        self.__assert_runtime_context()
-        realm_id = self.__get_realm_id(realm)
-        return self.__get_descriptor_data_frame(realm_id, 'dimensions')
+        return self.__get_metrics_or_dimensions(realm, 'dimensions')
 
     def get_filters(self, realm, dimension):
         """Get a DataFrame containing the valid filters for the given dimension
@@ -611,6 +607,11 @@ class DataWarehouse:
     def __get_realms(self):
         d = self.__get_descriptor()
         return [(realm_id, d[realm_id]['label']) for realm_id in d]
+
+    def __get_metrics_or_dimensions(self, realm, m_or_d):
+        self.__assert_runtime_context()
+        realm_id = self.__get_realm_id(realm)
+        return self.__get_descriptor_data_frame(realm_id, m_or_d)
 
     def __get_descriptor_data_frame(self, realm, field):
         return self.__get_indexed_data_frame(
