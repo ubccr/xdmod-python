@@ -43,6 +43,7 @@ class DataWarehouse:
            If a connection cannot be made to the XDMoD server specified by
            `xdmod_host`.
     """
+
     def __init__(self, xdmod_host, api_token=None):
         self.__assert_str('xdmod_host', xdmod_host)
         self.__xdmod_host = xdmod_host
@@ -58,121 +59,6 @@ class DataWarehouse:
         self.__init_api_token()
         self.__init_valid_values()
         self.__init_dates()
-
-    def __assert_str(self, name, value):
-        if not isinstance(value, str):
-            raise TypeError('`' + name + '` must be a string.')
-
-    def __init_api_token(self):
-        if not self.__api_token:
-            username = self.__get_environment_variable('XDMOD_USER')
-            password = self.__get_environment_variable('XDMOD_PASS')
-            self.__api_token = {
-                'username': username,
-                'password': password}
-
-    def __get_environment_variable(self, name):
-        try:
-            value = os.environ[name]
-        except KeyError:
-            raise KeyError(
-                name + ' environment variable has not been set.') from None
-        return value
-
-    def __init_valid_values(self):
-        self.__valid_values = {}
-        this_year = date.today().year
-        six_years_ago = this_year - 6
-        last_seven_years = tuple(
-            map(str, reversed(range(six_years_ago, this_year + 1))))
-        self.__valid_values['duration'] = (
-            (
-                'Yesterday',
-                '7 day',
-                '30 day',
-                '90 day',
-                'Month to date',
-                'Previous month',
-                'Quarter to date',
-                'Previous quarter',
-                'Year to date',
-                'Previous year',
-                '1 year',
-                '2 year',
-                '3 year',
-                '5 year',
-                '10 year')
-            + last_seven_years)
-        self.__valid_values['aggregation_unit'] = (
-            'Auto', 'Day', 'Month', 'Quarter', 'Year')
-
-    def __init_dates(self):
-        today = date.today()
-        yesterday = today + timedelta(days=-1)
-        last_week = today + timedelta(days=-7)
-        last_month = today + timedelta(days=-30)
-        last_quarter = today + timedelta(days=-90)
-        this_month_start = date(today.year, today.month, 1)
-        if today.month == 1:
-            last_full_month_start_year = today.year - 1
-            last_full_month_start_month = 12
-        else:
-            last_full_month_start_year = today.year
-            last_full_month_start_month = today.month - 1
-        last_full_month_start = date(
-            last_full_month_start_year,
-            last_full_month_start_month,
-            1)
-        last_full_month_end = this_month_start + timedelta(days=-1)
-        this_quarter_start = date(
-            today.year,
-            ((today.month - 1) // 3) * 3 + 1,
-            1)
-        if today.month < 4:
-            last_quarter_start_year = today.year - 1
-        else:
-            last_quarter_start_year = today.year
-        last_quarter_start = date(
-            last_quarter_start_year,
-            (((today.month - 1) - ((today.month - 1) % 3) + 9) % 12) + 1,
-            1)
-        last_quarter_end = this_quarter_start + timedelta(days=-1)
-        this_year_start = date(today.year, 1, 1)
-        previous_year_start = date(today.year - 1, 1, 1)
-        previous_year_end = date(today.year - 1, 12, 31)
-        self.__DURATION_TO_START_END = {
-            'Yesterday': (yesterday, yesterday),
-            '7 day': (last_week, today),
-            '30 day': (last_month, today),
-            '90 day': (last_quarter, today),
-            'Month to date': (this_month_start, today),
-            'Previous month': (last_full_month_start, last_full_month_end),
-            'Quarter to date': (this_quarter_start, today),
-            'Previous quarter': (last_quarter_start, last_quarter_end),
-            'Year to date': (this_year_start, today),
-            'Previous year': (previous_year_start, previous_year_end),
-            '1 year': (self.__date_add_years(today, -1), today),
-            '2 year': (self.__date_add_years(today, -2), today),
-            '3 year': (self.__date_add_years(today, -3), today),
-            '5 year': (self.__date_add_years(today, -5), today),
-            '10 year': (self.__date_add_years(today, -10), today)}
-
-    def __date_add_years(self, old_date, year_delta):
-        # Make dates behave like Ext.JS, i.e., if a date is specified
-        # with a day value that is too big, add days to the last valid
-        # day in that month, e.g., 2023-02-31 becomes 2023-03-03.
-        new_date_year = old_date.year + year_delta
-        new_date_day = old_date.day
-        days_above = 0
-        keep_going = True
-        while keep_going:
-            try:
-                new_date = date(new_date_year, old_date.month, new_date_day)
-                keep_going = False
-            except ValueError:
-                new_date_day -= 1
-                days_above += 1
-        return new_date + timedelta(days=days_above)
 
     def __enter__(self):
         self.__in_runtime_context = True
@@ -194,253 +80,13 @@ class DataWarehouse:
         self.__descriptor = self.__request_descriptor()
         return self
 
-    def __assert_connection_to_xdmod_host(self):
-        try:
-            self.__request()
-        except RuntimeError as e:
-            raise RuntimeError(
-                'Could not connect to xdmod_host \'' + self.__xdmod_host
-                + '\': ' + str(e)) from None
-
-    def __request_json(
-            self, path, post_fields, headers=None, content_type=None):
-        response = self.__request(path, post_fields, headers, content_type)
-        return json.loads(response)
-
-    def __request(
-            self, path='', post_fields={}, headers=None, content_type=None):
-        self.__assert_runtime_context()
-        self.__crl.reset()
-        url = self.__xdmod_host + path
-        self.__crl.setopt(pycurl.URL, url)
-        if content_type == 'JSON':
-            pf = post_fields
-        else:
-            pf = urlencode(post_fields)
-        if pf:
-            self.__crl.setopt(pycurl.POSTFIELDS, pf)
-        if headers is None:
-            headers = self.__headers
-        self.__crl.setopt(pycurl.HTTPHEADER, headers)
-        buffer = io.BytesIO()
-        self.__crl.setopt(pycurl.WRITEDATA, buffer)
-        try:
-            self.__crl.perform()
-        except pycurl.error as e:
-            code, msg = e.args
-            if code == pycurl.E_URL_MALFORMAT:
-                msg = 'Malformed URL.'
-            raise RuntimeError(msg) from None
-        response = buffer.getvalue().decode()
-        code = self.__crl.getinfo(pycurl.RESPONSE_CODE)
-        if code != 200:
-            msg = ''
-            try:
-                response_json = json.loads(response)
-                msg = ': ' + response_json['message']
-            except json.JSONDecodeError:
-                pass
-            raise RuntimeError('Error ' + str(code) + msg) from None
-        return response
-
-    def __assert_runtime_context(self):
-        if not self.__in_runtime_context:
-            raise RuntimeError(
-                'Method is being called outside of the runtime context.'
-                + ' Make sure this method is only called within the body'
-                + ' of a `with` statement.')
-
-    def __request_descriptor(self):
-        response = self.__request_json(
-            '/controllers/metric_explorer.php',
-            {'operation': 'get_dw_descripter'})
-        if response['totalCount'] != 1:
-            raise RuntimeError(
-                'Descriptor received with unexpected structure.')
-        return self.__deserialize_descriptor(response['data'][0]['realms'])
-
-    def __deserialize_descriptor(self, serialized_descriptor):
-        result = {}
-        for realm in serialized_descriptor:
-            result[realm] = {}
-            for field in ('metrics', 'dimensions'):
-                field_descriptor = serialized_descriptor[realm][field]
-                result[realm][field] = [
-                    (
-                        id_,
-                        field_descriptor[id_]['text'],
-                        field_descriptor[id_]['info'])
-                    for id_ in field_descriptor]
-        return result
-
-    def get_realms(self):
-        """Get a tuple containing the valid realms in the data warehouse.
-
-           Returns
-           -------
-           Tuple of str
-               The valid realms.
-
-           Raises
-           ------
-           RuntimeError
-               If this method is called outside the runtime context.
-        """
-        self.__assert_runtime_context()
-        return tuple(self.__descriptor)
-
-    def get_metrics(self, realm):
-        """Get a DataFrame containing the valid metrics for the given realm.
-
-           Parameters
-           ----------
-           realm : str
-               A realm in the data warehouse.
-
-           Returns
-           -------
-           pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the ID, label, and description
-               of each metric.
-
-           Raises
-           ------
-           KeyError
-               If `realm` is not one of the values from `get_realms()`.
-           TypeError
-               If `realm` is not a string.
-           RuntimeError
-               If this method is called outside the runtime context.
-        """
-        self.__assert_runtime_context()
-        self.__validate_realm(realm)
-        return self.__get_descriptor_data_frame(realm, 'metrics')
-
-    def __validate_realm(self, realm):
-        self.__assert_str('realm', realm)
-        self.__assert_str_in_sequence(
-            realm, self.get_realms(), 'realms',
-            'Invalid realm \'' + realm + '\'')
-
-    def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
-        if string not in sequence:
-            raise KeyError(
-                msg_prologue + '. Valid ' + label + ' are: \''
-                + '\', \''.join(sequence) + '\'.') from None
-
-    def __get_descriptor_data_frame(self, realm, field):
-        return self.__get_indexed_data_frame(
-            data=self.__descriptor[realm][field],
-            columns=('id', 'label', 'description'),
-            index='id')
-
-    def __get_indexed_data_frame(self, data, columns, index):
-        df = pd.DataFrame(data=data, columns=columns)
-        df = df.set_index('id')
-        return df
-
-    def get_dimensions(self, realm):
-        """Get a DataFrame containing the valid dimensions for the given realm.
-
-           Parameters
-           ----------
-           realm : str
-               A realm in the data warehouse.
-
-           Returns
-           -------
-           pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the ID, label, and description
-               of each dimension.
-
-           Raises
-           ------
-           KeyError
-               If `realm` is not one of the values from `get_realms()`.
-           TypeError
-               If `realm` is not a string.
-           RuntimeError
-               If this method is called outside the runtime context.
-        """
-        self.__assert_runtime_context()
-        self.__validate_realm(realm)
-        return self.__get_descriptor_data_frame(realm, 'dimensions')
-
-    def get_filters(self, realm, dimension):
-        """Get a DataFrame containing the valid filters for the given dimension
-           of the given realm.
-
-           Parameters
-           ----------
-           realm : str
-               A realm in the data warehouse.
-           dimension : str
-               A dimension of the given realm in the data warehouse.
-
-           Returns
-           -------
-           pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the ID and label of each filter.
-
-           Raises
-           ------
-           KeyError
-               If `realm` is not one of the values from `get_realms()` or
-               `dimension` is not one of the IDs or labels from
-               `get_dimensions()`
-           TypeError
-               If `realm` or `dimension` are not strings.
-           RuntimeError
-               If this method is called outside the runtime context.
-        """
-        self.__assert_runtime_context()
-        self.__validate_realm(realm)
-        self.__assert_str('dimension', dimension)
-        dimension_id = self.__find_id_in_descriptor(
-            realm, 'dimensions', dimension)
-        path = '/controllers/metric_explorer.php'
-        post_fields = {
-            'operation': 'get_dimension',
-            'dimension_id': dimension_id,
-            'realm': realm}
-        response = self.__request_json(path, post_fields)
-        data = [(datum['id'], datum['name']) for datum in response['data']]
-        df = self.__get_indexed_data_frame(
-            data=data, columns=('id', 'label'), index='id')
-        return df
-
-    def get_valid_values(self, parameter):
-        """Get a collection of valid values for a given parameter.
-
-           Parameters
-           ----------
-           parameter : str
-               The name of the parameter.
-
-           Returns
-           -------
-           tuple of str
-               The collection of valid values.
-
-           Raises
-           ------
-           KeyError
-               If the given parameter does not have a collection of valid
-               values.
-        """
-        if parameter not in self.__valid_values:
-            raise KeyError(
-                'Parameter \'' + parameter + '\' does not have a list of'
-                + ' valid values.')
-        return self.__valid_values[parameter]
-
-    def __find_id_in_descriptor(self, realm, field, search_str):
-        for (id_, text, info) in self.__descriptor[realm][field]:
-            if id_ == search_str or text == search_str:
-                return id_
-        raise KeyError(
-            '\'' + search_str + '\' not found in ' + field + ' of \'' + realm
-            + '\' realm.')
+    def __exit__(self, tpe, value, tb):
+        if self.__cookie_file:
+            os.unlink(self.__cookie_file)
+        if self.__crl:
+            self.__crl.close()
+        self.__username = None
+        self.__in_runtime_context = False
 
     def get_aggregate_data(
             self, duration='Previous month', realm='Jobs',
@@ -589,6 +235,280 @@ class DataWarehouse:
                 index=pd.Series(data=timestamps, name='Time'),
                 columns=dimensions)
 
+    def get_raw_data(self, realm, start, end, filters, stats):
+        post_fields = json.dumps({
+            'realm': realm,
+            'start_date': start,
+            'end_date': end,
+            'params': filters,
+            'stats': stats})
+        headers = self.__headers + [
+            'Accept: application/json',
+            'Content-Type: application/json',
+            'charset: utf-8']
+        result = self.__request_json(
+            path='/rest/v1/warehouse/rawdata', post_fields=post_fields,
+            headers=headers, content_type='JSON')
+        return pd.DataFrame(
+            data=result['data'], columns=result['stats'], dtype=numpy.float64)
+
+    def get_realms(self):
+        """Get a tuple containing the valid realms in the data warehouse.
+
+           Returns
+           -------
+           Tuple of str
+               The valid realms.
+
+           Raises
+           ------
+           RuntimeError
+               If this method is called outside the runtime context.
+        """
+        self.__assert_runtime_context()
+        return tuple(self.__descriptor)
+
+    def get_metrics(self, realm):
+        """Get a DataFrame containing the valid metrics for the given realm.
+
+           Parameters
+           ----------
+           realm : str
+               A realm in the data warehouse.
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the ID, label, and description
+               of each metric.
+
+           Raises
+           ------
+           KeyError
+               If `realm` is not one of the values from `get_realms()`.
+           TypeError
+               If `realm` is not a string.
+           RuntimeError
+               If this method is called outside the runtime context.
+        """
+        self.__assert_runtime_context()
+        self.__validate_realm(realm)
+        return self.__get_descriptor_data_frame(realm, 'metrics')
+
+    def get_dimensions(self, realm):
+        """Get a DataFrame containing the valid dimensions for the given realm.
+
+           Parameters
+           ----------
+           realm : str
+               A realm in the data warehouse.
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the ID, label, and description
+               of each dimension.
+
+           Raises
+           ------
+           KeyError
+               If `realm` is not one of the values from `get_realms()`.
+           TypeError
+               If `realm` is not a string.
+           RuntimeError
+               If this method is called outside the runtime context.
+        """
+        self.__assert_runtime_context()
+        self.__validate_realm(realm)
+        return self.__get_descriptor_data_frame(realm, 'dimensions')
+
+    def get_filters(self, realm, dimension):
+        """Get a DataFrame containing the valid filters for the given dimension
+           of the given realm.
+
+           Parameters
+           ----------
+           realm : str
+               A realm in the data warehouse.
+           dimension : str
+               A dimension of the given realm in the data warehouse.
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the ID and label of each filter.
+
+           Raises
+           ------
+           KeyError
+               If `realm` is not one of the values from `get_realms()` or
+               `dimension` is not one of the IDs or labels from
+               `get_dimensions()`
+           TypeError
+               If `realm` or `dimension` are not strings.
+           RuntimeError
+               If this method is called outside the runtime context.
+        """
+        self.__assert_runtime_context()
+        self.__validate_realm(realm)
+        self.__assert_str('dimension', dimension)
+        dimension_id = self.__find_id_in_descriptor(
+            realm, 'dimensions', dimension)
+        path = '/controllers/metric_explorer.php'
+        post_fields = {
+            'operation': 'get_dimension',
+            'dimension_id': dimension_id,
+            'realm': realm}
+        response = self.__request_json(path, post_fields)
+        data = [(datum['id'], datum['name']) for datum in response['data']]
+        df = self.__get_indexed_data_frame(
+            data=data, columns=('id', 'label'), index='id')
+        return df
+
+    def get_valid_values(self, parameter):
+        """Get a collection of valid values for a given parameter.
+
+           Parameters
+           ----------
+           parameter : str
+               The name of the parameter.
+
+           Returns
+           -------
+           tuple of str
+               The collection of valid values.
+
+           Raises
+           ------
+           KeyError
+               If the given parameter does not have a collection of valid
+               values.
+        """
+        if parameter not in self.__valid_values:
+            raise KeyError(
+                'Parameter \'' + parameter + '\' does not have a list of'
+                + ' valid values.')
+        return self.__valid_values[parameter]
+
+    def __assert_str(self, name, value):
+        if not isinstance(value, str):
+            raise TypeError('`' + name + '` must be a string.')
+
+    def __init_api_token(self):
+        if not self.__api_token:
+            username = self.__get_environment_variable('XDMOD_USER')
+            password = self.__get_environment_variable('XDMOD_PASS')
+            self.__api_token = {
+                'username': username,
+                'password': password}
+
+    def __init_valid_values(self):
+        self.__valid_values = {}
+        this_year = date.today().year
+        six_years_ago = this_year - 6
+        last_seven_years = tuple(
+            map(str, reversed(range(six_years_ago, this_year + 1))))
+        self.__valid_values['duration'] = (
+            (
+                'Yesterday',
+                '7 day',
+                '30 day',
+                '90 day',
+                'Month to date',
+                'Previous month',
+                'Quarter to date',
+                'Previous quarter',
+                'Year to date',
+                'Previous year',
+                '1 year',
+                '2 year',
+                '3 year',
+                '5 year',
+                '10 year')
+            + last_seven_years)
+        self.__valid_values['aggregation_unit'] = (
+            'Auto', 'Day', 'Month', 'Quarter', 'Year')
+
+    def __init_dates(self):
+        today = date.today()
+        yesterday = today + timedelta(days=-1)
+        last_week = today + timedelta(days=-7)
+        last_month = today + timedelta(days=-30)
+        last_quarter = today + timedelta(days=-90)
+        this_month_start = date(today.year, today.month, 1)
+        if today.month == 1:
+            last_full_month_start_year = today.year - 1
+            last_full_month_start_month = 12
+        else:
+            last_full_month_start_year = today.year
+            last_full_month_start_month = today.month - 1
+        last_full_month_start = date(
+            last_full_month_start_year,
+            last_full_month_start_month,
+            1)
+        last_full_month_end = this_month_start + timedelta(days=-1)
+        this_quarter_start = date(
+            today.year,
+            ((today.month - 1) // 3) * 3 + 1,
+            1)
+        if today.month < 4:
+            last_quarter_start_year = today.year - 1
+        else:
+            last_quarter_start_year = today.year
+        last_quarter_start = date(
+            last_quarter_start_year,
+            (((today.month - 1) - ((today.month - 1) % 3) + 9) % 12) + 1,
+            1)
+        last_quarter_end = this_quarter_start + timedelta(days=-1)
+        this_year_start = date(today.year, 1, 1)
+        previous_year_start = date(today.year - 1, 1, 1)
+        previous_year_end = date(today.year - 1, 12, 31)
+        self.__DURATION_TO_START_END = {
+            'Yesterday': (yesterday, yesterday),
+            '7 day': (last_week, today),
+            '30 day': (last_month, today),
+            '90 day': (last_quarter, today),
+            'Month to date': (this_month_start, today),
+            'Previous month': (last_full_month_start, last_full_month_end),
+            'Quarter to date': (this_quarter_start, today),
+            'Previous quarter': (last_quarter_start, last_quarter_end),
+            'Year to date': (this_year_start, today),
+            'Previous year': (previous_year_start, previous_year_end),
+            '1 year': (self.__date_add_years(today, -1), today),
+            '2 year': (self.__date_add_years(today, -2), today),
+            '3 year': (self.__date_add_years(today, -3), today),
+            '5 year': (self.__date_add_years(today, -5), today),
+            '10 year': (self.__date_add_years(today, -10), today)}
+
+    def __assert_connection_to_xdmod_host(self):
+        try:
+            self.__request()
+        except RuntimeError as e:
+            raise RuntimeError(
+                'Could not connect to xdmod_host \'' + self.__xdmod_host
+                + '\': ' + str(e)) from None
+
+    def __request_json(
+            self, path, post_fields, headers=None, content_type=None):
+        response = self.__request(path, post_fields, headers, content_type)
+        return json.loads(response)
+
+    def __request_descriptor(self):
+        response = self.__request_json(
+            '/controllers/metric_explorer.php',
+            {'operation': 'get_dw_descripter'})
+        if response['totalCount'] != 1:
+            raise RuntimeError(
+                'Descriptor received with unexpected structure.')
+        return self.__deserialize_descriptor(response['data'][0]['realms'])
+
+    def __assert_runtime_context(self):
+        if not self.__in_runtime_context:
+            raise RuntimeError(
+                'Method is being called outside of the runtime context.'
+                + ' Make sure this method is only called within the body'
+                + ' of a `with` statement.')
+
     def __get_start_end_from_duration(self, duration):
         if isinstance(duration, str):
             self.__validate_str('duration', duration)
@@ -602,11 +522,19 @@ class DataWarehouse:
                     + ' with 2 items.') from None
         return (start, end)
 
-    def __validate_str(self, key, value):
-        self.__assert_str(key, value)
+    def __validate_realm(self, realm):
+        self.__assert_str('realm', realm)
         self.__assert_str_in_sequence(
-            value, self.__valid_values[key], 'values',
-            'Invalid value for `' + key + '`: \'' + value + '\'')
+            realm, self.get_realms(), 'realms',
+            'Invalid realm \'' + realm + '\'')
+
+    def __find_id_in_descriptor(self, realm, field, search_str):
+        for (id_, text, info) in self.__descriptor[realm][field]:
+            if id_ == search_str or text == search_str:
+                return id_
+        raise KeyError(
+            '\'' + search_str + '\' not found in ' + field + ' of \'' + realm
+            + '\' realm.')
 
     def __validate_filters(self, realm, filters):
         type_error_msg = (
@@ -632,21 +560,15 @@ class DataWarehouse:
                 raise TypeError(type_error_msg) from None
         return new_filters
 
-    def __find_filter_value(self, realm, dimension, filter_value):
-        valid_filters = self.get_filters(realm, dimension)
-        if filter_value in valid_filters.index:
-            return filter_value
-        elif filter_value in valid_filters['label'].values:
-            return valid_filters.index[
-                valid_filters['label'] == filter_value].tolist()[0]
-        else:
-            raise KeyError(
-                'Filter value \'' + filter_value + '\' not found in \''
-                + dimension + '\' dimension of \'' + realm + '\' realm.')
-
     def __assert_bool(self, name, obj):
         if not isinstance(obj, bool):
             raise TypeError('`' + name + '` must be a Boolean.')
+
+    def __validate_str(self, key, value):
+        self.__assert_str(key, value)
+        self.__assert_str_in_sequence(
+            value, self.__valid_values[key], 'values',
+            'Invalid value for `' + key + '`: \'' + value + '\'')
 
     def __get_usage_data(self, post_fields):
         response = self.__request(
@@ -668,22 +590,109 @@ class DataWarehouse:
             return pd.Series(dtype='float64')
         return pd.Series(data=data, index=groups, name=metric)
 
-    def get_raw_data(self, realm, start, end, filters, stats):
-        post_fields = json.dumps({
-            'realm': realm,
-            'start_date': start,
-            'end_date': end,
-            'params': filters,
-            'stats': stats})
-        headers = self.__headers + [
-            'Accept: application/json',
-            'Content-Type: application/json',
-            'charset: utf-8']
-        result = self.__request_json(
-            path='/rest/v1/warehouse/rawdata', post_fields=post_fields,
-            headers=headers, content_type='JSON')
-        return pd.DataFrame(
-            data=result['data'], columns=result['stats'], dtype=numpy.float64)
+    def __get_descriptor_data_frame(self, realm, field):
+        return self.__get_indexed_data_frame(
+            data=self.__descriptor[realm][field],
+            columns=('id', 'label', 'description'),
+            index='id')
+
+    def __get_indexed_data_frame(self, data, columns, index):
+        df = pd.DataFrame(data=data, columns=columns)
+        df = df.set_index('id')
+        return df
+
+    def __get_environment_variable(self, name):
+        try:
+            value = os.environ[name]
+        except KeyError:
+            raise KeyError(
+                name + ' environment variable has not been set.') from None
+        return value
+
+    def __date_add_years(self, old_date, year_delta):
+        # Make dates behave like Ext.JS, i.e., if a date is specified
+        # with a day value that is too big, add days to the last valid
+        # day in that month, e.g., 2023-02-31 becomes 2023-03-03.
+        new_date_year = old_date.year + year_delta
+        new_date_day = old_date.day
+        days_above = 0
+        keep_going = True
+        while keep_going:
+            try:
+                new_date = date(new_date_year, old_date.month, new_date_day)
+                keep_going = False
+            except ValueError:
+                new_date_day -= 1
+                days_above += 1
+        return new_date + timedelta(days=days_above)
+
+    def __request(
+            self, path='', post_fields={}, headers=None, content_type=None):
+        self.__assert_runtime_context()
+        self.__crl.reset()
+        url = self.__xdmod_host + path
+        self.__crl.setopt(pycurl.URL, url)
+        if content_type == 'JSON':
+            pf = post_fields
+        else:
+            pf = urlencode(post_fields)
+        if pf:
+            self.__crl.setopt(pycurl.POSTFIELDS, pf)
+        if headers is None:
+            headers = self.__headers
+        self.__crl.setopt(pycurl.HTTPHEADER, headers)
+        buffer = io.BytesIO()
+        self.__crl.setopt(pycurl.WRITEDATA, buffer)
+        try:
+            self.__crl.perform()
+        except pycurl.error as e:
+            code, msg = e.args
+            if code == pycurl.E_URL_MALFORMAT:
+                msg = 'Malformed URL.'
+            raise RuntimeError(msg) from None
+        response = buffer.getvalue().decode()
+        code = self.__crl.getinfo(pycurl.RESPONSE_CODE)
+        if code != 200:
+            msg = ''
+            try:
+                response_json = json.loads(response)
+                msg = ': ' + response_json['message']
+            except json.JSONDecodeError:
+                pass
+            raise RuntimeError('Error ' + str(code) + msg) from None
+        return response
+
+    def __deserialize_descriptor(self, serialized_descriptor):
+        result = {}
+        for realm in serialized_descriptor:
+            result[realm] = {}
+            for field in ('metrics', 'dimensions'):
+                field_descriptor = serialized_descriptor[realm][field]
+                result[realm][field] = [
+                    (
+                        id_,
+                        field_descriptor[id_]['text'],
+                        field_descriptor[id_]['info'])
+                    for id_ in field_descriptor]
+        return result
+
+    def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
+        if string not in sequence:
+            raise KeyError(
+                msg_prologue + '. Valid ' + label + ' are: \''
+                + '\', \''.join(sequence) + '\'.') from None
+
+    def __find_filter_value(self, realm, dimension, filter_value):
+        valid_filters = self.get_filters(realm, dimension)
+        if filter_value in valid_filters.index:
+            return filter_value
+        elif filter_value in valid_filters['label'].values:
+            return valid_filters.index[
+                valid_filters['label'] == filter_value].tolist()[0]
+        else:
+            raise KeyError(
+                'Filter value \'' + filter_value + '\' not found in \''
+                + dimension + '\' dimension of \'' + realm + '\' realm.')
 
     def whoami(self):
         if self.__username:
@@ -737,11 +746,3 @@ class DataWarehouse:
             df = pd.DataFrame(data=quality, index=jobs, columns=dates)
             df.name = type_to_title[params['type']]
             return df
-
-    def __exit__(self, tpe, value, tb):
-        if self.__cookie_file:
-            os.unlink(self.__cookie_file)
-        if self.__crl:
-            self.__crl.close()
-        self.__username = None
-        self.__in_runtime_context = False
