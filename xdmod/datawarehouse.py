@@ -326,7 +326,8 @@ class DataWarehouse:
         post_fields = {
             'operation': 'get_dimension',
             'dimension_id': dimension_id,
-            'realm': realm_id}
+            'realm': realm_id,
+            'limit': 10000}
         response = self.__request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
         return self.__get_indexed_data_frame(

@@ -37,5 +37,5 @@ class TestDataWarehouse:
     def test_get_filters(self, valid_dw):
         with valid_dw:
             self.__assert_dfs_equal(
-                'xdmod-dev-jobs-nsfstatus-filters.csv',
-                valid_dw.get_filters('Jobs', 'nsfstatus'))
+                'xdmod-dev-jobs-fieldofscience-filters.csv',
+                valid_dw.get_filters('Jobs', 'Field of Science'))
