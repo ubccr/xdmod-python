@@ -151,6 +151,14 @@ class TestDataWarehouse:
                 valid_dw.get_aggregate_data(
                     duration=('2022-01-01', self.__INVALID_STR))
 
+    def test_get_valid_values_KeyError(self, valid_dw):
+        with valid_dw:
+            with pytest.raises(
+                    KeyError,
+                    match='Parameter \'' + self.__INVALID_STR
+                        + '\' does not have a list of valid values.'):
+                valid_dw.get_valid_values(self.__INVALID_STR)
+
     def test_get_valid_values_TypeError(self, valid_dw):
         with valid_dw:
             with pytest.raises(
