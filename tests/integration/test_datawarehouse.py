@@ -14,7 +14,7 @@ class TestDataWarehouse:
 
     def test_get_aggregate_data_KeyError_duration(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='duration'):
+            with pytest.raises(KeyError, match='Invalid value for `duration`'):
                 valid_dw.get_aggregate_data(duration=self.__INVALID_STR)
 
     def test_get_aggregate_data_KeyError_realm(self, valid_dw):
@@ -24,12 +24,12 @@ class TestDataWarehouse:
 
     def test_get_aggregate_data_KeyError_metric(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='metric'):
+            with pytest.raises(KeyError, match='not found in metrics'):
                 valid_dw.get_aggregate_data(metric=self.__INVALID_STR)
 
     def test_get_aggregate_data_KeyError_dimension(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='dimension'):
+            with pytest.raises(KeyError, match='not found in dimensions'):
                 valid_dw.get_aggregate_data(dimension=self.__INVALID_STR)
 
     def test_get_aggregate_data_KeyError_filters(self, valid_dw):
@@ -40,25 +40,31 @@ class TestDataWarehouse:
 
     def test_get_aggregate_data_KeyError_aggregation_unit(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='aggregation_unit'):
+            with pytest.raises(
+                    KeyError, match='Invalid value for `aggregation_unit`'):
                 valid_dw.get_aggregate_data(
                     aggregation_unit=self.__INVALID_STR)
 
     def test_get_aggregate_data_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(RuntimeError, match='runtime context'):
+        with pytest.raises(
+                RuntimeError, match='outside of the runtime context'):
             valid_dw.get_aggregate_data()
 
     def test_get_aggregate_data_RuntimeError_start_date_malformed(
             self, valid_dw):
         with valid_dw:
-            with pytest.raises(RuntimeError, match='start_date'):
+            with pytest.raises(
+                    RuntimeError,
+                    match='start_date param is not in the correct format'):
                 valid_dw.get_aggregate_data(
                     duration=(self.__INVALID_STR, '2022-01-01'))
 
     def test_get_aggregate_data_RuntimeError_end_date_malformed(
             self, valid_dw):
         with valid_dw:
-            with pytest.raises(RuntimeError, match='end_date'):
+            with pytest.raises(
+                    RuntimeError,
+                    match='end_date param is not in the correct format'):
                 valid_dw.get_aggregate_data(
                     duration=('2022-01-01', self.__INVALID_STR))
 
@@ -108,7 +114,8 @@ class TestDataWarehouse:
                 valid_dw.get_realms(), pandas.core.frame.DataFrame)
 
     def test_get_realms_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(RuntimeError, match='runtime context'):
+        with pytest.raises(
+                RuntimeError, match='outside of the runtime context'):
             valid_dw.get_realms()
 
     def test_get_metrics_return_type(self, valid_dw):
@@ -119,11 +126,12 @@ class TestDataWarehouse:
 
     def test_get_metrics_KeyError(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='realm'):
+            with pytest.raises(KeyError, match='Invalid realm'):
                 valid_dw.get_metrics(self.__INVALID_STR)
 
     def test_get_metrics_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(RuntimeError, match='runtime context'):
+        with pytest.raises(
+                RuntimeError, match='outside of the runtime context'):
             valid_dw.get_metrics(self.__VALID_REALM)
 
     def test_get_metrics_TypeError(self, valid_dw):
