@@ -20,7 +20,7 @@ class DataWarehouse:
        keyword, e.g.,
 
        >>> with DataWarehouse(XDMOD_URL, XDMOD_API_TOKEN) as x:
-       ...     x.get_aggregate_data()
+       ...     x.get_data()
 
        Parameters
        ----------
@@ -87,11 +87,11 @@ class DataWarehouse:
         self.__username = None
         self.__in_runtime_context = False
 
-    def get_aggregate_data(
+    def get_data(
             self, duration='Previous month', realm='Jobs',
             metric='CPU Hours: Total', dimension='None', filters={},
             timeseries=True, aggregation_unit='Auto'):
-        """Get a DataFrame containing aggregate data from the warehouse.
+        """Get a DataFrame containing data from the warehouse.
 
            Parameters
            ----------
@@ -142,7 +142,7 @@ class DataWarehouse:
         filters = self.__validate_filters(realm_id, filters)
         self.__assert_bool('timeseries', timeseries)
         self.__validate_str('aggregation_unit', aggregation_unit)
-        post_fields = self.__get_aggregate_data_post_fields(
+        post_fields = self.__get_data_post_fields(
             start_date, end_date, realm_id, metric_id, dimension_id, filters,
             timeseries, aggregation_unit)
         response = self.__get_usage_data(post_fields)
@@ -532,7 +532,7 @@ class DataWarehouse:
             value, self.__valid_values[key], 'values',
             'Invalid value for `' + key + '`: \'' + value + '\'')
 
-    def __get_aggregate_data_post_fields(
+    def __get_data_post_fields(
             self, start_date, end_date, realm, metric_id, dimension_id, filters,
             timeseries, aggregation_unit):
         result = {
