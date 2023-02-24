@@ -5,6 +5,8 @@ import xdmod.datawarehouse as xdw
 
 class TestDataWarehouse:
     __INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
+    __VALID_DATE = '2020-01-01'
+    __VALID_DIMENSION = 'allocation'
     __VALID_REALM = 'Jobs'
     __VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org'
 
@@ -32,11 +34,17 @@ class TestDataWarehouse:
             with pytest.raises(KeyError, match='not found in dimensions'):
                 valid_dw.get_aggregate_data(dimension=self.__INVALID_STR)
 
-    def test_get_aggregate_data_KeyError_filters(self, valid_dw):
+    def test_get_aggregate_data_KeyError_filter_key(self, valid_dw):
         with valid_dw:
             with pytest.raises(KeyError, match='not found in dimensions'):
                 valid_dw.get_aggregate_data(
                     filters={self.__INVALID_STR: self.__INVALID_STR})
+
+    def test_get_aggregate_data_KeyError_filter_value(self, valid_dw):
+        with valid_dw:
+            with pytest.raises(KeyError, match='Filter value'):
+                valid_dw.get_aggregate_data(
+                    filters={self.__VALID_DIMENSION: self.__INVALID_STR})
 
     def test_get_aggregate_data_KeyError_aggregation_unit(self, valid_dw):
         with valid_dw:
@@ -57,7 +65,7 @@ class TestDataWarehouse:
                     RuntimeError,
                     match='start_date param is not in the correct format'):
                 valid_dw.get_aggregate_data(
-                    duration=(self.__INVALID_STR, '2022-01-01'))
+                    duration=(self.__INVALID_STR, self.__VALID_DATE))
 
     def test_get_aggregate_data_RuntimeError_end_date_malformed(
             self, valid_dw):
@@ -66,7 +74,7 @@ class TestDataWarehouse:
                     RuntimeError,
                     match='end_date param is not in the correct format'):
                 valid_dw.get_aggregate_data(
-                    duration=('2022-01-01', self.__INVALID_STR))
+                    duration=(self.__VALID_DATE, self.__INVALID_STR))
 
     def test_get_aggregate_data_TypeError_duration(self, valid_dw):
         with valid_dw:
@@ -92,6 +100,17 @@ class TestDataWarehouse:
         with valid_dw:
             with pytest.raises(TypeError, match='filters'):
                 valid_dw.get_aggregate_data(filters=1)
+
+    def test_get_aggregate_data_TypeError_filter_key(self, valid_dw):
+        with valid_dw:
+            with pytest.raises(TypeError, match='filters'):
+                valid_dw.get_aggregate_data(filters={2: self.__INVALID_STR})
+
+    def test_get_aggregate_data_TypeError_filter_value(self, valid_dw):
+        with valid_dw:
+            with pytest.raises(TypeError, match='filters'):
+                valid_dw.get_aggregate_data(
+                    filters={self.__VALID_DIMENSION: 2})
 
     def test_get_aggregate_data_TypeError_timeseries(self, valid_dw):
         with valid_dw:

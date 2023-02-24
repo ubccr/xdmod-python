@@ -508,12 +508,13 @@ class DataWarehouse:
             raise TypeError(type_error_msg)
         new_filters = {}
         for dimension in filters:
-            dimension_id = self.__find_id_in_descriptor(
-                realm, 'dimensions', dimension)
-            filter_values = filters[dimension]
-            if isinstance(filter_values, str):
-                filter_values = [filter_values]
             try:
+                self.__assert_str('filter key', dimension)
+                dimension_id = self.__find_id_in_descriptor(
+                    realm, 'dimensions', dimension)
+                filter_values = filters[dimension]
+                if isinstance(filter_values, str):
+                    filter_values = [filter_values]
                 new_filters[dimension_id] = []
                 for filter_value in filter_values:
                     self.__assert_str('filter value', filter_value)
