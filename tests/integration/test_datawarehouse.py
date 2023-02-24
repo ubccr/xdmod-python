@@ -156,7 +156,7 @@ class TestDataWarehouse:
             with pytest.raises(
                     KeyError,
                     match='Parameter \'' + self.__INVALID_STR
-                        + '\' does not have a list of valid values.'):
+                    + '\' does not have a list of valid values.'):
                 valid_dw.get_valid_values(self.__INVALID_STR)
 
     def test_get_valid_values_TypeError(self, valid_dw):
