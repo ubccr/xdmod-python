@@ -21,36 +21,51 @@ class TestDataWarehouse:
         os.environ['XDMOD_PASS'] = self.__INVALID_STR
 
     def test___init___KeyError_XDMOD_USER(self, tmp_environ_no_user):
-        with pytest.raises(KeyError, match='XDMOD_USER'):
+        with pytest.raises(
+                KeyError,
+                match='XDMOD_USER environment variable has not been set.'):
             xdw.DataWarehouse(self.__VALID_XDMOD_URL)
 
     def test___init___KeyError_XDMOD_PASS(self, tmp_environ_no_user):
         os.environ['XDMOD_USER'] = self.__INVALID_STR
-        with pytest.raises(KeyError, match='XDMOD_PASS'):
+        with pytest.raises(
+                KeyError,
+                match='XDMOD_PASS environment variable has not been set.'):
             xdw.DataWarehouse(self.__VALID_XDMOD_URL)
 
     def test___init___TypeError_xdmod_host(self, tmp_environ_unauth_user):
-        with pytest.raises(TypeError, match='xdmod_host'):
+        with pytest.raises(TypeError, match='`xdmod_host` must be a string.'):
             xdw.DataWarehouse(2)
 
     def test___init___TypeError_api_token(self, tmp_environ_unauth_user):
-        with pytest.raises(TypeError, match='api_token'):
+        with pytest.raises(TypeError, match='`api_token` must be a string.'):
             xdw.DataWarehouse('', 2)
 
     def test___enter___RuntimeError_xdmod_host_malformed(
             self, tmp_environ_unauth_user):
-        with pytest.raises(RuntimeError, match='xdmod_host'):
+        with pytest.raises(
+                RuntimeError,
+                match='Could not connect to xdmod_host \'\': Malformed URL.'):
             with xdw.DataWarehouse(''):
                 pass
 
     def test___enter___RuntimeError_xdmod_host_unresolved(
             self, tmp_environ_unauth_user):
-        with pytest.raises(RuntimeError, match='xdmod_host'):
-            with xdw.DataWarehouse('asdfsdf.xdmod.org'):
+        invalid_host = self.__INVALID_STR + '.xdmod.org'
+        with pytest.raises(
+                RuntimeError,
+                match='Could not connect to xdmod_host \'' + invalid_host
+                + '\': Could not resolve host: ' + invalid_host):
+            with xdw.DataWarehouse(invalid_host):
                 pass
 
     def test___enter___RuntimeError_xdmod_host_unsupported_protocol(
             self, tmp_environ_unauth_user):
-        with pytest.raises(RuntimeError, match='xdmod_host'):
-            with xdw.DataWarehouse('asdklsdfj://sdlkfs'):
+        invalid_host = self.__INVALID_STR + '://' + self.__INVALID_STR
+        with pytest.raises(
+                RuntimeError,
+                match='Could not connect to xdmod_host \'' + invalid_host
+                + '\': Protocol "' + self.__INVALID_STR
+                + '" not supported or disabled in libcurl'):
+            with xdw.DataWarehouse(invalid_host):
                 pass
