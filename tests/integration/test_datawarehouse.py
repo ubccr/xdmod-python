@@ -12,55 +12,6 @@ class TestDataWarehouse:
     def valid_dw(self):
         yield xdw.DataWarehouse(self.__VALID_XDMOD_URL)
 
-    def test_get_realms_return_type(self, valid_dw):
-        with valid_dw:
-            assert isinstance(
-                valid_dw.get_realms(), pandas.core.frame.DataFrame)
-
-    def test_get_realms_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(RuntimeError, match='runtime context'):
-            valid_dw.get_realms()
-
-    def test_get_metrics_return_type(self, valid_dw):
-        with valid_dw:
-            assert isinstance(
-                valid_dw.get_metrics(self.__VALID_REALM),
-                pandas.core.frame.DataFrame)
-
-    def test_get_metrics_KeyError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='realm'):
-                valid_dw.get_metrics(self.__INVALID_STR)
-
-    def test_get_metrics_TypeError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='realm'):
-                valid_dw.get_metrics(2)
-
-    def test_get_metrics_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(RuntimeError, match='runtime context'):
-            valid_dw.get_metrics(self.__VALID_REALM)
-
-    def test_get_dimensions_return_type(self, valid_dw):
-        with valid_dw:
-            assert isinstance(
-                valid_dw.get_dimensions(self.__VALID_REALM),
-                pandas.core.frame.DataFrame)
-
-    def test_get_dimensions_KeyError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='Invalid realm'):
-                valid_dw.get_dimensions(self.__INVALID_STR)
-
-    def test_get_dimensions_TypeError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='realm'):
-                valid_dw.get_dimensions(2)
-
-    def test_get_dimensions_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(RuntimeError, match='runtime context'):
-            valid_dw.get_dimensions(self.__VALID_REALM)
-
     def test_get_aggregate_data_KeyError_duration(self, valid_dw):
         with valid_dw:
             with pytest.raises(KeyError, match='duration'):
@@ -96,6 +47,20 @@ class TestDataWarehouse:
     def test_get_aggregate_data_RuntimeError_outside_context(self, valid_dw):
         with pytest.raises(RuntimeError, match='runtime context'):
             valid_dw.get_aggregate_data()
+
+    def test_get_aggregate_data_RuntimeError_start_date_malformed(
+            self, valid_dw):
+        with valid_dw:
+            with pytest.raises(RuntimeError, match='start_date'):
+                valid_dw.get_aggregate_data(
+                    duration=(self.__INVALID_STR, '2022-01-01'))
+
+    def test_get_aggregate_data_RuntimeError_end_date_malformed(
+            self, valid_dw):
+        with valid_dw:
+            with pytest.raises(RuntimeError, match='end_date'):
+                valid_dw.get_aggregate_data(
+                    duration=('2022-01-01', self.__INVALID_STR))
 
     def test_get_aggregate_data_TypeError_duration(self, valid_dw):
         with valid_dw:
@@ -137,19 +102,54 @@ class TestDataWarehouse:
             with pytest.raises(ValueError, match='duration'):
                 valid_dw.get_aggregate_data(duration=('1', '2', '3'))
 
-    def test_get_aggregate_data_RuntimeError_start_date_malformed(
-            self, valid_dw):
+    def test_get_realms_return_type(self, valid_dw):
         with valid_dw:
-            with pytest.raises(RuntimeError, match='start_date'):
-                valid_dw.get_aggregate_data(
-                    duration=(self.__INVALID_STR, '2022-01-01'))
+            assert isinstance(
+                valid_dw.get_realms(), pandas.core.frame.DataFrame)
 
-    def test_get_aggregate_data_RuntimeError_end_date_malformed(
-            self, valid_dw):
+    def test_get_realms_RuntimeError_outside_context(self, valid_dw):
+        with pytest.raises(RuntimeError, match='runtime context'):
+            valid_dw.get_realms()
+
+    def test_get_metrics_return_type(self, valid_dw):
         with valid_dw:
-            with pytest.raises(RuntimeError, match='end_date'):
-                valid_dw.get_aggregate_data(
-                    duration=('2022-01-01', self.__INVALID_STR))
+            assert isinstance(
+                valid_dw.get_metrics(self.__VALID_REALM),
+                pandas.core.frame.DataFrame)
+
+    def test_get_metrics_KeyError(self, valid_dw):
+        with valid_dw:
+            with pytest.raises(KeyError, match='realm'):
+                valid_dw.get_metrics(self.__INVALID_STR)
+
+    def test_get_metrics_RuntimeError_outside_context(self, valid_dw):
+        with pytest.raises(RuntimeError, match='runtime context'):
+            valid_dw.get_metrics(self.__VALID_REALM)
+
+    def test_get_metrics_TypeError(self, valid_dw):
+        with valid_dw:
+            with pytest.raises(TypeError, match='realm'):
+                valid_dw.get_metrics(2)
+
+    def test_get_dimensions_return_type(self, valid_dw):
+        with valid_dw:
+            assert isinstance(
+                valid_dw.get_dimensions(self.__VALID_REALM),
+                pandas.core.frame.DataFrame)
+
+    def test_get_dimensions_KeyError(self, valid_dw):
+        with valid_dw:
+            with pytest.raises(KeyError, match='Invalid realm'):
+                valid_dw.get_dimensions(self.__INVALID_STR)
+
+    def test_get_dimensions_RuntimeError_outside_context(self, valid_dw):
+        with pytest.raises(RuntimeError, match='runtime context'):
+            valid_dw.get_dimensions(self.__VALID_REALM)
+
+    def test_get_dimensions_TypeError(self, valid_dw):
+        with valid_dw:
+            with pytest.raises(TypeError, match='realm'):
+                valid_dw.get_dimensions(2)
 
     def test_get_valid_values_KeyError(self, valid_dw):
         with valid_dw:

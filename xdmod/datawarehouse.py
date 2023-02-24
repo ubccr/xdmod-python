@@ -258,10 +258,10 @@ class DataWarehouse:
            ------
            KeyError
                If `realm` is not one of the values from `get_realms()`.
-           TypeError
-               If `realm` is not a string.
            RuntimeError
                If this method is called outside the runtime context.
+           TypeError
+               If `realm` is not a string.
         """
         return self.__get_metrics_or_dimensions(realm, 'metrics')
 
@@ -283,10 +283,10 @@ class DataWarehouse:
            ------
            KeyError
                If `realm` is not one of the values from `get_realms()`.
-           TypeError
-               If `realm` is not a string.
            RuntimeError
                If this method is called outside the runtime context.
+           TypeError
+               If `realm` is not a string.
         """
         return self.__get_metrics_or_dimensions(realm, 'dimensions')
 
@@ -312,10 +312,10 @@ class DataWarehouse:
                If `realm` is not one of the values from `get_realms()` or
                `dimension` is not one of the IDs or labels from
                `get_dimensions()`
-           TypeError
-               If `realm` or `dimension` are not strings.
            RuntimeError
                If this method is called outside the runtime context.
+           TypeError
+               If `realm` or `dimension` are not strings.
         """
         self.__assert_runtime_context()
         realm_id = self.__get_realm_id(realm)
