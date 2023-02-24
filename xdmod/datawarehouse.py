@@ -36,12 +36,12 @@ class DataWarehouse:
        KeyError
            If `api_token` is None and either or both of the environment
            variables `XDMOD_USER` and `XDMOD_PASS` have not been set.
-       TypeError
-           If `xdmod_host` is not a string or if `api_token` is not None and is
-           not a string.
        RuntimeError
            If a connection cannot be made to the XDMoD server specified by
            `xdmod_host`.
+       TypeError
+           If `xdmod_host` is not a string or if `api_token` is not None and is
+           not a string.
     """
 
     def __init__(self, xdmod_host, api_token=None):
