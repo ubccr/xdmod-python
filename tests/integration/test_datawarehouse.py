@@ -26,17 +26,17 @@ class TestDataWarehouse:
 
     def test_get_aggregate_data_KeyError_metric(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='not found in metrics'):
+            with pytest.raises(KeyError, match='Metric'):
                 valid_dw.get_aggregate_data(metric=self.__INVALID_STR)
 
     def test_get_aggregate_data_KeyError_dimension(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='not found in dimensions'):
+            with pytest.raises(KeyError, match='Dimension'):
                 valid_dw.get_aggregate_data(dimension=self.__INVALID_STR)
 
     def test_get_aggregate_data_KeyError_filter_key(self, valid_dw):
         with valid_dw:
-            with pytest.raises(KeyError, match='not found in dimensions'):
+            with pytest.raises(KeyError, match='Dimension'):
                 valid_dw.get_aggregate_data(
                     filters={self.__INVALID_STR: self.__INVALID_STR})
 

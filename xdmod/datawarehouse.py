@@ -135,12 +135,10 @@ class DataWarehouse:
         self.__assert_runtime_context()
         (start_date, end_date) = self.__get_dates_from_duration(duration)
         realm_id = self.__get_realm_id(realm)
-        self.__assert_str('metric', metric)
-        metric_id = self.__find_id_in_descriptor(
-            realm_id, 'metrics', metric)
-        self.__assert_str('dimension', dimension)
-        dimension_id = self.__find_id_in_descriptor(
-            realm_id, 'dimensions', dimension)
+        metric_id = self.__get_metric_or_dimension_id(
+            realm_id, 'metric', metric)
+        dimension_id = self.__get_metric_or_dimension_id(
+            realm_id, 'dimension', dimension)
         filters = self.__validate_filters(realm_id, filters)
         self.__assert_bool('timeseries', timeseries)
         self.__validate_str('aggregation_unit', aggregation_unit)
@@ -319,9 +317,8 @@ class DataWarehouse:
         """
         self.__assert_runtime_context()
         realm_id = self.__get_realm_id(realm)
-        self.__assert_str('dimension', dimension)
-        dimension_id = self.__find_id_in_descriptor(
-            realm_id, 'dimensions', dimension)
+        dimension_id = self.__get_metric_or_dimension_id(
+            realm_id, 'dimension', dimension)
         path = '/controllers/metric_explorer.php'
         post_fields = {
             'operation': 'get_dimension',
@@ -484,20 +481,21 @@ class DataWarehouse:
                     + ' with 2 items.') from None
         return (start_date, end_date)
 
-    def __get_realm_id(self, search_str):
-        self.__assert_str('realm', search_str)
+    def __get_realm_id(self, realm):
+        self.__assert_str('realm', realm)
         descriptor = self.__get_descriptor()
         for id_ in descriptor:
-            if id_ == search_str or descriptor[id_]['label'] == search_str:
+            if id_ == realm or descriptor[id_]['label'] == realm:
                 return id_
-        raise KeyError('Invalid realm \'' + search_str + '\'.')
+        raise KeyError('Invalid realm \'' + realm + '\'.')
 
-    def __find_id_in_descriptor(self, realm, m_or_d, search_str):
-        for (id_, label, _) in self.__get_descriptor()[realm][m_or_d]:
-            if id_ == search_str or label == search_str:
+    def __get_metric_or_dimension_id(self, realm, name, value):
+        self.__assert_str(name, value)
+        for (id_, label, _) in self.__get_descriptor()[realm][name + 's']:
+            if id_ == value or label == value:
                 return id_
         raise KeyError(
-            '\'' + search_str + '\' not found in ' + m_or_d + ' of \'' + realm
+            name.capitalize() + ' \'' + value + '\' not found in \'' + realm
             + '\' realm.')
 
     def __validate_filters(self, realm, filters):
@@ -509,9 +507,8 @@ class DataWarehouse:
         new_filters = {}
         for dimension in filters:
             try:
-                self.__assert_str('filter key', dimension)
-                dimension_id = self.__find_id_in_descriptor(
-                    realm, 'dimensions', dimension)
+                dimension_id = self.__get_metric_or_dimension_id(
+                    realm, 'dimension', dimension)
                 filter_values = filters[dimension]
                 if isinstance(filter_values, str):
                     filter_values = [filter_values]
