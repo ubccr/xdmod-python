@@ -1,193 +1,165 @@
-import pandas
 import pytest
 import xdmod.datawarehouse as xdw
+import pandas
+
+INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
+VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org'
+METHOD_PARAMS = {
+    'get_data': (
+        'duration', 'realm', 'metric', 'dimension', 'filters', 'timeseries',
+        'aggregation_unit',
+    ),
+    'get_realms': (),
+    'get_metrics': ('realm',),
+    'get_dimensions': ('realm',),
+    'get_filters': ('realm', 'dimension',),
+    'get_valid_values': ('parameter',),
+}
+VALID_DATE = '2020-01-01'
+VALID_DIMENSION = 'Resource'
+VALID_VALUES = {
+  'duration': 'Previous month',
+  'realm': 'Jobs',
+  'metric': 'CPU Hours: Total',
+  'dimension': VALID_DIMENSION,
+  'filters': {VALID_DIMENSION: 'Expanse'},
+  'timeseries': True,
+  'aggregation_unit': 'Auto',
+  'parameter': 'duration',
+}
+KEY_ERROR_TEST_VALUES_AND_MATCHES = {
+    'duration': (INVALID_STR, 'Invalid value for `duration`'),
+    'realm': (INVALID_STR, r'Realm .* not found'),
+    'metric': (INVALID_STR, r'Metric .* not found'),
+    'dimension': (INVALID_STR, r'Dimension .* not found'),
+    'filter_key': ({INVALID_STR: INVALID_STR}, r'Dimension .* not found'),
+    'filter_value': (
+        {VALID_DIMENSION: INVALID_STR}, r'Filter value .* not found'
+    ),
+    'aggregation_unit': (INVALID_STR, 'Invalid value for `aggregation_unit`'),
+    'parameter': (
+        INVALID_STR, 'Parameter .* does not have a list of valid values'
+    ),
+}
+
+key_error_test_names = []
+duration_test_names = []
+start_end_test_names = []
+type_error_test_names = []
+
+default_valid_params = {}
+key_error_test_params = []
+date_malformed_test_params = []
+type_error_test_params = []
+value_error_test_methods = []
+
+for method in METHOD_PARAMS:
+    default_valid_params[method] = {}
+    for param in METHOD_PARAMS[method]:
+        default_valid_params[method][param] = VALID_VALUES[param]
+        type_error_test_names += [method + ':' + param]
+        type_error_test_params += [(method, param)]
+        if param in KEY_ERROR_TEST_VALUES_AND_MATCHES:
+            key_error_test_names += [method + ':' + param]
+            (value, match) = KEY_ERROR_TEST_VALUES_AND_MATCHES[param]
+            key_error_test_params += [(method, {param: value}, match)]
+        if param == 'duration':
+            duration_test_names += [method + ':duration']
+            start_end_test_names += [
+                method + ':start_date', method + ':end_date'
+            ]
+            date_malformed_test_params += [
+                (method, 'start_date', {'duration': (INVALID_STR, VALID_DATE)}),
+                (method, 'end_date', {'duration': (VALID_DATE, INVALID_STR)}),
+            ]
+            value_error_test_methods += [method]
 
 
-class TestDataWarehouse:
-    __INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
-    __VALID_DATE = '2020-01-01'
-    __VALID_DIMENSION = 'allocation'
-    __VALID_REALM = 'Jobs'
-    __VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org'
+@pytest.fixture(scope='module')
+def dw_methods():
+    with xdw.DataWarehouse(VALID_XDMOD_URL) as dw:
+        yield __get_dw_methods(dw)
 
-    @pytest.fixture
-    def valid_dw(self):
-        yield xdw.DataWarehouse(self.__VALID_XDMOD_URL)
 
-    def test_get_data_KeyError_duration(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='Invalid value for `duration`'):
-                valid_dw.get_data(duration=self.__INVALID_STR)
+@pytest.fixture(scope='module')
+def dw_methods_outside_runtime_context():
+    dw = xdw.DataWarehouse(VALID_XDMOD_URL)
+    return __get_dw_methods(dw)
 
-    def test_get_data_KeyError_realm(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='Invalid realm'):
-                valid_dw.get_data(realm=self.__INVALID_STR)
 
-    def test_get_data_KeyError_metric(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='Metric'):
-                valid_dw.get_data(metric=self.__INVALID_STR)
+def __get_dw_methods(dw):
+    return {
+        'get_data': dw.get_data,
+        'get_realms': dw.get_realms,
+        'get_metrics': dw.get_metrics,
+        'get_dimensions': dw.get_dimensions,
+        'get_filters': dw.get_filters,
+        'get_valid_values': dw.get_valid_values,
+    }
 
-    def test_get_data_KeyError_dimension(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='Dimension'):
-                valid_dw.get_data(dimension=self.__INVALID_STR)
 
-    def test_get_data_KeyError_filter_key(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='Dimension'):
-                valid_dw.get_data(
-                    filters={self.__INVALID_STR: self.__INVALID_STR})
+def __run_method(dw, method, additional_params={}):
+    params = {**default_valid_params[method], **additional_params}
+    return dw[method](**params)
 
-    def test_get_data_KeyError_filter_value(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='Filter value'):
-                valid_dw.get_data(
-                    filters={self.__VALID_DIMENSION: self.__INVALID_STR})
 
-    def test_get_data_KeyError_aggregation_unit(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(
-                    KeyError, match='Invalid value for `aggregation_unit`'):
-                valid_dw.get_data(
-                    aggregation_unit=self.__INVALID_STR)
+def __test_exception(dw_methods, method, additional_params, error, match):
+    with pytest.raises(error, match=match):
+        __run_method(dw_methods, method, additional_params)
 
-    def test_get_data_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(
-                RuntimeError, match='outside of the runtime context'):
-            valid_dw.get_data()
 
-    def test_get_data_RuntimeError_start_date_malformed(
-            self, valid_dw):
-        with valid_dw:
-            with pytest.raises(
-                    RuntimeError,
-                    match='start_date param is not in the correct format'):
-                valid_dw.get_data(
-                    duration=(self.__INVALID_STR, self.__VALID_DATE))
+@pytest.mark.parametrize(
+    'method, params, match', key_error_test_params, ids=key_error_test_names
+)
+def test_KeyError(dw_methods, method, params, match):
+    __test_exception(dw_methods, method, params, KeyError, match)
 
-    def test_get_data_RuntimeError_end_date_malformed(
-            self, valid_dw):
-        with valid_dw:
-            with pytest.raises(
-                    RuntimeError,
-                    match='end_date param is not in the correct format'):
-                valid_dw.get_data(
-                    duration=(self.__VALID_DATE, self.__INVALID_STR))
 
-    def test_get_data_TypeError_duration(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='duration'):
-                valid_dw.get_data(duration=1)
+@pytest.mark.parametrize(
+    'method',
+    ['get_data', 'get_realms', 'get_metrics', 'get_dimensions', 'get_filters']
+)
+def test_RuntimeError_outside_context(
+        dw_methods_outside_runtime_context, method):
+    __test_exception(
+        dw_methods_outside_runtime_context, method, {}, RuntimeError,
+        'outside of the runtime context'
+    )
 
-    def test_get_data_TypeError_realm(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='realm'):
-                valid_dw.get_data(realm=1)
 
-    def test_get_data_TypeError_metric(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='metric'):
-                valid_dw.get_data(metric=1)
+@pytest.mark.parametrize(
+    'method, param, params', date_malformed_test_params,
+    ids=start_end_test_names
+)
+def test_RuntimeError_date_malformed(dw_methods, method, param, params):
+    __test_exception(
+        dw_methods, method, params, RuntimeError,
+        param + ' param is not in the correct format'
+    )
 
-    def test_get_data_TypeError_dimension(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='dimension'):
-                valid_dw.get_data(dimension=1)
 
-    def test_get_data_TypeError_filters(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='filters'):
-                valid_dw.get_data(filters=1)
+@pytest.mark.parametrize(
+    'method, param', type_error_test_params, ids=type_error_test_names
+)
+def test_TypeError(dw_methods, method, param):
+    __test_exception(dw_methods, method, {param: 2}, TypeError, param)
 
-    def test_get_data_TypeError_filter_key(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='filters'):
-                valid_dw.get_data(filters={2: self.__INVALID_STR})
 
-    def test_get_data_TypeError_filter_value(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='filters'):
-                valid_dw.get_data(
-                    filters={self.__VALID_DIMENSION: 2})
+@pytest.mark.parametrize(
+    'method', value_error_test_methods, ids=duration_test_names
+)
+def test_ValueError_duration(dw_methods, method):
+    __test_exception(
+        dw_methods, method, {'duration': ('1', '2', '3')}, ValueError,
+        'duration'
+    )
 
-    def test_get_data_TypeError_timeseries(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='timeseries'):
-                valid_dw.get_data(timeseries=1)
 
-    def test_get_data_TypeError_aggregation_unit(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='aggregation_unit'):
-                valid_dw.get_data(aggregation_unit=1)
-
-    def test_get_data_ValueError_duration(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(ValueError, match='duration'):
-                valid_dw.get_data(duration=('1', '2', '3'))
-
-    def test_get_realms_return_type(self, valid_dw):
-        with valid_dw:
-            assert isinstance(
-                valid_dw.get_realms(), pandas.core.frame.DataFrame)
-
-    def test_get_realms_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(
-                RuntimeError, match='outside of the runtime context'):
-            valid_dw.get_realms()
-
-    def test_get_metrics_return_type(self, valid_dw):
-        with valid_dw:
-            assert isinstance(
-                valid_dw.get_metrics(self.__VALID_REALM),
-                pandas.core.frame.DataFrame)
-
-    def test_get_metrics_KeyError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='Invalid realm'):
-                valid_dw.get_metrics(self.__INVALID_STR)
-
-    def test_get_metrics_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(
-                RuntimeError, match='outside of the runtime context'):
-            valid_dw.get_metrics(self.__VALID_REALM)
-
-    def test_get_metrics_TypeError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='realm'):
-                valid_dw.get_metrics(2)
-
-    def test_get_dimensions_return_type(self, valid_dw):
-        with valid_dw:
-            assert isinstance(
-                valid_dw.get_dimensions(self.__VALID_REALM),
-                pandas.core.frame.DataFrame)
-
-    def test_get_dimensions_KeyError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(KeyError, match='Invalid realm'):
-                valid_dw.get_dimensions(self.__INVALID_STR)
-
-    def test_get_dimensions_RuntimeError_outside_context(self, valid_dw):
-        with pytest.raises(RuntimeError, match='runtime context'):
-            valid_dw.get_dimensions(self.__VALID_REALM)
-
-    def test_get_dimensions_TypeError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(TypeError, match='realm'):
-                valid_dw.get_dimensions(2)
-
-    def test_get_valid_values_KeyError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(
-                    KeyError,
-                    match='Parameter \'' + self.__INVALID_STR
-                    + '\' does not have a list of valid values.'):
-                valid_dw.get_valid_values(self.__INVALID_STR)
-
-    def test_get_valid_values_TypeError(self, valid_dw):
-        with valid_dw:
-            with pytest.raises(
-                    TypeError, match='`parameter` must be a string.'):
-                valid_dw.get_valid_values(2)
+@pytest.mark.parametrize(
+    'method',
+    ['get_data', 'get_realms', 'get_metrics', 'get_dimensions', 'get_filters']
+)
+def test_DataFrame_return_type(dw_methods, method):
+    assert isinstance(
+        __run_method(dw_methods, method), pandas.core.frame.DataFrame
+    )

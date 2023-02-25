@@ -134,11 +134,9 @@ class DataWarehouse:
         """
         self.__assert_runtime_context()
         (start_date, end_date) = self.__get_dates_from_duration(duration)
-        realm_id = self.__get_realm_id(realm)
-        metric_id = self.__get_metric_or_dimension_id(
-            realm_id, 'metric', metric)
-        dimension_id = self.__get_metric_or_dimension_id(
-            realm_id, 'dimension', dimension)
+        realm_id = self.__find_realm_id(realm)
+        metric_id = self.__find_metric_id(realm_id, metric)
+        dimension_id = self.__find_dimension_id(realm_id, dimension)
         filters = self.__validate_filters(realm_id, filters)
         self.__assert_bool('timeseries', timeseries)
         self.__validate_str('aggregation_unit', aggregation_unit)
@@ -200,7 +198,9 @@ class DataWarehouse:
             return pd.DataFrame(
                 data=data,
                 index=pd.Series(data=timestamps, name='Time'),
-                columns=dimensions)
+                columns=pd.Series(
+                    dimensions,
+                    name=self.__get_dimension_label(realm_id, dimension_id)))
 
     def get_raw_data(self, realm, start_date, end_date, filters, stats):
         post_fields = json.dumps({
@@ -233,10 +233,8 @@ class DataWarehouse:
                If this method is called outside the runtime context.
         """
         self.__assert_runtime_context()
-        return self.__get_indexed_data_frame(
-            data=self.__get_realms(),
-            columns=('id', 'label'),
-            index='id')
+        return self.__get_indexed_data_frame_from_descriptor(
+            self.__get_descriptor(), ('id', 'label'))
 
     def get_metrics(self, realm):
         """Get a DataFrame containing the valid metrics for the given realm.
@@ -316,9 +314,8 @@ class DataWarehouse:
                If `realm` or `dimension` are not strings.
         """
         self.__assert_runtime_context()
-        realm_id = self.__get_realm_id(realm)
-        dimension_id = self.__get_metric_or_dimension_id(
-            realm_id, 'dimension', dimension)
+        realm_id = self.__find_realm_id(realm)
+        dimension_id = self.__find_dimension_id(realm_id, dimension)
         path = '/controllers/metric_explorer.php'
         post_fields = {
             'operation': 'get_dimension',
@@ -327,8 +324,9 @@ class DataWarehouse:
             'limit': 10000}
         response = self.__request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
-        return self.__get_indexed_data_frame(
-            data=data, columns=('id', 'label'), index='id')
+        result = pd.DataFrame(data=data, columns=('id', 'label'))
+        result = result.set_index('id')
+        return result
 
     def get_valid_values(self, parameter):
         """Get a collection of valid values for a given parameter.
@@ -481,22 +479,16 @@ class DataWarehouse:
                     + ' with 2 items.') from None
         return (start_date, end_date)
 
-    def __get_realm_id(self, realm):
-        self.__assert_str('realm', realm)
-        descriptor = self.__get_descriptor()
-        for id_ in descriptor:
-            if id_ == realm or descriptor[id_]['label'] == realm:
-                return id_
-        raise KeyError('Invalid realm \'' + realm + '\'.')
+    def __find_realm_id(self, realm):
+        return self.__find_id_in_descriptor(
+            self.__get_descriptor(), 'realm', realm)
 
-    def __get_metric_or_dimension_id(self, realm, name, value):
-        self.__assert_str(name, value)
-        for (id_, label, _) in self.__get_descriptor()[realm][name + 's']:
-            if id_ == value or label == value:
-                return id_
-        raise KeyError(
-            name.capitalize() + ' \'' + value + '\' not found in \'' + realm
-            + '\' realm.')
+    def __find_metric_id(self, realm, metric):
+        return self.__find_metric_or_dimension_id(realm, 'metric', metric)
+
+    def __find_dimension_id(self, realm, dimension):
+        return self.__find_metric_or_dimension_id(
+            realm, 'dimension', dimension)
 
     def __validate_filters(self, realm, filters):
         type_error_msg = (
@@ -507,8 +499,7 @@ class DataWarehouse:
         new_filters = {}
         for dimension in filters:
             try:
-                dimension_id = self.__get_metric_or_dimension_id(
-                    realm, 'dimension', dimension)
+                dimension_id = self.__find_dimension_id(realm, dimension)
                 filter_values = filters[dimension]
                 if isinstance(filter_values, str):
                     filter_values = [filter_values]
@@ -591,19 +582,29 @@ class DataWarehouse:
             return pd.Series(dtype='float64')
         return pd.Series(data=data, index=groups, name=metric)
 
-    def __get_indexed_data_frame(self, data, columns, index):
-        df = pd.DataFrame(data=data, columns=columns)
-        df = df.set_index('id')
-        return df
+    def __get_dimension_label(self, realm, dimension_id):
+        return self.__get_descriptor()[realm]['dimensions'][dimension_id][
+            'label']
 
-    def __get_realms(self):
-        d = self.__get_descriptor()
-        return [(realm_id, d[realm_id]['label']) for realm_id in d]
+    def __get_indexed_data_frame_from_descriptor(self, descriptor, columns):
+        data = [
+            [id_] + [descriptor[id_][column] for column in columns[1:]]
+            for id_ in descriptor]
+        result = pd.DataFrame(data=data, columns=columns)
+        result = result.set_index('id')
+        return result
+
+    def __get_descriptor(self):
+        if self.__descriptor is None:
+            self.__descriptor = self.__request_descriptor()
+        return self.__descriptor
 
     def __get_metrics_or_dimensions(self, realm, m_or_d):
         self.__assert_runtime_context()
-        realm_id = self.__get_realm_id(realm)
-        return self.__get_descriptor_data_frame(realm_id, m_or_d)
+        realm_id = self.__find_realm_id(realm)
+        return self.__get_indexed_data_frame_from_descriptor(
+            self.__get_descriptor()[realm_id][m_or_d],
+            ('id', 'label', 'description'))
 
     def __get_environment_variable(self, name):
         try:
@@ -665,10 +666,17 @@ class DataWarehouse:
             raise RuntimeError('Error ' + str(code) + msg) from None
         return response
 
-    def __get_descriptor(self):
-        if self.__descriptor is None:
-            self.__descriptor = self.__request_descriptor()
-        return self.__descriptor
+    def __find_id_in_descriptor(self, descriptor, name, value):
+        self.__assert_str(name, value)
+        for id_ in descriptor:
+            if id_ == value or descriptor[id_]['label'] == value:
+                return id_
+        raise KeyError(
+            name.capitalize() + ' \'' + value + '\' not found.')
+
+    def __find_metric_or_dimension_id(self, realm, m_or_d, value):
+        return self.__find_id_in_descriptor(
+            self.__get_descriptor()[realm][m_or_d + 's'], m_or_d, value)
 
     def __find_filter_value(self, realm, dimension, filter_value):
         valid_filters = self.get_filters(realm, dimension)
@@ -679,20 +687,13 @@ class DataWarehouse:
                 valid_filters['label'] == filter_value].tolist()[0]
         else:
             raise KeyError(
-                'Filter value \'' + filter_value + '\' not found in \''
-                + dimension + '\' dimension of \'' + realm + '\' realm.')
+                'Filter value \'' + filter_value + '\' not found.')
 
     def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
         if string not in sequence:
             raise KeyError(
                 msg_prologue + '. Valid ' + label + ' are: \''
                 + '\', \''.join(sequence) + '\'.') from None
-
-    def __get_descriptor_data_frame(self, realm, field):
-        return self.__get_indexed_data_frame(
-            data=self.__get_descriptor()[realm][field],
-            columns=('id', 'label', 'description'),
-            index='id')
 
     def __request_descriptor(self):
         response = self.__request_json(
@@ -709,12 +710,11 @@ class DataWarehouse:
             result[realm] = {'label': serialized_descriptor[realm]['category']}
             for m_or_d in ('metrics', 'dimensions'):
                 m_or_d_descriptor = serialized_descriptor[realm][m_or_d]
-                result[realm][m_or_d] = [
-                    (
-                        id_,
-                        m_or_d_descriptor[id_]['text'],
-                        m_or_d_descriptor[id_]['info'])
-                    for id_ in m_or_d_descriptor]
+                result[realm][m_or_d] = {}
+                for id_ in m_or_d_descriptor:
+                    result[realm][m_or_d][id_] = {
+                        'label': m_or_d_descriptor[id_]['text'],
+                        'description': m_or_d_descriptor[id_]['info']}
         return result
 
     def whoami(self):
