@@ -120,10 +120,10 @@ class DataWarehouse:
            ------
            KeyError
                If any of the parameters have invalid values. Valid realms
-               come from `get_realms()`; valid metrics come from
-               `get_metrics()`; valid dimensions and filter keys come from
-               `get_dimensions()`; valid filter values come from
-               `get_filters()`; and valid durations and aggregation units
+               come from `get_realms()`, valid metrics come from
+               `get_metrics()`, valid dimensions and filter keys come from
+               `get_dimensions()`, valid filter values come from
+               `get_filters()`, and valid durations and aggregation units
                come from `get_valid_values()`.
            RuntimeError
                If this method is called outside the runtime context or if
