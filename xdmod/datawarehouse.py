@@ -242,27 +242,10 @@ class DataWarehouse:
                If `duration` is an object but not of length 2.
         """
         self.__assert_runtime_context()
-        (start_date, end_date) = self.__get_dates_from_duration(duration)
-        realm_id = self.__find_raw_realm_id(realm)
-        filters = self.__validate_filters(realm_id, filters)
-        fields = self.__validate_fields(realm_id, fields)
-        post_fields = json.dumps({
-            'realm': realm,
-            'start_date': start_date,
-            'end_date': end_date,
-            'params': filters,
-            'stats': fields
-        })
-        headers = self.__headers + [
-            'Accept: application/json',
-            'Content-Type: application/json',
-            'charset: utf-8'
-        ]
+        params = self.__validate_get_raw_data_params(locals())
+        url_params = self.__get_raw_data_url_params(params)
         result = self.__request_json(
-            path='/rest/v1/warehouse/rawdata',
-            post_fields=post_fields,
-            headers=headers,
-            content_type='JSON'
+            path='/rest/v1/warehouse/data/raw?' + url_params
         )
         return pd.DataFrame(
             data=result['data'], columns=result['stats'], dtype=numpy.float64
@@ -611,6 +594,29 @@ class DataWarehouse:
                     + ' with 2 items.'
                 ) from None
         return (start_date, end_date)
+
+    def __validate_get_raw_data_params(self, params):
+        results = {}
+        (results['start_date'], results['end_date']) = (
+            self.__get_dates_from_duration(params['duration'])
+        )
+        results['realm'] = self.__find_raw_realm_id(params['realm'])
+        results['filters'] = self.__validate_filters(
+            params['realm'], params['filters']
+        )
+        results['fields'] = self.__validate_fields(
+            params['realm'], params['fields']
+        )
+        return results
+
+    def __get_raw_data_url_params(self, params):
+        return urlencode({
+            'realm': params['realm'],
+            'start_date': params['start_date'],
+            'end_date': params['end_date'],
+            'params': params['filters'],
+            'stats': params['fields']
+        })
 
     def __find_realm_id(self, realm):
         return self.__find_id_in_descriptor(
