@@ -134,22 +134,16 @@ class DataWarehouse:
                If `duration` is an object but not of length 2.
         """
         self.__assert_runtime_context()
-        (start_date, end_date) = self.__get_dates_from_duration(duration)
-        realm_id = self.__find_realm_id(realm)
-        metric_id = self.__find_metric_id(realm_id, metric)
-        dimension_id = self.__find_dimension_id(realm_id, dimension)
-        filters = self.__validate_filters(realm_id, filters)
-        self.__assert_bool('timeseries', timeseries)
-        self.__validate_str('aggregation_unit', aggregation_unit)
-        post_fields = self.__get_data_post_fields(
-            start_date, end_date, realm_id, metric_id, dimension_id, filters,
-            timeseries, aggregation_unit
-        )
+        params = self.__validate_get_data_params(locals())
+        post_fields = self.__get_data_post_fields(params)
         response = self.__request(
             '/controllers/user_interface.php', post_fields
         )
+        return self.__process_get_data_response(params, response)
+
+    def __process_get_data_response(self, params, response):
         csvdata = csv.reader(response.splitlines())
-        if not timeseries:
+        if not params['timeseries']:
             return self.__xdmod_csv_to_pandas(csvdata)
         else:
             labelre = re.compile(r'\[([^\]]+)\].*')
@@ -206,7 +200,9 @@ class DataWarehouse:
                 index=pd.Series(data=timestamps, name='Time'),
                 columns=pd.Series(
                     dimensions,
-                    name=self.__get_dimension_label(realm_id, dimension_id)
+                    name=self.__get_dimension_label(
+                        params['realm'], params['dimension']
+                    )
                 )
             )
 
@@ -582,6 +578,26 @@ class DataWarehouse:
                 + ' of a `with` statement.'
             )
 
+    def __validate_get_data_params(self, params):
+        results = {}
+        (results['start_date'], results['end_date']) = (
+            self.__get_dates_from_duration(params['duration'])
+        )
+        results['realm'] = self.__find_realm_id(params['realm'])
+        results['metric'] = self.__find_metric_id(
+            results['realm'], params['metric'])
+        results['dimension'] = self.__find_dimension_id(
+            results['realm'], params['dimension']
+        )
+        results['filters'] = self.__validate_filters(
+            results['realm'], params['filters']
+        )
+        self.__assert_bool('timeseries', params['timeseries'])
+        results['timeseries'] = params['timeseries']
+        self.__validate_str('aggregation_unit', params['aggregation_unit'])
+        results['aggregation_unit'] = params['aggregation_unit']
+        return results
+
     def __get_dates_from_duration(self, duration):
         if isinstance(duration, str):
             self.__validate_str('duration', duration)
@@ -643,18 +659,18 @@ class DataWarehouse:
             'Invalid value for `' + key + '`: \'' + value + '\''
         )
 
-    def __get_data_post_fields(
-            self, start_date, end_date, realm, metric_id, dimension_id, filters,
-            timeseries, aggregation_unit):
-        result = {
+    def __get_data_post_fields(self, params):
+        post_fields = {
             'operation': 'get_data',
-            'start_date': start_date,
-            'end_date': end_date,
-            'realm': realm,
-            'statistic': metric_id,
-            'group_by': dimension_id,
-            'dataset_type': 'timeseries' if timeseries else 'aggregate',
-            'aggregation_unit': aggregation_unit,
+            'start_date': params['start_date'],
+            'end_date': params['end_date'],
+            'realm': params['realm'],
+            'statistic': params['metric'],
+            'group_by': params['dimension'],
+            'dataset_type': (
+                'timeseries' if params['timeseries'] else 'aggregate'
+            ),
+            'aggregation_unit': params['aggregation_unit'],
             'public_user': 'true',
             'timeframe_label': '2016',
             'scale': '1',
@@ -679,9 +695,11 @@ class DataWarehouse:
             'inline': 'n',
             'format': 'csv'
         }
-        for dimension in filters:
-            result[dimension + '_filter'] = ','.join(filters[dimension])
-        return result
+        for dimension in params['filters']:
+            post_fields[dimension + '_filter'] = ','.join(
+                params['filters'][dimension]
+            )
+        return post_fields
 
     def __xdmod_csv_to_pandas(self, rd):
         groups = []
