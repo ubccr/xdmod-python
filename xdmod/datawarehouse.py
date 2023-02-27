@@ -1,4 +1,3 @@
-from collections.abc import Mapping
 import csv
 from datetime import date, datetime, timedelta
 import html
@@ -625,7 +624,7 @@ class DataWarehouse:
             return result
         except TypeError:
             raise TypeError(
-                '`filters` must be a mapping whose keys are strings and whose'      
+                '`filters` must be a mapping whose keys are strings and whose'
                 + ' values are strings or sequences of strings.'
             ) from None
 
