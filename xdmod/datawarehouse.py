@@ -145,7 +145,9 @@ class DataWarehouse:
             start_date, end_date, realm_id, metric_id, dimension_id, filters,
             timeseries, aggregation_unit
         )
-        response = self.__get_usage_data(post_fields)
+        response = self.__request(
+            '/controllers/user_interface.php', post_fields
+        )
         csvdata = csv.reader(response.splitlines())
         if not timeseries:
             return self.__xdmod_csv_to_pandas(csvdata)
@@ -261,8 +263,10 @@ class DataWarehouse:
             'charset: utf-8'
         ]
         result = self.__request_json(
-            path='/rest/v1/warehouse/rawdata', post_fields=post_fields,
-            headers=headers, content_type='JSON'
+            path='/rest/v1/warehouse/rawdata',
+            post_fields=post_fields,
+            headers=headers,
+            content_type='JSON'
         )
         return pd.DataFrame(
             data=result['data'], columns=result['stats'], dtype=numpy.float64
@@ -566,7 +570,7 @@ class DataWarehouse:
             ) from None
 
     def __request_json(
-            self, path, post_fields, headers=None, content_type=None):
+            self, path, post_fields=None, headers=None, content_type=None):
         response = self.__request(path, post_fields, headers, content_type)
         return json.loads(response)
 
@@ -679,12 +683,6 @@ class DataWarehouse:
             result[dimension + '_filter'] = ','.join(filters[dimension])
         return result
 
-    def __get_usage_data(self, post_fields):
-        response = self.__request(
-            '/controllers/user_interface.php', post_fields
-        )
-        return response
-
     def __xdmod_csv_to_pandas(self, rd):
         groups = []
         data = []
@@ -776,16 +774,16 @@ class DataWarehouse:
         return new_date + timedelta(days=days_above)
 
     def __request(
-            self, path='', post_fields={}, headers=None, content_type=None):
+            self, path='', post_fields=None, headers=None, content_type=None):
         self.__assert_runtime_context()
         self.__crl.reset()
         url = self.__xdmod_host + path
         self.__crl.setopt(pycurl.URL, url)
-        if content_type == 'JSON':
-            pf = post_fields
-        else:
-            pf = urlencode(post_fields)
-        if pf:
+        if post_fields:
+            if content_type == 'JSON':
+                pf = post_fields
+            else:
+                pf = urlencode(post_fields)
             self.__crl.setopt(pycurl.POSTFIELDS, pf)
         if headers is None:
             headers = self.__headers
@@ -858,7 +856,7 @@ class DataWarehouse:
         )
 
     def __request_raw_descriptor(self):
-        response = self.__request_json('/rest/v1/warehouse/export/realms', {})
+        response = self.__request_json('/rest/v1/warehouse/export/realms')
         return self.__deserialize_raw_descriptor(response['data'])
 
     def __deserialize_aggregate_descriptor(self, serialized_descriptor):
