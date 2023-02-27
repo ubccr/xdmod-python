@@ -54,7 +54,8 @@ class DataWarehouse:
         self.__username = None
         self.__crl = None
         self.__cookie_file = None
-        self.__descriptor = None
+        self.__aggregate_descriptor = None
+        self.__raw_descriptor = None
         self.__headers = []
         self.__init_api_token()
         self.__init_valid_values()
@@ -208,13 +209,52 @@ class DataWarehouse:
                 )
             )
 
-    def get_raw_data(self, realm, start_date, end_date, filters, stats):
+    def get_raw_data(self, duration, realm, filters, fields):
+        """Get a DataFrame containing raw data from the warehouse.
+
+           Parameters
+           ----------
+           duration : str or object of length 2 of str
+               ...
+           realm : str
+               ...
+           filters : mapping
+               ...
+           fields : sequence of str
+               ...
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the data...
+
+           Raises
+           ------
+           KeyError
+               If any of the parameters have invalid values. Valid durations
+               come from `get_valid_values()`, valid realms come from
+               `get_raw_realms()`, valid filters keys come from
+               `get_dimensions()`, valid filter values come from
+               `get_filters()`, and valid fields come from `get_raw_fields()`.
+           RuntimeError
+               If this method is called outside the runtime context or if
+               there is an error requesting data from the warehouse.
+           TypeError
+               If any of the arguments are of the wrong type.
+           ValueError
+               If `duration` is an object but not of length 2.
+        """
+        self.__assert_runtime_context()
+        (start_date, end_date) = self.__get_dates_from_duration(duration)
+        realm_id = self.__find_raw_realm_id(realm)
+        filters = self.__validate_filters(realm_id, filters)
+        fields = self.__validate_fields(realm_id, fields)
         post_fields = json.dumps({
             'realm': realm,
             'start_date': start_date,
             'end_date': end_date,
             'params': filters,
-            'stats': stats
+            'stats': fields
         })
         headers = self.__headers + [
             'Accept: application/json',
@@ -244,7 +284,7 @@ class DataWarehouse:
         """
         self.__assert_runtime_context()
         return self.__get_indexed_data_frame_from_descriptor(
-            self.__get_descriptor(), ('id', 'label')
+            self.__get_aggregate_descriptor(), ('id', 'label')
         )
 
     def get_metrics(self, realm):
@@ -368,6 +408,55 @@ class DataWarehouse:
                 + '\' does not have a list of valid values.'
             )
         return self.__valid_values[parameter]
+
+    def get_raw_realms(self):
+        """Get a DataFrame containing the valid raw data realms in the data
+           warehouse.
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the ID and label of each realm.
+
+           Raises
+           ------
+           RuntimeError
+               If this method is called outside the runtime context.
+        """
+        self.__assert_runtime_context()
+        return self.__get_indexed_data_frame_from_descriptor(
+            self.__get_raw_descriptor(), ('id', 'label')
+        )
+
+    def get_raw_fields(self, realm):
+        """Get a DataFrame containing the raw data fields for the given realm.
+
+           Parameters
+           ----------
+           realm : str
+               A raw data realm in the data warehouse.
+
+           Returns
+           -------
+           pandas.core.frame.DataFrame
+               A Pandas DataFrame containing the ID, label, and description
+               of each field.
+
+           Raises
+           ------
+           KeyError
+               If `realm` is not one of the values from `get_raw_realms()`.
+           RuntimeError
+               If this method is called outside the runtime context.
+           TypeError
+               If `realm` is not a string.
+        """
+        self.__assert_runtime_context()
+        realm_id = self.__find_raw_realm_id(realm)
+        return self.__get_indexed_data_frame_from_descriptor(
+            self.__get_raw_descriptor()[realm_id]['fields'],
+            ('id', 'label', 'description')
+        )
 
     def __assert_str(self, name, value):
         if not isinstance(value, str):
@@ -506,7 +595,7 @@ class DataWarehouse:
 
     def __find_realm_id(self, realm):
         return self.__find_id_in_descriptor(
-            self.__get_descriptor(), 'realm', realm
+            self.__get_aggregate_descriptor(), 'realm', realm
         )
 
     def __find_metric_id(self, realm, metric):
@@ -518,29 +607,27 @@ class DataWarehouse:
         )
 
     def __validate_filters(self, realm, filters):
-        type_error_msg = (
-            '`filters` must be a mapping whose values are strings or'
-            + ' sequences of strings.'
-        )
-        if not isinstance(filters, Mapping):
-            raise TypeError(type_error_msg)
-        new_filters = {}
-        for dimension in filters:
-            try:
+        try:
+            result = {}
+            for dimension in filters:
                 dimension_id = self.__find_dimension_id(realm, dimension)
                 filter_values = filters[dimension]
                 if isinstance(filter_values, str):
                     filter_values = [filter_values]
-                new_filters[dimension_id] = []
+                result[dimension_id] = []
                 for filter_value in filter_values:
-                    self.__assert_str('filter value', filter_value)
-                    new_filter_value = self.__find_filter_value(
-                        realm, dimension_id, filter_value
+                    new_filter_value = self.__find_value_in_df(
+                        'Filter value',
+                        self.get_filters(realm, dimension),
+                        filter_value
                     )
-                    new_filters[dimension_id].append(new_filter_value)
-            except TypeError:
-                raise TypeError(type_error_msg) from None
-        return new_filters
+                    result[dimension_id].append(new_filter_value)
+            return result
+        except TypeError:
+            raise TypeError(
+                '`filters` must be a mapping whose keys are strings and whose'      
+                + ' values are strings or sequences of strings.'
+            ) from None
 
     def __assert_bool(self, name, obj):
         if not isinstance(obj, bool):
@@ -615,9 +702,27 @@ class DataWarehouse:
         return pd.Series(data=data, index=groups, name=metric)
 
     def __get_dimension_label(self, realm, dimension_id):
-        return self.__get_descriptor()[realm]['dimensions'][dimension_id][
-            'label'
-        ]
+        d = self.__get_aggregate_descriptor()
+        return d[realm]['dimensions'][dimension_id]['label']
+
+    def __find_raw_realm_id(self, realm):
+        return self.__find_id_in_descriptor(
+            self.__get_raw_descriptor(), 'realm', realm
+        )
+
+    def __validate_fields(self, realm, fields):
+        try:
+            result = []
+            for field in fields:
+                new_field = self.__find_value_in_df(
+                    'Field', self.get_raw_fields(realm), field
+                )
+                result.append(new_field)
+            return result
+        except TypeError:
+            raise TypeError(
+                '`fields` must be a sequence of strings.'
+            ) from None
 
     def __get_indexed_data_frame_from_descriptor(self, descriptor, columns):
         data = [
@@ -628,18 +733,23 @@ class DataWarehouse:
         result = result.set_index('id')
         return result
 
-    def __get_descriptor(self):
-        if self.__descriptor is None:
-            self.__descriptor = self.__request_descriptor()
-        return self.__descriptor
+    def __get_aggregate_descriptor(self):
+        if self.__aggregate_descriptor is None:
+            self.__aggregate_descriptor = self.__request_aggregate_descriptor()
+        return self.__aggregate_descriptor
 
     def __get_metrics_or_dimensions(self, realm, m_or_d):
         self.__assert_runtime_context()
         realm_id = self.__find_realm_id(realm)
         return self.__get_indexed_data_frame_from_descriptor(
-            self.__get_descriptor()[realm_id][m_or_d],
+            self.__get_aggregate_descriptor()[realm_id][m_or_d],
             ('id', 'label', 'description')
         )
+
+    def __get_raw_descriptor(self):
+        if self.__raw_descriptor is None:
+            self.__raw_descriptor = self.__request_raw_descriptor()
+        return self.__raw_descriptor
 
     def __get_environment_variable(self, name):
         try:
@@ -713,21 +823,20 @@ class DataWarehouse:
 
     def __find_metric_or_dimension_id(self, realm, m_or_d, value):
         return self.__find_id_in_descriptor(
-            self.__get_descriptor()[realm][m_or_d + 's'], m_or_d, value
+            self.__get_aggregate_descriptor()[realm][m_or_d + 's'],
+            m_or_d,
+            value
         )
 
-    def __find_filter_value(self, realm, dimension, filter_value):
-        valid_filters = self.get_filters(realm, dimension)
-        if filter_value in valid_filters.index:
-            return filter_value
-        elif filter_value in valid_filters['label'].values:
-            return valid_filters.index[
-                valid_filters['label'] == filter_value
+    def __find_value_in_df(self, label, valid_df, value):
+        if value in valid_df.index:
+            return value
+        elif value in valid_df['label'].values:
+            return valid_df.index[
+                valid_df['label'] == value
             ].tolist()[0]
         else:
-            raise KeyError(
-                'Filter value \'' + filter_value + '\' not found.'
-            )
+            raise KeyError(label + ' \'' + value + '\' not found.')
 
     def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
         if string not in sequence:
@@ -736,7 +845,7 @@ class DataWarehouse:
                 + '\', \''.join(sequence) + '\'.'
             ) from None
 
-    def __request_descriptor(self):
+    def __request_aggregate_descriptor(self):
         response = self.__request_json(
             '/controllers/metric_explorer.php',
             {'operation': 'get_dw_descripter'}
@@ -745,9 +854,15 @@ class DataWarehouse:
             raise RuntimeError(
                 'Descriptor received with unexpected structure.'
             )
-        return self.__deserialize_descriptor(response['data'][0]['realms'])
+        return self.__deserialize_aggregate_descriptor(
+            response['data'][0]['realms']
+        )
 
-    def __deserialize_descriptor(self, serialized_descriptor):
+    def __request_raw_descriptor(self):
+        response = self.__request_json('/rest/v1/warehouse/export/realms', {})
+        return self.__deserialize_raw_descriptor(response['data'])
+
+    def __deserialize_aggregate_descriptor(self, serialized_descriptor):
         result = {}
         for realm in serialized_descriptor:
             result[realm] = {'label': serialized_descriptor[realm]['category']}
@@ -759,6 +874,20 @@ class DataWarehouse:
                         'label': m_or_d_descriptor[id_]['text'],
                         'description': m_or_d_descriptor[id_]['info']
                     }
+        return result
+
+    def __deserialize_raw_descriptor(self, serialized_descriptor):
+        result = {}
+        for realm in serialized_descriptor:
+            realm_id = realm['id']
+            result[realm_id] = {'label': realm['name']}
+            result[realm_id]['fields'] = {}
+            fields = realm['fields']
+            for field in fields:
+                result[realm_id]['fields'][field['alias']] = {
+                    'label': field['display'],
+                    'description': field['documentation']
+                }
         return result
 
     def whoami(self):

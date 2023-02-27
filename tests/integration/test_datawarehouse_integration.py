@@ -9,11 +9,14 @@ METHOD_PARAMS = {
         'duration', 'realm', 'metric', 'dimension', 'filters', 'timeseries',
         'aggregation_unit',
     ),
+    'get_raw_data': ('duration', 'realm', 'filters', 'fields'),
     'get_realms': (),
     'get_metrics': ('realm',),
     'get_dimensions': ('realm',),
     'get_filters': ('realm', 'dimension',),
     'get_valid_values': ('parameter',),
+    'get_raw_realms': (),
+    'get_raw_fields': ('realm',),
 }
 VALID_DATE = '2020-01-01'
 VALID_DIMENSION = 'Resource'
@@ -26,6 +29,7 @@ VALID_VALUES = {
   'timeseries': True,
   'aggregation_unit': 'Auto',
   'parameter': 'duration',
+  'fields': ['Nodes'],
 }
 KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     'duration': (INVALID_STR, 'Invalid value for `duration`'),
@@ -40,6 +44,7 @@ KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     'parameter': (
         INVALID_STR, 'Parameter .* does not have a list of valid values'
     ),
+    'field': (INVALID_STR, r'Field .* not found'),
 }
 
 key_error_test_names = []
@@ -90,11 +95,14 @@ def dw_methods_outside_runtime_context():
 def __get_dw_methods(dw):
     return {
         'get_data': dw.get_data,
+        'get_raw_data': dw.get_raw_data,
         'get_realms': dw.get_realms,
         'get_metrics': dw.get_metrics,
         'get_dimensions': dw.get_dimensions,
         'get_filters': dw.get_filters,
         'get_valid_values': dw.get_valid_values,
+        'get_raw_realms': dw.get_raw_realms,
+        'get_raw_fields': dw.get_raw_fields,
     }
 
 
@@ -117,7 +125,16 @@ def test_KeyError(dw_methods, method, params, match):
 
 @pytest.mark.parametrize(
     'method',
-    ['get_data', 'get_realms', 'get_metrics', 'get_dimensions', 'get_filters']
+    [
+        'get_data',
+        'get_raw_data',
+        'get_realms',
+        'get_metrics',
+        'get_dimensions',
+        'get_filters',
+        'get_raw_realms',
+        'get_raw_fields',
+    ]
 )
 def test_RuntimeError_outside_context(
         dw_methods_outside_runtime_context, method):
@@ -128,7 +145,8 @@ def test_RuntimeError_outside_context(
 
 
 @pytest.mark.parametrize(
-    'method, param, params', date_malformed_test_params,
+    'method, param, params',
+    date_malformed_test_params,
     ids=start_end_test_names
 )
 def test_RuntimeError_date_malformed(dw_methods, method, param, params):
@@ -139,14 +157,18 @@ def test_RuntimeError_date_malformed(dw_methods, method, param, params):
 
 
 @pytest.mark.parametrize(
-    'method, param', type_error_test_params, ids=type_error_test_names
+    'method, param',
+    type_error_test_params,
+    ids=type_error_test_names
 )
 def test_TypeError(dw_methods, method, param):
     __test_exception(dw_methods, method, {param: 2}, TypeError, param)
 
 
 @pytest.mark.parametrize(
-    'method', value_error_test_methods, ids=duration_test_names
+    'method',
+    value_error_test_methods,
+    ids=duration_test_names
 )
 def test_ValueError_duration(dw_methods, method):
     __test_exception(
@@ -157,7 +179,16 @@ def test_ValueError_duration(dw_methods, method):
 
 @pytest.mark.parametrize(
     'method',
-    ['get_data', 'get_realms', 'get_metrics', 'get_dimensions', 'get_filters']
+    [
+        'get_data',
+        'get_raw_data',
+        'get_realms',
+        'get_metrics',
+        'get_dimensions',
+        'get_filters',
+        'get_raw_realms',
+        'get_raw_fields',
+    ]
 )
 def test_DataFrame_return_type(dw_methods, method):
     assert isinstance(
