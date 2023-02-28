@@ -206,7 +206,7 @@ class DataWarehouse:
                 )
             )
 
-    def get_raw_data(self, duration, realm, filters, fields):
+    def get_raw_data(self, duration, realm, fields, filters={}):
         """Get a DataFrame containing raw data from the warehouse.
 
            Parameters
@@ -215,9 +215,9 @@ class DataWarehouse:
                ...
            realm : str
                ...
-           filters : mapping
-               ...
            fields : sequence of str
+               ...
+           filters : mapping, optional
                ...
 
            Returns
@@ -601,11 +601,11 @@ class DataWarehouse:
             self.__get_dates_from_duration(params['duration'])
         )
         results['realm'] = self.__find_raw_realm_id(params['realm'])
-        results['filters'] = self.__validate_filters(
-            params['realm'], params['filters']
-        )
         results['fields'] = self.__validate_fields(
             params['realm'], params['fields']
+        )
+        results['filters'] = self.__validate_filters(
+            params['realm'], params['filters']
         )
         return results
 
@@ -614,8 +614,8 @@ class DataWarehouse:
             'realm': params['realm'],
             'start_date': params['start_date'],
             'end_date': params['end_date'],
+            'stats': params['fields'],
             'params': params['filters'],
-            'stats': params['fields']
         })
 
     def __find_realm_id(self, realm):
