@@ -321,7 +321,9 @@ class DataWareHouse:
                     timestamps.append(datetime.strptime(date_string, format))
                     data.append(numpy.asarray(line[1:], dtype=numpy.float64))
 
-            return pd.DataFrame(data=data, index=pd.Series(data=timestamps, name='Time'), columns=dimensions)
+            return pd.DataFrame(data=data,
+                                index=pd.Series(data=timestamps, name='Time'),
+                                columns=pd.Series(data=dimensions, name=dimension))
 
     def __get_id_from_descriptor(self, realm, key, id):
         list = self.__get_descriptor_id_text_info_list(realm, key)
