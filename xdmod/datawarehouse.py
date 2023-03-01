@@ -714,13 +714,18 @@ class DataWarehouse:
             if line_num == 5:
                 start_date, end_date = line
             elif line_num == 7:
-                group, metric = line
+                dimension, metric = line
             elif line_num > 7 and len(line) > 1:
                 groups.append(html.unescape(line[0]))
                 data.append(numpy.float64(line[1]))
         if len(data) == 0:
-            return pd.Series(dtype='float64')
-        return pd.Series(data=data, index=groups, name=metric)
+            return pd.Series(dtype=numpy.float64)
+        return pd.Series(
+            data=data,
+            name=metric,
+            index=pd.Series(data=groups, name=dimension),
+            dtype=numpy.float64
+        )
 
     def __get_dimension_label(self, realm, dimension_id):
         d = self.__get_aggregate_descriptor()
