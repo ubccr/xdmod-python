@@ -18,8 +18,8 @@ class DataWarehouse:
        Methods must be called within a runtime context using the ``with``
        keyword, e.g.,
 
-       >>> with DataWarehouse(XDMOD_URL, XDMOD_API_TOKEN) as x:
-       ...     x.get_data()
+       >>> with DataWarehouse(XDMOD_URL, XDMOD_API_TOKEN) as dw:
+       ...     dw.get_data()
 
        Parameters
        ----------
@@ -94,6 +94,24 @@ class DataWarehouse:
             timeseries=True, aggregation_unit='Auto'):
         """Get a DataFrame containing data from the warehouse.
 
+           If `timeseries` is True, a Pandas DataFrame is returned. In that
+           DataFrame, the index has the name 'Time' and contains
+           the time values for the given `duration` in increments
+           determined by `aggregation_unit`. The columns of the DataFrame are
+           a Pandas Series that has the same properties as the Series that is
+           returned if `timeseries` were instead False (see paragraph below). 
+           The data in the DataFrame are the float64 values for the
+           corresponding time value, `metric`, and `dimension` value.
+
+           If `timeseries` is False, a Pandas Series is returned. The name of
+           the Series is the value of `metric`. The index of the Series
+           has a name equal to `dimension`, and its data are the corresponding
+           values for that `dimension` (as can be obtained via
+           `get_filters()`). If `dimension` is None, the Series has a name
+           equal to the organization name configured by the instance of XDMoD
+           whose URL is passed into the `DataWarehouse()` constructor as
+           `xdmod_host`.
+
            Parameters
            ----------
            duration : str or object of length 2 of str, optional
@@ -113,8 +131,7 @@ class DataWarehouse:
 
            Returns
            -------
-           pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the data...
+           pandas.core.frame.DataFrame | pandas.core.series.Series
 
            Raises
            ------
