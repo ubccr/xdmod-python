@@ -99,7 +99,7 @@ class DataWarehouse:
            the time values for the given `duration` in increments
            determined by `aggregation_unit`. The columns of the DataFrame are
            a Pandas Series that has the same properties as the Series that is
-           returned if `timeseries` were instead False (see paragraph below). 
+           returned if `timeseries` were instead False (see paragraph below).
            The data in the DataFrame are the float64 values for the
            corresponding time value, `metric`, and `dimension` value.
 
