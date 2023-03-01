@@ -357,7 +357,7 @@ class DataWarehouse:
            KeyError
                If `realm` is not one of the values from `get_realms()` or
                `dimension` is not one of the IDs or labels from
-               `get_dimensions()`
+               `get_dimensions()`.
            RuntimeError
                If this method is called outside the runtime context.
            TypeError
