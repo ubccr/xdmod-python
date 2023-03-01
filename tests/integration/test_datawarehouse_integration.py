@@ -14,7 +14,6 @@ METHOD_PARAMS = {
     'get_metrics': ('realm',),
     'get_dimensions': ('realm',),
     'get_filters': ('realm', 'dimension',),
-    'get_valid_values': ('parameter',),
     'get_raw_realms': (),
     'get_raw_fields': ('realm',),
 }
@@ -100,7 +99,6 @@ def __get_dw_methods(dw):
         'get_metrics': dw.get_metrics,
         'get_dimensions': dw.get_dimensions,
         'get_filters': dw.get_filters,
-        'get_valid_values': dw.get_valid_values,
         'get_raw_realms': dw.get_raw_realms,
         'get_raw_fields': dw.get_raw_fields,
     }

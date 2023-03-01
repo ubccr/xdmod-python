@@ -1,5 +1,6 @@
+import xdmod._validator as _validator
 import csv
-from datetime import date, datetime, timedelta
+from datetime import datetime
 import html
 import io
 import json
@@ -44,12 +45,12 @@ class DataWarehouse:
     """
 
     def __init__(self, xdmod_host, api_token=None):
-        self.__assert_str('xdmod_host', xdmod_host)
+        self.__in_runtime_context = False
+        _validator._assert_str('xdmod_host', xdmod_host)
         self.__xdmod_host = xdmod_host
         if api_token:
-            self.__assert_str('api_token', api_token)
+            _validator._assert_str('api_token', api_token)
         self.__api_token = api_token
-        self.__in_runtime_context = False
         self.__username = None
         self.__crl = None
         self.__cookie_file = None
@@ -57,13 +58,11 @@ class DataWarehouse:
         self.__raw_descriptor = None
         self.__headers = []
         self.__init_api_token()
-        self.__init_valid_values()
-        self.__init_dates()
 
     def __enter__(self):
         self.__in_runtime_context = True
         self.__crl = pycurl.Curl()
-        self.__assert_connection_to_xdmod_host()
+        _validator._assert_connection_to_xdmod_host(self, self.__xdmod_host)
         if self.__api_token:
             _, self.__cookie_file = tempfile.mkstemp()
             self.__crl.setopt(pycurl.COOKIEJAR, self.__cookie_file)
@@ -140,8 +139,9 @@ class DataWarehouse:
                come from `get_realms()`, valid metrics come from
                `get_metrics()`, valid dimensions and filter keys come from
                `get_dimensions()`, valid filter values come from
-               `get_filters()`, and valid durations and aggregation units
-               come from `get_valid_values()`.
+               `get_filters()`, valid durations come from
+               `get_durations()`, and aggregation units come from
+               `get_aggregation_units()`.
            RuntimeError
                If this method is called outside the runtime context or if
                there is an error requesting data from the warehouse.
@@ -150,10 +150,10 @@ class DataWarehouse:
            ValueError
                If `duration` is an object but not of length 2.
         """
-        self.__assert_runtime_context()
-        params = self.__validate_get_data_params(locals())
+        _validator._assert_runtime_context(self.__in_runtime_context)
+        params = _validator._validate_get_data_params(self, locals())
         post_fields = self.__get_data_post_fields(params)
-        response = self.__request(
+        response = self._request(
             '/controllers/user_interface.php', post_fields
         )
         return self.__process_get_data_response(params, response)
@@ -246,7 +246,7 @@ class DataWarehouse:
            ------
            KeyError
                If any of the parameters have invalid values. Valid durations
-               come from `get_valid_values()`, valid realms come from
+               come from `get_durations()`, valid realms come from
                `get_raw_realms()`, valid filters keys come from
                `get_dimensions()`, valid filter values come from
                `get_filters()`, and valid fields come from `get_raw_fields()`.
@@ -258,8 +258,8 @@ class DataWarehouse:
            ValueError
                If `duration` is an object but not of length 2.
         """
-        self.__assert_runtime_context()
-        params = self.__validate_get_raw_data_params(locals())
+        _validator._assert_runtime_context(self.__in_runtime_context)
+        params = _validator._validate_get_raw_data_params(self, locals())
         url_params = self.__get_raw_data_url_params(params)
         result = self.__request_json(
             path='/rest/v1/warehouse/data/raw?' + url_params
@@ -281,9 +281,9 @@ class DataWarehouse:
            RuntimeError
                If this method is called outside the runtime context.
         """
-        self.__assert_runtime_context()
+        _validator._assert_runtime_context(self.__in_runtime_context)
         return self.__get_indexed_data_frame_from_descriptor(
-            self.__get_aggregate_descriptor(), ('id', 'label')
+            self._get_aggregate_descriptor(), ('id', 'label')
         )
 
     def get_metrics(self, realm):
@@ -363,9 +363,9 @@ class DataWarehouse:
            TypeError
                If `realm` or `dimension` are not strings.
         """
-        self.__assert_runtime_context()
-        realm_id = self.__find_realm_id(realm)
-        dimension_id = self.__find_dimension_id(realm_id, dimension)
+        _validator._assert_runtime_context(self.__in_runtime_context)
+        realm_id = _validator._find_realm_id(self, realm)
+        dimension_id = _validator._find_dimension_id(self, realm_id, dimension)
         path = '/controllers/metric_explorer.php'
         post_fields = {
             'operation': 'get_dimension',
@@ -379,34 +379,23 @@ class DataWarehouse:
         result = result.set_index('id')
         return result
 
-    def get_valid_values(self, parameter):
-        """Get a collection of valid values for a given parameter.
-
-           Parameters
-           ----------
-           parameter : str
-               The name of the parameter.
+    def get_durations(self):
+        """Get the collection of valid duration values.
 
            Returns
            -------
            tuple of str
-               The collection of valid values.
-
-           Raises
-           ------
-           KeyError
-               If the given parameter does not have a collection of valid
-               values.
-           TypeError
-               If the given parameter is not a string.
         """
-        self.__assert_str('parameter', parameter)
-        if parameter not in self.__valid_values:
-            raise KeyError(
-                'Parameter \'' + parameter
-                + '\' does not have a list of valid values.'
-            )
-        return self.__valid_values[parameter]
+        return _validator._get_durations()
+
+    def get_aggregation_units(self):
+        """Get the collection of valid aggregation units.
+
+           Returns
+           -------
+           tuple of str
+        """
+        return _validator._get_aggregation_units()
 
     def get_raw_realms(self):
         """Get a DataFrame containing the valid raw data realms in the data
@@ -422,9 +411,9 @@ class DataWarehouse:
            RuntimeError
                If this method is called outside the runtime context.
         """
-        self.__assert_runtime_context()
+        _validator._assert_runtime_context(self.__in_runtime_context)
         return self.__get_indexed_data_frame_from_descriptor(
-            self.__get_raw_descriptor(), ('id', 'label')
+            self._get_raw_descriptor(), ('id', 'label')
         )
 
     def get_raw_fields(self, realm):
@@ -450,16 +439,12 @@ class DataWarehouse:
            TypeError
                If `realm` is not a string.
         """
-        self.__assert_runtime_context()
-        realm_id = self.__find_raw_realm_id(realm)
+        _validator._assert_runtime_context(self.__in_runtime_context)
+        realm_id = _validator._find_raw_realm_id(self, realm)
         return self.__get_indexed_data_frame_from_descriptor(
-            self.__get_raw_descriptor()[realm_id]['fields'],
+            self._get_raw_descriptor()[realm_id]['fields'],
             ('id', 'label', 'description')
         )
-
-    def __assert_str(self, name, value):
-        if not isinstance(value, str):
-            raise TypeError('`' + name + '` must be a string.')
 
     def __init_api_token(self):
         if not self.__api_token:
@@ -470,161 +455,10 @@ class DataWarehouse:
                 'password': password
             }
 
-    def __init_valid_values(self):
-        self.__valid_values = {}
-        this_year = date.today().year
-        six_years_ago = this_year - 6
-        last_seven_years = tuple(
-            map(str, reversed(range(six_years_ago, this_year + 1)))
-        )
-        self.__valid_values['duration'] = (
-            (
-                'Yesterday',
-                '7 day',
-                '30 day',
-                '90 day',
-                'Month to date',
-                'Previous month',
-                'Quarter to date',
-                'Previous quarter',
-                'Year to date',
-                'Previous year',
-                '1 year',
-                '2 year',
-                '3 year',
-                '5 year',
-                '10 year'
-            )
-            + last_seven_years
-        )
-        self.__valid_values['aggregation_unit'] = (
-            'Auto', 'Day', 'Month', 'Quarter', 'Year'
-        )
-
-    def __init_dates(self):
-        today = date.today()
-        yesterday = today + timedelta(days=-1)
-        last_week = today + timedelta(days=-7)
-        last_month = today + timedelta(days=-30)
-        last_quarter = today + timedelta(days=-90)
-        this_month_start = date(today.year, today.month, 1)
-        if today.month == 1:
-            last_full_month_start_year = today.year - 1
-            last_full_month_start_month = 12
-        else:
-            last_full_month_start_year = today.year
-            last_full_month_start_month = today.month - 1
-        last_full_month_start = date(
-            last_full_month_start_year,
-            last_full_month_start_month,
-            1
-        )
-        last_full_month_end = this_month_start + timedelta(days=-1)
-        this_quarter_start = date(
-            today.year,
-            ((today.month - 1) // 3) * 3 + 1,
-            1
-        )
-        if today.month < 4:
-            last_quarter_start_year = today.year - 1
-        else:
-            last_quarter_start_year = today.year
-        last_quarter_start = date(
-            last_quarter_start_year,
-            (((today.month - 1) - ((today.month - 1) % 3) + 9) % 12) + 1,
-            1
-        )
-        last_quarter_end = this_quarter_start + timedelta(days=-1)
-        this_year_start = date(today.year, 1, 1)
-        previous_year_start = date(today.year - 1, 1, 1)
-        previous_year_end = date(today.year - 1, 12, 31)
-        self.__DURATION_TO_START_END = {
-            'Yesterday': (yesterday, yesterday),
-            '7 day': (last_week, today),
-            '30 day': (last_month, today),
-            '90 day': (last_quarter, today),
-            'Month to date': (this_month_start, today),
-            'Previous month': (last_full_month_start, last_full_month_end),
-            'Quarter to date': (this_quarter_start, today),
-            'Previous quarter': (last_quarter_start, last_quarter_end),
-            'Year to date': (this_year_start, today),
-            'Previous year': (previous_year_start, previous_year_end),
-            '1 year': (self.__date_add_years(today, -1), today),
-            '2 year': (self.__date_add_years(today, -2), today),
-            '3 year': (self.__date_add_years(today, -3), today),
-            '5 year': (self.__date_add_years(today, -5), today),
-            '10 year': (self.__date_add_years(today, -10), today)
-        }
-
-    def __assert_connection_to_xdmod_host(self):
-        try:
-            self.__request()
-        except RuntimeError as e:
-            raise RuntimeError(
-                'Could not connect to xdmod_host \'' + self.__xdmod_host
-                + '\': ' + str(e)
-            ) from None
-
     def __request_json(
             self, path, post_fields=None, headers=None, content_type=None):
-        response = self.__request(path, post_fields, headers, content_type)
+        response = self._request(path, post_fields, headers, content_type)
         return json.loads(response)
-
-    def __assert_runtime_context(self):
-        if not self.__in_runtime_context:
-            raise RuntimeError(
-                'Method is being called outside of the runtime context.'
-                + ' Make sure this method is only called within the body'
-                + ' of a `with` statement.'
-            )
-
-    def __validate_get_data_params(self, params):
-        results = {}
-        (results['start_date'], results['end_date']) = (
-            self.__get_dates_from_duration(params['duration'])
-        )
-        results['realm'] = self.__find_realm_id(params['realm'])
-        results['metric'] = self.__find_metric_id(
-            results['realm'], params['metric'])
-        results['dimension'] = self.__find_dimension_id(
-            results['realm'], params['dimension']
-        )
-        results['filters'] = self.__validate_filters(
-            results['realm'], params['filters']
-        )
-        self.__assert_bool('timeseries', params['timeseries'])
-        results['timeseries'] = params['timeseries']
-        self.__validate_str('aggregation_unit', params['aggregation_unit'])
-        results['aggregation_unit'] = params['aggregation_unit']
-        return results
-
-    def __get_dates_from_duration(self, duration):
-        if isinstance(duration, str):
-            self.__validate_str('duration', duration)
-            (start_date, end_date) = self.__DURATION_TO_START_END[duration]
-        else:
-            try:
-                (start_date, end_date) = duration
-            except (TypeError, ValueError) as error:
-                raise type(error)(
-                    '`duration` must be a string or an object'
-                    + ' with 2 items.'
-                ) from None
-        return (start_date, end_date)
-
-    def __validate_get_raw_data_params(self, params):
-        results = {}
-        (results['start_date'], results['end_date']) = (
-            self.__get_dates_from_duration(params['duration'])
-        )
-        results['realm'] = self.__find_raw_realm_id(params['realm'])
-        results['fields'] = self.__validate_raw_fields(
-            params['realm'], params['fields']
-        )
-        results['filters'] = self.__validate_filters(
-            params['realm'], params['filters']
-        )
-        return results
 
     def __get_raw_data_url_params(self, params):
         return urlencode({
@@ -634,53 +468,6 @@ class DataWarehouse:
             'stats': params['fields'],
             'params': params['filters'],
         })
-
-    def __find_realm_id(self, realm):
-        return self.__find_id_in_descriptor(
-            self.__get_aggregate_descriptor(), 'realm', realm
-        )
-
-    def __find_metric_id(self, realm, metric):
-        return self.__find_metric_or_dimension_id(realm, 'metric', metric)
-
-    def __find_dimension_id(self, realm, dimension):
-        return self.__find_metric_or_dimension_id(
-            realm, 'dimension', dimension
-        )
-
-    def __validate_filters(self, realm, filters):
-        try:
-            result = {}
-            for dimension in filters:
-                dimension_id = self.__find_dimension_id(realm, dimension)
-                filter_values = filters[dimension]
-                if isinstance(filter_values, str):
-                    filter_values = [filter_values]
-                result[dimension_id] = []
-                for filter_value in filter_values:
-                    new_filter_value = self.__find_value_in_df(
-                        'Filter value',
-                        self.get_filters(realm, dimension),
-                        filter_value
-                    )
-                    result[dimension_id].append(new_filter_value)
-            return result
-        except TypeError:
-            raise TypeError(
-                '`filters` must be a mapping whose keys are strings and whose'
-                + ' values are strings or sequences of strings.'
-            ) from None
-
-    def __assert_bool(self, name, obj):
-        if not isinstance(obj, bool):
-            raise TypeError('`' + name + '` must be a Boolean.')
-
-    def __validate_str(self, key, value):
-        self.__assert_str(key, value)
-        self.__assert_str_in_sequence(
-            value, self.__valid_values[key], 'values',
-            'Invalid value for `' + key + '`: \'' + value + '\''
-        )
 
     def __get_data_post_fields(self, params):
         post_fields = {
@@ -745,27 +532,8 @@ class DataWarehouse:
         )
 
     def __get_dimension_label(self, realm, dimension_id):
-        d = self.__get_aggregate_descriptor()
+        d = self._get_aggregate_descriptor()
         return d[realm]['dimensions'][dimension_id]['label']
-
-    def __find_raw_realm_id(self, realm):
-        return self.__find_id_in_descriptor(
-            self.__get_raw_descriptor(), 'realm', realm
-        )
-
-    def __validate_raw_fields(self, realm, fields):
-        try:
-            result = []
-            for field in fields:
-                new_field = self.__find_value_in_df(
-                    'Field', self.get_raw_fields(realm), field
-                )
-                result.append(new_field)
-            return result
-        except TypeError:
-            raise TypeError(
-                '`fields` must be a sequence of strings.'
-            ) from None
 
     def __get_indexed_data_frame_from_descriptor(self, descriptor, columns):
         data = [
@@ -776,20 +544,20 @@ class DataWarehouse:
         result = result.set_index('id')
         return result
 
-    def __get_aggregate_descriptor(self):
+    def _get_aggregate_descriptor(self):
         if self.__aggregate_descriptor is None:
             self.__aggregate_descriptor = self.__request_aggregate_descriptor()
         return self.__aggregate_descriptor
 
     def __get_metrics_or_dimensions(self, realm, m_or_d):
-        self.__assert_runtime_context()
-        realm_id = self.__find_realm_id(realm)
+        _validator._assert_runtime_context(self.__in_runtime_context)
+        realm_id = _validator._find_realm_id(self, realm)
         return self.__get_indexed_data_frame_from_descriptor(
-            self.__get_aggregate_descriptor()[realm_id][m_or_d],
+            self._get_aggregate_descriptor()[realm_id][m_or_d],
             ('id', 'label', 'description')
         )
 
-    def __get_raw_descriptor(self):
+    def _get_raw_descriptor(self):
         if self.__raw_descriptor is None:
             self.__raw_descriptor = self.__request_raw_descriptor()
         return self.__raw_descriptor
@@ -802,26 +570,9 @@ class DataWarehouse:
                 name + ' environment variable has not been set.'
             ) from None
 
-    def __date_add_years(self, old_date, year_delta):
-        # Make dates behave like Ext.JS, i.e., if a date is specified
-        # with a day value that is too big, add days to the last valid
-        # day in that month, e.g., 2023-02-31 becomes 2023-03-03.
-        new_date_year = old_date.year + year_delta
-        new_date_day = old_date.day
-        days_above = 0
-        keep_going = True
-        while keep_going:
-            try:
-                new_date = date(new_date_year, old_date.month, new_date_day)
-                keep_going = False
-            except ValueError:
-                new_date_day -= 1
-                days_above += 1
-        return new_date + timedelta(days=days_above)
-
-    def __request(
+    def _request(
             self, path='', post_fields=None, headers=None, content_type=None):
-        self.__assert_runtime_context()
+        _validator._assert_runtime_context(self.__in_runtime_context)
         self.__crl.reset()
         url = self.__xdmod_host + path
         self.__crl.setopt(pycurl.URL, url)
@@ -854,39 +605,6 @@ class DataWarehouse:
                 pass
             raise RuntimeError('Error ' + str(code) + msg) from None
         return response
-
-    def __find_id_in_descriptor(self, descriptor, name, value):
-        self.__assert_str(name, value)
-        for id_ in descriptor:
-            if id_ == value or descriptor[id_]['label'] == value:
-                return id_
-        raise KeyError(
-            name.capitalize() + ' \'' + value + '\' not found.'
-        )
-
-    def __find_metric_or_dimension_id(self, realm, m_or_d, value):
-        return self.__find_id_in_descriptor(
-            self.__get_aggregate_descriptor()[realm][m_or_d + 's'],
-            m_or_d,
-            value
-        )
-
-    def __find_value_in_df(self, label, valid_df, value):
-        if value in valid_df.index:
-            return value
-        elif value in valid_df['label'].values:
-            return valid_df.index[
-                valid_df['label'] == value
-            ].tolist()[0]
-        else:
-            raise KeyError(label + ' \'' + value + '\' not found.')
-
-    def __assert_str_in_sequence(self, string, sequence, label, msg_prologue):
-        if string not in sequence:
-            raise KeyError(
-                msg_prologue + '. Valid ' + label + ' are: \''
-                + '\', \''.join(sequence) + '\'.'
-            ) from None
 
     def __request_aggregate_descriptor(self):
         response = self.__request_json(
