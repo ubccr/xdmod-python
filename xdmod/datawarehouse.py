@@ -618,7 +618,7 @@ class DataWarehouse:
             self.__get_dates_from_duration(params['duration'])
         )
         results['realm'] = self.__find_raw_realm_id(params['realm'])
-        results['fields'] = self.__validate_fields(
+        results['fields'] = self.__validate_raw_fields(
             params['realm'], params['fields']
         )
         results['filters'] = self.__validate_filters(
@@ -753,7 +753,7 @@ class DataWarehouse:
             self.__get_raw_descriptor(), 'realm', realm
         )
 
-    def __validate_fields(self, realm, fields):
+    def __validate_raw_fields(self, realm, fields):
         try:
             result = []
             for field in fields:
