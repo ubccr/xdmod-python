@@ -1,10 +1,10 @@
-import xdmod._validator as _validator
 import io
 import json
 import os
 import pycurl
 import tempfile
 from urllib.parse import urlencode
+import xdmod._validator as _validator
 
 
 class _HttpRequester:

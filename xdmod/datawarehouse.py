@@ -1,6 +1,3 @@
-import xdmod._validator as _validator
-from xdmod._descriptors import _Descriptors
-from xdmod._http_requester import _HttpRequester
 import csv
 from datetime import datetime
 import html
@@ -8,6 +5,9 @@ import numpy
 import pandas as pd
 import re
 from urllib.parse import urlencode
+from xdmod._descriptors import _Descriptors
+from xdmod._http_requester import _HttpRequester
+import xdmod._validator as _validator
 
 
 class DataWarehouse:
