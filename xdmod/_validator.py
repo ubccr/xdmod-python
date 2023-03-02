@@ -6,18 +6,9 @@ def _assert_str(name, value):
         raise TypeError('`' + name + '` must be a string.')
 
 
-def _assert_bool(name, obj):
+def __assert_bool(name, obj):
     if not isinstance(obj, bool):
         raise TypeError('`' + name + '` must be a Boolean.')
-
-
-def _assert_connection_to_xdmod_host(data_warehouse, xdmod_host):
-    try:
-        data_warehouse._request()
-    except RuntimeError as e:
-        raise RuntimeError(
-            'Could not connect to xdmod_host \'' + xdmod_host + '\': ' + str(e)
-        ) from None
 
 
 def _assert_runtime_context(in_runtime_context):
@@ -29,23 +20,23 @@ def _assert_runtime_context(in_runtime_context):
         )
 
 
-def _validate_get_data_params(data_warehouse, params):
+def _validate_get_data_params(data_warehouse, descriptors, params):
     results = {}
     (results['start_date'], results['end_date']) = (
-        _validate_duration(params['duration'])
+        __validate_duration(params['duration'])
     )
-    results['realm'] = _find_realm_id(data_warehouse, params['realm'])
-    results['metric'] = _find_metric_id(
-        data_warehouse, results['realm'], params['metric'])
+    results['realm'] = _find_realm_id(descriptors, params['realm'])
+    results['metric'] = __find_metric_id(
+        descriptors, results['realm'], params['metric'])
     results['dimension'] = _find_dimension_id(
-        data_warehouse, results['realm'], params['dimension']
+        descriptors, results['realm'], params['dimension']
     )
-    results['filters'] = _validate_filters(
-        data_warehouse, results['realm'], params['filters']
+    results['filters'] = __validate_filters(
+        data_warehouse, descriptors, results['realm'], params['filters']
     )
-    _assert_bool('timeseries', params['timeseries'])
+    __assert_bool('timeseries', params['timeseries'])
     results['timeseries'] = params['timeseries']
-    _assert_str_in_sequence(
+    __assert_str_in_sequence(
         params['aggregation_unit'],
         _get_aggregation_units(),
         'aggregation_unit',
@@ -54,42 +45,42 @@ def _validate_get_data_params(data_warehouse, params):
     return results
 
 
-def _validate_get_raw_data_params(data_warehouse, params):
+def _validate_get_raw_data_params(data_warehouse, descriptors, params):
     results = {}
     (results['start_date'], results['end_date']) = (
-        _validate_duration(params['duration'])
+        __validate_duration(params['duration'])
     )
-    results['realm'] = _find_raw_realm_id(data_warehouse, params['realm'])
-    results['fields'] = _validate_raw_fields(
+    results['realm'] = _find_raw_realm_id(descriptors, params['realm'])
+    results['fields'] = __validate_raw_fields(
         data_warehouse, params['realm'], params['fields']
     )
-    results['filters'] = _validate_filters(
-        data_warehouse, params['realm'], params['filters']
+    results['filters'] = __validate_filters(
+        data_warehouse, descriptors, params['realm'], params['filters']
     )
     return results
 
 
-def _find_realm_id(data_warehouse, realm):
-    return _find_id_in_descriptor(
-        data_warehouse._get_aggregate_descriptor(), 'realm', realm
+def _find_realm_id(descriptors, realm):
+    return __find_id_in_descriptor(
+        descriptors._get_aggregate(), 'realm', realm
     )
 
 
-def _find_metric_id(data_warehouse, realm, metric):
-    return _find_metric_or_dimension_id(
-        data_warehouse, realm, 'metric', metric
+def __find_metric_id(descriptors, realm, metric):
+    return __find_metric_or_dimension_id(
+        descriptors, realm, 'metric', metric
     )
 
 
-def _find_dimension_id(data_warehouse, realm, dimension):
-    return _find_metric_or_dimension_id(
-        data_warehouse, realm, 'dimension', dimension
+def _find_dimension_id(descriptors, realm, dimension):
+    return __find_metric_or_dimension_id(
+        descriptors, realm, 'dimension', dimension
     )
 
 
-def _find_metric_or_dimension_id(data_warehouse, realm, m_or_d, value):
-    return _find_id_in_descriptor(
-        data_warehouse._get_aggregate_descriptor()[realm][m_or_d + 's'],
+def __find_metric_or_dimension_id(descriptors, realm, m_or_d, value):
+    return __find_id_in_descriptor(
+        descriptors._get_aggregate()[realm][m_or_d + 's'],
         m_or_d,
         value
     )
@@ -129,23 +120,23 @@ def _get_aggregation_units():
     )
 
 
-def _find_raw_realm_id(data_warehouse, realm):
-    return _find_id_in_descriptor(
-        data_warehouse._get_raw_descriptor(), 'realm', realm
+def _find_raw_realm_id(descriptors, realm):
+    return __find_id_in_descriptor(
+        descriptors._get_raw(), 'realm', realm
     )
 
 
-def _validate_filters(data_warehouse, realm, filters):
+def __validate_filters(data_warehouse, descriptors, realm, filters):
     try:
         result = {}
         for dimension in filters:
-            dimension_id = _find_dimension_id(data_warehouse, realm, dimension)
+            dimension_id = _find_dimension_id(descriptors, realm, dimension)
             filter_values = filters[dimension]
             if isinstance(filter_values, str):
                 filter_values = [filter_values]
             result[dimension_id] = []
             for filter_value in filter_values:
-                new_filter_value = _find_value_in_df(
+                new_filter_value = __find_value_in_df(
                     'Filter value',
                     data_warehouse.get_filters(realm, dimension),
                     filter_value
@@ -159,11 +150,11 @@ def _validate_filters(data_warehouse, realm, filters):
         ) from None
 
 
-def _validate_raw_fields(data_warehouse, realm, fields):
+def __validate_raw_fields(data_warehouse, realm, fields):
     try:
         result = []
         for field in fields:
-            new_field = _find_value_in_df(
+            new_field = __find_value_in_df(
                 'Field', data_warehouse.get_raw_fields(realm), field
             )
             result.append(new_field)
@@ -174,12 +165,12 @@ def _validate_raw_fields(data_warehouse, realm, fields):
         ) from None
 
 
-def _validate_duration(duration):
+def __validate_duration(duration):
     if isinstance(duration, str):
-        _assert_str_in_sequence(
+        __assert_str_in_sequence(
             duration, _get_durations(), 'duration'
         )
-        (start_date, end_date) = _get_dates_from_duration(duration)
+        (start_date, end_date) = __get_dates_from_duration(duration)
     else:
         try:
             (start_date, end_date) = duration
@@ -191,7 +182,7 @@ def _validate_duration(duration):
     return (start_date, end_date)
 
 
-def _get_dates_from_duration(duration):
+def __get_dates_from_duration(duration):
     today = date.today()
     yesterday = today + timedelta(days=-1)
     last_week = today + timedelta(days=-7)
@@ -239,15 +230,15 @@ def _get_dates_from_duration(duration):
         'Previous quarter': (last_quarter_start, last_quarter_end),
         'Year to date': (this_year_start, today),
         'Previous year': (previous_year_start, previous_year_end),
-        '1 year': (_date_add_years(today, -1), today),
-        '2 year': (_date_add_years(today, -2), today),
-        '3 year': (_date_add_years(today, -3), today),
-        '5 year': (_date_add_years(today, -5), today),
-        '10 year': (_date_add_years(today, -10), today)
+        '1 year': (__date_add_years(today, -1), today),
+        '2 year': (__date_add_years(today, -2), today),
+        '3 year': (__date_add_years(today, -3), today),
+        '5 year': (__date_add_years(today, -5), today),
+        '10 year': (__date_add_years(today, -10), today)
     }[duration]
 
 
-def _date_add_years(old_date, year_delta):
+def __date_add_years(old_date, year_delta):
     # Make dates behave like Ext.JS, i.e., if a date is specified
     # with a day value that is too big, add days to the last valid
     # day in that month, e.g., 2023-02-31 becomes 2023-03-03.
@@ -265,7 +256,7 @@ def _date_add_years(old_date, year_delta):
     return new_date + timedelta(days=days_above)
 
 
-def _find_value_in_df(label, valid_df, value):
+def __find_value_in_df(label, valid_df, value):
     if value in valid_df.index:
         return value
     elif value in valid_df['label'].values:
@@ -276,7 +267,7 @@ def _find_value_in_df(label, valid_df, value):
         raise KeyError(label + ' \'' + value + '\' not found.')
 
 
-def _find_id_in_descriptor(descriptor, name, value):
+def __find_id_in_descriptor(descriptor, name, value):
     _assert_str(name, value)
     for id_ in descriptor:
         if id_ == value or descriptor[id_]['label'] == value:
@@ -286,7 +277,7 @@ def _find_id_in_descriptor(descriptor, name, value):
     )
 
 
-def _assert_str_in_sequence(value, sequence, label):
+def __assert_str_in_sequence(value, sequence, label):
     _assert_str(label, value)
     if value not in sequence:
         raise KeyError(

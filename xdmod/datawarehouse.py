@@ -1,15 +1,12 @@
 import xdmod._validator as _validator
+from xdmod._descriptors import _Descriptors
+from xdmod._http_requester import _HttpRequester
 import csv
 from datetime import datetime
 import html
-import io
-import json
 import numpy
-import os
 import pandas as pd
-import pycurl
 import re
-import tempfile
 from urllib.parse import urlencode
 
 
@@ -46,44 +43,17 @@ class DataWarehouse:
 
     def __init__(self, xdmod_host, api_token=None):
         self.__in_runtime_context = False
-        _validator._assert_str('xdmod_host', xdmod_host)
-        self.__xdmod_host = xdmod_host
-        if api_token:
-            _validator._assert_str('api_token', api_token)
-        self.__api_token = api_token
+        self.__http_requester = _HttpRequester(xdmod_host, api_token)
+        self.__descriptors = _Descriptors(self.__http_requester)
         self.__username = None
-        self.__crl = None
-        self.__cookie_file = None
-        self.__aggregate_descriptor = None
-        self.__raw_descriptor = None
-        self.__headers = []
-        self.__init_api_token()
 
     def __enter__(self):
         self.__in_runtime_context = True
-        self.__crl = pycurl.Curl()
-        _validator._assert_connection_to_xdmod_host(self, self.__xdmod_host)
-        if self.__api_token:
-            _, self.__cookie_file = tempfile.mkstemp()
-            self.__crl.setopt(pycurl.COOKIEJAR, self.__cookie_file)
-            self.__crl.setopt(pycurl.COOKIEFILE, self.__cookie_file)
-            response = self.__request_json(
-                '/rest/auth/login', self.__api_token
-            )
-            if response['success'] is True:
-                token = response['results']['token']
-                self.__headers = ['Token: ' + token]
-                self.__crl.setopt(pycurl.HTTPHEADER, self.__headers)
-                self.__username = response['results']['name']
-            else:
-                raise RuntimeError('Access Denied.')
+        self.__http_requester._start_up()
         return self
 
-    def __exit__(self, tpe, value, tb):
-        if self.__cookie_file:
-            os.unlink(self.__cookie_file)
-        if self.__crl:
-            self.__crl.close()
+    def __exit__(self, type_, value, traceback):
+        self.__http_requester._tear_down()
         self.__username = None
         self.__in_runtime_context = False
 
@@ -151,9 +121,11 @@ class DataWarehouse:
                If `duration` is an object but not of length 2.
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
-        params = _validator._validate_get_data_params(self, locals())
+        params = _validator._validate_get_data_params(
+            self, self.__descriptors, locals()
+        )
         post_fields = self.__get_data_post_fields(params)
-        response = self._request(
+        response = self.__http_requester._request(
             '/controllers/user_interface.php', post_fields
         )
         return self.__process_get_data_response(params, response)
@@ -259,9 +231,11 @@ class DataWarehouse:
                If `duration` is an object but not of length 2.
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
-        params = _validator._validate_get_raw_data_params(self, locals())
+        params = _validator._validate_get_raw_data_params(
+            self, self.__descriptors, locals()
+        )
         url_params = self.__get_raw_data_url_params(params)
-        result = self.__request_json(
+        result = self.__http_requester._request_json(
             path='/rest/v1/warehouse/data/raw?' + url_params
         )
         return pd.DataFrame(
@@ -283,7 +257,7 @@ class DataWarehouse:
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
         return self.__get_indexed_data_frame_from_descriptor(
-            self._get_aggregate_descriptor(), ('id', 'label')
+            self.__descriptors._get_aggregate(), ('id', 'label')
         )
 
     def get_metrics(self, realm):
@@ -364,8 +338,10 @@ class DataWarehouse:
                If `realm` or `dimension` are not strings.
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
-        realm_id = _validator._find_realm_id(self, realm)
-        dimension_id = _validator._find_dimension_id(self, realm_id, dimension)
+        realm_id = _validator._find_realm_id(self.__descriptors, realm)
+        dimension_id = _validator._find_dimension_id(
+            self.__descriptors, realm_id, dimension
+        )
         path = '/controllers/metric_explorer.php'
         post_fields = {
             'operation': 'get_dimension',
@@ -373,7 +349,7 @@ class DataWarehouse:
             'realm': realm_id,
             'limit': 10000
         }
-        response = self.__request_json(path, post_fields)
+        response = self.__http_requester._request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
         result = pd.DataFrame(data=data, columns=('id', 'label'))
         result = result.set_index('id')
@@ -413,7 +389,7 @@ class DataWarehouse:
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
         return self.__get_indexed_data_frame_from_descriptor(
-            self._get_raw_descriptor(), ('id', 'label')
+            self.__descriptors._get_raw(), ('id', 'label')
         )
 
     def get_raw_fields(self, realm):
@@ -440,25 +416,11 @@ class DataWarehouse:
                If `realm` is not a string.
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
-        realm_id = _validator._find_raw_realm_id(self, realm)
+        realm_id = _validator._find_raw_realm_id(self.__descriptors, realm)
         return self.__get_indexed_data_frame_from_descriptor(
-            self._get_raw_descriptor()[realm_id]['fields'],
+            self.__descriptors._get_raw()[realm_id]['fields'],
             ('id', 'label', 'description')
         )
-
-    def __init_api_token(self):
-        if not self.__api_token:
-            username = self.__get_environment_variable('XDMOD_USER')
-            password = self.__get_environment_variable('XDMOD_PASS')
-            self.__api_token = {
-                'username': username,
-                'password': password
-            }
-
-    def __request_json(
-            self, path, post_fields=None, headers=None, content_type=None):
-        response = self._request(path, post_fields, headers, content_type)
-        return json.loads(response)
 
     def __get_raw_data_url_params(self, params):
         return urlencode({
@@ -532,7 +494,7 @@ class DataWarehouse:
         )
 
     def __get_dimension_label(self, realm, dimension_id):
-        d = self._get_aggregate_descriptor()
+        d = self.__descriptors._get_aggregate()
         return d[realm]['dimensions'][dimension_id]['label']
 
     def __get_indexed_data_frame_from_descriptor(self, descriptor, columns):
@@ -544,112 +506,13 @@ class DataWarehouse:
         result = result.set_index('id')
         return result
 
-    def _get_aggregate_descriptor(self):
-        if self.__aggregate_descriptor is None:
-            self.__aggregate_descriptor = self.__request_aggregate_descriptor()
-        return self.__aggregate_descriptor
-
     def __get_metrics_or_dimensions(self, realm, m_or_d):
         _validator._assert_runtime_context(self.__in_runtime_context)
-        realm_id = _validator._find_realm_id(self, realm)
+        realm_id = _validator._find_realm_id(self.__descriptors, realm)
         return self.__get_indexed_data_frame_from_descriptor(
-            self._get_aggregate_descriptor()[realm_id][m_or_d],
+            self.__descriptors._get_aggregate()[realm_id][m_or_d],
             ('id', 'label', 'description')
         )
-
-    def _get_raw_descriptor(self):
-        if self.__raw_descriptor is None:
-            self.__raw_descriptor = self.__request_raw_descriptor()
-        return self.__raw_descriptor
-
-    def __get_environment_variable(self, name):
-        try:
-            return os.environ[name]
-        except KeyError:
-            raise KeyError(
-                name + ' environment variable has not been set.'
-            ) from None
-
-    def _request(
-            self, path='', post_fields=None, headers=None, content_type=None):
-        _validator._assert_runtime_context(self.__in_runtime_context)
-        self.__crl.reset()
-        url = self.__xdmod_host + path
-        self.__crl.setopt(pycurl.URL, url)
-        if post_fields:
-            if content_type == 'JSON':
-                pf = post_fields
-            else:
-                pf = urlencode(post_fields)
-            self.__crl.setopt(pycurl.POSTFIELDS, pf)
-        if headers is None:
-            headers = self.__headers
-        self.__crl.setopt(pycurl.HTTPHEADER, headers)
-        buffer = io.BytesIO()
-        self.__crl.setopt(pycurl.WRITEDATA, buffer)
-        try:
-            self.__crl.perform()
-        except pycurl.error as e:
-            code, msg = e.args
-            if code == pycurl.E_URL_MALFORMAT:
-                msg = 'Malformed URL.'
-            raise RuntimeError(msg) from None
-        response = buffer.getvalue().decode()
-        code = self.__crl.getinfo(pycurl.RESPONSE_CODE)
-        if code != 200:
-            msg = ''
-            try:
-                response_json = json.loads(response)
-                msg = ': ' + response_json['message']
-            except json.JSONDecodeError:
-                pass
-            raise RuntimeError('Error ' + str(code) + msg) from None
-        return response
-
-    def __request_aggregate_descriptor(self):
-        response = self.__request_json(
-            '/controllers/metric_explorer.php',
-            {'operation': 'get_dw_descripter'}
-        )
-        if response['totalCount'] != 1:
-            raise RuntimeError(
-                'Descriptor received with unexpected structure.'
-            )
-        return self.__deserialize_aggregate_descriptor(
-            response['data'][0]['realms']
-        )
-
-    def __request_raw_descriptor(self):
-        response = self.__request_json('/rest/v1/warehouse/export/realms')
-        return self.__deserialize_raw_descriptor(response['data'])
-
-    def __deserialize_aggregate_descriptor(self, serialized_descriptor):
-        result = {}
-        for realm in serialized_descriptor:
-            result[realm] = {'label': serialized_descriptor[realm]['category']}
-            for m_or_d in ('metrics', 'dimensions'):
-                m_or_d_descriptor = serialized_descriptor[realm][m_or_d]
-                result[realm][m_or_d] = {}
-                for id_ in m_or_d_descriptor:
-                    result[realm][m_or_d][id_] = {
-                        'label': m_or_d_descriptor[id_]['text'],
-                        'description': m_or_d_descriptor[id_]['info']
-                    }
-        return result
-
-    def __deserialize_raw_descriptor(self, serialized_descriptor):
-        result = {}
-        for realm in serialized_descriptor:
-            realm_id = realm['id']
-            result[realm_id] = {'label': realm['name']}
-            result[realm_id]['fields'] = {}
-            fields = realm['fields']
-            for field in fields:
-                result[realm_id]['fields'][field['alias']] = {
-                    'label': field['display'],
-                    'description': field['documentation']
-                }
-        return result
 
     def whoami(self):
         if self.__username:
@@ -657,7 +520,7 @@ class DataWarehouse:
         return 'Not logged in'
 
     def compliance(self, timeframe):
-        response = self.__request_json(
+        response = self.__http_requester._request_json(
             '/controllers/compliance.php',
             {'timeframe_mode': timeframe}
         )
@@ -686,7 +549,7 @@ class DataWarehouse:
             'script': '% of jobs with Job Batch Script information',
             'realms': '% of jobs in the SUPReMM realm compared to Jobs realm'
         }
-        response = self.__request_json(
+        response = self.__http_requester._request_json(
             '/rest/supremm_dataflow/quality', params
         )
         if response['success']:
