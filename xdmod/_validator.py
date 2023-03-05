@@ -152,13 +152,13 @@ def __validate_filters(data_warehouse, descriptors, realm, filters):
 
 def __validate_raw_fields(data_warehouse, realm, fields):
     try:
-        result = []
+        results = []
         for field in fields:
             new_field = __find_value_in_df(
                 'Field', data_warehouse.get_raw_fields(realm), field
             )
-            result.append(new_field)
-        return result
+            results.append(new_field)
+        return results
     except TypeError:
         raise TypeError(
             '`fields` must be a sequence of strings.'
