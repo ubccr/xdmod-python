@@ -3,7 +3,7 @@ import xdmod.datawarehouse as xdw
 import pandas
 import os
 
-XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org'
+XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
 DATA_DIR = os.path.dirname(__file__) + '/data'
 
 

@@ -55,26 +55,18 @@ class _HttpRequester:
                 + '\': ' + str(e)
             ) from None
 
-    def _request_json(
-            self, path, post_fields=None, headers=None, content_type=None):
-        response = self._request(path, post_fields, headers, content_type)
+    def _request_json(self, path, post_fields=None):
+        response = self._request(path, post_fields)
         return json.loads(response)
 
-    def _request(
-            self, path='', post_fields=None, headers=None, content_type=None):
+    def _request(self, path='', post_fields=None):
         _validator._assert_runtime_context(self.__in_runtime_context)
         self.__crl.reset()
         url = self.__xdmod_host + path
         self.__crl.setopt(pycurl.URL, url)
         if post_fields:
-            if content_type == 'JSON':
-                pf = post_fields
-            else:
-                pf = urlencode(post_fields)
-            self.__crl.setopt(pycurl.POSTFIELDS, pf)
-        if headers is None:
-            headers = self.__headers
-        self.__crl.setopt(pycurl.HTTPHEADER, headers)
+            self.__crl.setopt(pycurl.POSTFIELDS, urlencode(post_fields))
+        self.__crl.setopt(pycurl.HTTPHEADER, self.__headers)
         buffer = io.BytesIO()
         self.__crl.setopt(pycurl.WRITEDATA, buffer)
         try:

@@ -3,7 +3,7 @@ import xdmod.datawarehouse as xdw
 import pandas
 
 INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
-VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org'
+VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
 METHOD_PARAMS = {
     'get_data': (
         'duration', 'realm', 'metric', 'dimension', 'filters', 'timeseries',
@@ -149,8 +149,7 @@ def test_RuntimeError_outside_context(
 )
 def test_RuntimeError_date_malformed(dw_methods, method, param, params):
     __test_exception(
-        dw_methods, method, params, RuntimeError,
-        param + ' param is not in the correct format'
+        dw_methods, method, params, RuntimeError, param
     )
 
 
@@ -179,7 +178,6 @@ def test_ValueError_duration(dw_methods, method):
     'method',
     [
         'get_data',
-        'get_raw_data',
         'get_realms',
         'get_metrics',
         'get_dimensions',

@@ -235,12 +235,8 @@ class DataWarehouse:
             self, self.__descriptors, locals()
         )
         url_params = self.__get_raw_data_url_params(params)
-        result = self.__http_requester._request_json(
-            path='/rest/v1/warehouse/data/raw?' + url_params
-        )
-        return pd.DataFrame(
-            data=result['data'], columns=result['stats'], dtype=np.float64
-        )
+        (data, columns) = self.__request_raw_data(url_params)
+        return pd.DataFrame(data=data, columns=columns).fillna(value=np.nan)
 
     def get_realms(self):
         """Get a DataFrame containing the valid realms in the data warehouse.
@@ -423,13 +419,37 @@ class DataWarehouse:
         )
 
     def __get_raw_data_url_params(self, params):
-        return urlencode({
+        results = {
             'realm': params['realm'],
             'start_date': params['start_date'],
             'end_date': params['end_date'],
-            'stats': params['fields'],
-            'params': params['filters'],
-        })
+        }
+        if (params['fields']):
+            results['fields'] = ','.join(params['fields'])
+        if (params['filters']):
+            results['filter_keys'] = ','.join(params['filters'])
+            for dimension in params['filters']:
+                results[dimension + '_filter'] = ','.join(
+                    params['filters'][dimension]
+                )
+        return urlencode(results)
+
+    def __request_raw_data(self, url_params):
+        data = []
+        limit = 0
+        num_rows = 0
+        offset = 0
+        while num_rows == limit:
+            response = self.__http_requester._request_json(
+                path='/rest/v1/warehouse/raw-data?' + url_params
+                + '&offset=' + str(offset)
+            )
+            partial_data = response['data']
+            data += partial_data
+            limit = int(response['limit'])
+            num_rows = len(partial_data)
+            offset += limit
+        return (data, response['fields'])
 
     def __get_data_post_fields(self, params):
         post_fields = {
