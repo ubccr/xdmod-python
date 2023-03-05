@@ -1,7 +1,7 @@
 import csv
 from datetime import datetime
 import html
-import numpy
+import numpy as np
 import pandas as pd
 import re
 from urllib.parse import urlencode
@@ -183,7 +183,7 @@ class DataWarehouse:
                             'Unsupported date specification ' + line[0] + '.'
                         )
                     timestamps.append(datetime.strptime(date_string, format))
-                    data.append(numpy.asarray(line[1:], dtype=numpy.float64))
+                    data.append(np.asarray(line[1:], dtype=np.float64))
             return pd.DataFrame(
                 data=data,
                 index=pd.Series(data=timestamps, name='Time'),
@@ -239,7 +239,7 @@ class DataWarehouse:
             path='/rest/v1/warehouse/data/raw?' + url_params
         )
         return pd.DataFrame(
-            data=result['data'], columns=result['stats'], dtype=numpy.float64
+            data=result['data'], columns=result['stats'], dtype=np.float64
         )
 
     def get_realms(self):
@@ -483,14 +483,14 @@ class DataWarehouse:
                 dimension, metric = line
             elif line_num > 7 and len(line) > 1:
                 groups.append(html.unescape(line[0]))
-                data.append(numpy.float64(line[1]))
+                data.append(np.float64(line[1]))
         if len(data) == 0:
-            return pd.Series(dtype=numpy.float64)
+            return pd.Series(dtype=np.float64)
         return pd.Series(
             data=data,
             name=metric,
             index=pd.Series(data=groups, name=dimension),
-            dtype=numpy.float64
+            dtype=np.float64
         )
 
     def __get_dimension_label(self, realm, dimension_id):
@@ -560,14 +560,14 @@ class DataWarehouse:
                     params['start'], params['end'], freq='D'
                 ).date
             ]
-            quality = numpy.empty((len(jobs), len(dates)))
+            quality = np.empty((len(jobs), len(dates)))
             for i in range(len(jobs)):
                 for j in range(len(dates)):
                     job_i = result[jobs[i]]
-                    if job_i.get(dates[j], numpy.nan) != 'N/A':
-                        quality[i, j] = job_i.get(dates[j], numpy.nan)
+                    if job_i.get(dates[j], np.nan) != 'N/A':
+                        quality[i, j] = job_i.get(dates[j], np.nan)
                     else:
-                        quality[i, j] = numpy.nan
+                        quality[i, j] = np.nan
             if is_numpy:
                 return quality
             df = pd.DataFrame(data=quality, index=jobs, columns=dates)
