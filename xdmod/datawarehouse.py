@@ -195,7 +195,7 @@ class DataWarehouse:
                 )
             )
 
-    def get_raw_data(self, duration, realm, fields, filters={}):
+    def get_raw_data(self, duration, realm, fields=(), filters={}):
         """Get a DataFrame containing raw data from the warehouse.
 
            Parameters
@@ -204,7 +204,7 @@ class DataWarehouse:
                ...
            realm : str
                ...
-           fields : sequence of str
+           fields : sequence of str, optional
                ...
            filters : mapping, optional
                ...
