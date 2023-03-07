@@ -9,7 +9,9 @@ METHOD_PARAMS = {
         'duration', 'realm', 'metric', 'dimension', 'filters', 'timeseries',
         'aggregation_unit',
     ),
-    'get_raw_data': ('duration', 'realm', 'filters', 'fields'),
+    'get_raw_data': (
+        'duration', 'realm', 'filters', 'fields', 'show_progress',
+    ),
     'get_realms': (),
     'get_metrics': ('realm',),
     'get_dimensions': ('realm',),
@@ -29,6 +31,7 @@ VALID_VALUES = {
   'aggregation_unit': 'Auto',
   'parameter': 'duration',
   'fields': ['Nodes'],
+  'show_progress': True,
 }
 KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     'duration': (INVALID_STR, 'Invalid value for `duration`'),

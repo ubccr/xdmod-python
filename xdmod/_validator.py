@@ -2,13 +2,17 @@ from datetime import date, timedelta
 
 
 def _assert_str(name, value):
-    if not isinstance(value, str):
-        raise TypeError('`' + name + '` must be a string.')
+    return __assert_type(name, value, str, 'string')
 
 
-def __assert_bool(name, obj):
-    if not isinstance(obj, bool):
-        raise TypeError('`' + name + '` must be a Boolean.')
+def __assert_bool(name, value):
+    return __assert_type(name, value, bool, 'Boolean')
+
+
+def __assert_type(name, value, type_, type_name):
+    if not isinstance(value, type_):
+        raise TypeError('`' + name + '` must be a ' + type_name + '.')
+    return value
 
 
 def _assert_runtime_context(in_runtime_context):
@@ -34,14 +38,12 @@ def _validate_get_data_params(data_warehouse, descriptors, params):
     results['filters'] = __validate_filters(
         data_warehouse, descriptors, results['realm'], params['filters']
     )
-    __assert_bool('timeseries', params['timeseries'])
-    results['timeseries'] = params['timeseries']
-    __assert_str_in_sequence(
+    results['timeseries'] = __assert_bool('timeseries', params['timeseries'])
+    results['aggregation_unit'] = __assert_str_in_sequence(
         params['aggregation_unit'],
         _get_aggregation_units(),
         'aggregation_unit',
     )
-    results['aggregation_unit'] = params['aggregation_unit']
     return results
 
 
@@ -56,6 +58,9 @@ def _validate_get_raw_data_params(data_warehouse, descriptors, params):
     )
     results['filters'] = __validate_filters(
         data_warehouse, descriptors, params['realm'], params['filters']
+    )
+    results['show_progress'] = __assert_bool(
+        'show_progress', params['show_progress']
     )
     return results
 
@@ -284,3 +289,4 @@ def __assert_str_in_sequence(value, sequence, label):
             'Invalid value for `' + label + '`: \'' + value + '\''
             + '. Valid values are: \'' + '\', \''.join(sequence) + '\'.'
         ) from None
+    return value

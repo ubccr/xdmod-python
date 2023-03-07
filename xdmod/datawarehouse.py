@@ -195,7 +195,9 @@ class DataWarehouse:
                 )
             )
 
-    def get_raw_data(self, duration, realm, fields=(), filters={}):
+    def get_raw_data(
+        self, duration, realm, fields=(), filters={}, show_progress=True
+    ):
         """Get a DataFrame containing raw data from the warehouse.
 
            Parameters
@@ -208,6 +210,9 @@ class DataWarehouse:
                ...
            filters : mapping, optional
                ...
+           show_progress : bool, optional
+               If true, periodically print how many rows have been gotten so
+               far.
 
            Returns
            -------
@@ -235,7 +240,7 @@ class DataWarehouse:
             self, self.__descriptors, locals()
         )
         url_params = self.__get_raw_data_url_params(params)
-        (data, columns) = self.__request_raw_data(url_params)
+        (data, columns) = self.__request_raw_data(url_params, show_progress)
         return pd.DataFrame(data=data, columns=columns).fillna(value=np.nan)
 
     def get_realms(self):
@@ -434,7 +439,7 @@ class DataWarehouse:
                 )
         return urlencode(results)
 
-    def __request_raw_data(self, url_params):
+    def __request_raw_data(self, url_params, show_progress):
         data = []
         limit = 0
         num_rows = 0
@@ -446,9 +451,14 @@ class DataWarehouse:
             )
             partial_data = response['data']
             data += partial_data
+            if show_progress:
+                progress_msg = 'Got ' + str(len(data)) + ' rows...'
+                print(progress_msg, end='\r')
             limit = int(response['limit'])
             num_rows = len(partial_data)
             offset += limit
+        if show_progress:
+            print(progress_msg + 'DONE')
         return (data, response['fields'])
 
     def __get_data_post_fields(self, params):
