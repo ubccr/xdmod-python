@@ -107,9 +107,9 @@ def __get_dw_methods(dw):
     }
 
 
-def __run_method(dw, method, additional_params={}):
+def __run_method(dw_methods, method, additional_params={}):
     params = {**default_valid_params[method], **additional_params}
-    return dw[method](**params)
+    return dw_methods[method](**params)
 
 
 def __test_exception(dw_methods, method, additional_params, error, match):
@@ -135,7 +135,7 @@ def test_KeyError(dw_methods, method, params, match):
         'get_filters',
         'get_raw_realms',
         'get_raw_fields',
-    ]
+    ],
 )
 def test_RuntimeError_outside_context(
         dw_methods_outside_runtime_context, method):
@@ -148,7 +148,7 @@ def test_RuntimeError_outside_context(
 @pytest.mark.parametrize(
     'method, param, params',
     date_malformed_test_params,
-    ids=start_end_test_names
+    ids=start_end_test_names,
 )
 def test_RuntimeError_date_malformed(dw_methods, method, param, params):
     __test_exception(
@@ -159,7 +159,7 @@ def test_RuntimeError_date_malformed(dw_methods, method, param, params):
 @pytest.mark.parametrize(
     'method, param',
     type_error_test_params,
-    ids=type_error_test_names
+    ids=type_error_test_names,
 )
 def test_TypeError(dw_methods, method, param):
     __test_exception(dw_methods, method, {param: 2}, TypeError, param)
@@ -168,7 +168,7 @@ def test_TypeError(dw_methods, method, param):
 @pytest.mark.parametrize(
     'method',
     value_error_test_methods,
-    ids=duration_test_names
+    ids=duration_test_names,
 )
 def test_ValueError_duration(dw_methods, method):
     __test_exception(
@@ -187,9 +187,23 @@ def test_ValueError_duration(dw_methods, method):
         'get_filters',
         'get_raw_realms',
         'get_raw_fields',
-    ]
+    ],
 )
 def test_DataFrame_return_type(dw_methods, method):
     assert isinstance(
         __run_method(dw_methods, method), pandas.core.frame.DataFrame
     )
+
+
+@pytest.mark.parametrize(
+    'method, param, value1, value2',
+    [
+        ('get_data', 'duration', 'Quarter to date', '  quaRterto dAte '),
+        ('get_data', 'aggregation_unit', 'Month', ' m O ntH  '),
+    ],
+    ids=('get_data:duration', 'get_data:aggregation_unit')
+)
+def test_case_insensitive(dw_methods, method, param, value1, value2):
+    data1 = __run_method(dw_methods, method, {param: value1})
+    data2 = __run_method(dw_methods, method, {param: value2})
+    assert data1.equals(data2)

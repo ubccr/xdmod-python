@@ -38,8 +38,9 @@ def _validate_get_data_params(data_warehouse, descriptors, params):
     results['filters'] = __validate_filters(
         data_warehouse, descriptors, results['realm'], params['filters']
     )
+    print(results['filters'])
     results['timeseries'] = __assert_bool('timeseries', params['timeseries'])
-    results['aggregation_unit'] = __assert_str_in_sequence(
+    results['aggregation_unit'] = __find_str_in_sequence(
         params['aggregation_unit'],
         _get_aggregation_units(),
         'aggregation_unit',
@@ -172,7 +173,7 @@ def __validate_raw_fields(data_warehouse, realm, fields):
 
 def __validate_duration(duration):
     if isinstance(duration, str):
-        __assert_str_in_sequence(
+        duration = __find_str_in_sequence(
             duration, _get_durations(), 'duration'
         )
         (start_date, end_date) = __get_dates_from_duration(duration)
@@ -261,13 +262,11 @@ def __date_add_years(old_date, year_delta):
     return new_date + timedelta(days=days_above)
 
 
-def __find_value_in_df(label, valid_df, value):
-    if value in valid_df.index:
+def __find_value_in_df(label, df, value):
+    if value in df.index:
         return value
-    elif value in valid_df['label'].values:
-        return valid_df.index[
-            valid_df['label'] == value
-        ].tolist()[0]
+    elif value in df['label'].values:
+        return df.index[df['label'] == value].tolist()[0]
     else:
         raise KeyError(label + ' \'' + value + '\' not found.')
 
@@ -282,11 +281,18 @@ def __find_id_in_descriptor(descriptor, name, value):
     )
 
 
-def __assert_str_in_sequence(value, sequence, label):
+def __find_str_in_sequence(value, sequence, label):
     _assert_str(label, value)
-    if value not in sequence:
-        raise KeyError(
-            'Invalid value for `' + label + '`: \'' + value + '\''
-            + '. Valid values are: \'' + '\', \''.join(sequence) + '\'.'
-        ) from None
-    return value
+    transformed_value = __lowercase_and_remove_spaces(value)
+    for valid_value in sequence:
+        transformed_valid_value = __lowercase_and_remove_spaces(valid_value)
+        if transformed_valid_value == transformed_value:
+            return valid_value
+    raise KeyError(
+        'Invalid value for `' + label + '`: \'' + value + '\''
+        + '. Valid values are: \'' + '\', \''.join(sequence) + '\'.'
+    ) from None
+
+
+def __lowercase_and_remove_spaces(value):
+    return value.lower().replace(' ', '')

@@ -86,8 +86,9 @@ class DataWarehouse:
            ----------
            duration : str or object of length 2 of str, optional
                The time period over which to collect data. Either a string
-               value from `get_durations()` or an object of length two with
-               start and end dates specified in 'YYYY-MM-DD' format.
+               value from `get_durations()` (case insensitive) or an object of
+               length two with start and end dates specified in 'YYYY-MM-DD'
+               format.
            realm : str, optional
                A realm in the data warehouse. Can be specified by its ID or its
                label. See `get_realms()`.
@@ -106,7 +107,7 @@ class DataWarehouse:
                (False).
            aggregation_unit : str, optional
                The units by which to aggregate data. Must be one of the valid
-               values from `get_aggregation_units()`.
+               values from `get_aggregation_units()` (case insensitive).
 
            Returns
            -------
@@ -214,8 +215,9 @@ class DataWarehouse:
            ----------
            duration : str or object of length 2 of str
                The time period over which to collect data. Either a string
-               value from `get_durations()` or an object of length two with
-               start and end dates specified in 'YYYY-MM-DD' format.
+               value from `get_durations()` (case insensitive) or an object of
+               length two with start and end dates specified in 'YYYY-MM-DD'
+               format.
            realm : str
                A realm in the data warehouse. Can be specified by its ID or its
                label. See `get_realms()`.
