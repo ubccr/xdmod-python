@@ -61,7 +61,7 @@ class DataWarehouse:
             self, duration='Previous month', realm='Jobs',
             metric='CPU Hours: Total', dimension='None', filters={},
             timeseries=True, aggregation_unit='Auto'):
-        """Get a DataFrame containing data from the warehouse.
+        """Get a data frame or series containing data from the warehouse.
 
            If `timeseries` is True, a Pandas DataFrame is returned. In that
            DataFrame, the index has the name 'Time' and contains
@@ -70,33 +70,43 @@ class DataWarehouse:
            a Pandas Series that has the same properties as the Series that is
            returned if `timeseries` were instead False (see paragraph below).
            The data in the DataFrame are the float64 values for the
-           corresponding time value, `metric`, and `dimension` value.
+           corresponding values of time, `metric`, and `dimension`.
 
            If `timeseries` is False, a Pandas Series is returned. The name of
            the Series is the value of `metric`. The index of the Series
-           has a name equal to `dimension`, and its data are the corresponding
-           values for that `dimension` (as can be obtained via
+           has a name equal to `dimension`, and the index has the
+           corresponding values for that `dimension` (as can be obtained via
            `get_filters()`). If `dimension` is None, the Series has a name
            equal to the organization name configured by the instance of XDMoD
            whose URL is passed into the `DataWarehouse()` constructor as
-           `xdmod_host`.
+           `xdmod_host`. The data in the series are the float64 values for the
+           corresponding values of `metric` and `dimension`.
 
            Parameters
            ----------
            duration : str or object of length 2 of str, optional
-               ...
+               The time period over which to collect data. Either a string
+               value from `get_durations()` or an object of length two with
+               start and end dates specified in 'YYYY-MM-DD' format.
            realm : str, optional
-               ...
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
            metric : str, optional
-               ...
+               A metric in the given realm of the data warehouse. Can be
+               specified by its ID or its label. See `get_metrics()`.
            dimension : str, optional
-               ...
+               A dimension of the given realm in the data warehouse. Can be
+               specified by its ID or its label. See `get_dimensions()`.
            filters : mapping, optional
-               ...
+               A mapping of dimensions to their possible values. Results will
+               only be included whose values for each of the given dimensions
+               match one of the corresponding given values.
            timeseries : bool, optional
-               ...
+               Whether to return timeseries data (True) or aggregate data
+               (False).
            aggregation_unit : str, optional
-               ...
+               The units by which to aggregate data. Must be one of the valid
+               values from `get_aggregation_units()`.
 
            Returns
            -------
@@ -198,18 +208,24 @@ class DataWarehouse:
     def get_raw_data(
         self, duration, realm, fields=(), filters={}, show_progress=True
     ):
-        """Get a DataFrame containing raw data from the warehouse.
+        """Get a data frame containing raw data from the warehouse.
 
            Parameters
            ----------
            duration : str or object of length 2 of str
-               ...
+               The time period over which to collect data. Either a string
+               value from `get_durations()` or an object of length two with
+               start and end dates specified in 'YYYY-MM-DD' format.
            realm : str
-               ...
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
            fields : sequence of str, optional
-               ...
+               The raw data fields to include in the results. See
+               `get_raw_fields()`.
            filters : mapping, optional
-               ...
+               A mapping of dimensions to their possible values. Results will
+               only be included whose values for each of the given dimensions
+               match one of the corresponding given values.
            show_progress : bool, optional
                If true, periodically print how many rows have been gotten so
                far.
@@ -217,7 +233,10 @@ class DataWarehouse:
            Returns
            -------
            pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the data...
+               The columns of the data frame are each of the given `fields`.
+               The data in the data frame are each of the corresponding values
+               for the given `fields`. Missing values are filled with the value
+               `numpy.nan`.
 
            Raises
            ------
@@ -244,7 +263,7 @@ class DataWarehouse:
         return pd.DataFrame(data=data, columns=columns).fillna(value=np.nan)
 
     def get_realms(self):
-        """Get a DataFrame containing the valid realms in the data warehouse.
+        """Get a data frame containing the valid realms in the data warehouse.
 
            Returns
            -------
@@ -262,12 +281,13 @@ class DataWarehouse:
         )
 
     def get_metrics(self, realm):
-        """Get a DataFrame containing the valid metrics for the given realm.
+        """Get a data frame containing the valid metrics for the given realm.
 
            Parameters
            ----------
            realm : str
-               A realm in the data warehouse.
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
 
            Returns
            -------
@@ -287,12 +307,14 @@ class DataWarehouse:
         return self.__get_metrics_or_dimensions(realm, 'metrics')
 
     def get_dimensions(self, realm):
-        """Get a DataFrame containing the valid dimensions for the given realm.
+        """Get a data frame containing the valid dimensions for the given
+           realm.
 
            Parameters
            ----------
            realm : str
-               A realm in the data warehouse.
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
 
            Returns
            -------
@@ -312,15 +334,17 @@ class DataWarehouse:
         return self.__get_metrics_or_dimensions(realm, 'dimensions')
 
     def get_filters(self, realm, dimension):
-        """Get a DataFrame containing the valid filters for the given dimension
-           of the given realm.
+        """Get a data frame containing the valid filters for the given
+           dimension of the given realm.
 
            Parameters
            ----------
            realm : str
-               A realm in the data warehouse.
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
            dimension : str
-               A dimension of the given realm in the data warehouse.
+               A dimension of the given realm in the data warehouse. Can be
+               specified by its ID or its label. See `get_dimensions()`.
 
            Returns
            -------
@@ -357,7 +381,8 @@ class DataWarehouse:
         return result
 
     def get_durations(self):
-        """Get the collection of valid duration values.
+        """Get the valid values of the `duration` parameter of `get_data()` and
+           `get_raw_data()`.
 
            Returns
            -------
@@ -366,7 +391,8 @@ class DataWarehouse:
         return _validator._get_durations()
 
     def get_aggregation_units(self):
-        """Get the collection of valid aggregation units.
+        """Get the valid values for the `aggregation_unit` parameter of
+           `get_data()`.
 
            Returns
            -------
@@ -375,13 +401,14 @@ class DataWarehouse:
         return _validator._get_aggregation_units()
 
     def get_raw_realms(self):
-        """Get a DataFrame containing the valid raw data realms in the data
+        """Get a data frame containing the valid raw data realms in the data
            warehouse.
 
            Returns
            -------
            pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the ID and label of each realm.
+               A Pandas DataFrame containing the ID and label of each raw data
+               realm.
 
            Raises
            ------
@@ -394,12 +421,13 @@ class DataWarehouse:
         )
 
     def get_raw_fields(self, realm):
-        """Get a DataFrame containing the raw data fields for the given realm.
+        """Get a data frame containing the raw data fields for the given realm.
 
            Parameters
            ----------
            realm : str
-               A raw data realm in the data warehouse.
+               A raw data realm in the data warehouse. Can be specified by its
+               ID or its label. See `get_raw_realms()`.
 
            Returns
            -------
