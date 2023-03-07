@@ -554,6 +554,8 @@ class DataWarehouse:
         )
 
     def __get_dimension_label(self, realm, dimension_id):
+        if dimension_id == 'none':
+            return None
         d = self.__descriptors._get_aggregate()
         return d[realm]['dimensions'][dimension_id]['label']
 
