@@ -9,7 +9,7 @@ import re
 def _process_get_data_response(dw, params, response):
     csv_data = csv.reader(response.splitlines())
     if not params['timeseries']:
-        return __xdmod_csv_to_pandas(csv_data)
+        return __xdmod_csv_to_pandas(params, csv_data)
     else:
         label_re = re.compile(r'\[([^\]]+)\].*')
         time_values = []
@@ -72,22 +72,18 @@ def _process_get_data_response(dw, params, response):
         )
 
 
-def __xdmod_csv_to_pandas(csv_data):
+def __xdmod_csv_to_pandas(params, csv_data):
     dimension_values = []
     data = []
     for line_num, line in enumerate(csv_data):
-        if line_num == 5:
-            start_date, end_date = line
-        elif line_num == 7:
-            dimension, metric = line
-        elif line_num > 7 and len(line) > 1:
+        if line_num > 7 and len(line) > 1:
             dimension_values.append(html.unescape(line[0]))
             data.append(np.float64(line[1]))
     if len(data) == 0:
         return pd.Series(dtype=np.float64)
     return pd.Series(
         data=data,
-        name=metric,
-        index=pd.Series(data=dimension_values, name=dimension),
+        name=params['metric'],
+        index=pd.Series(data=dimension_values, name=params['dimension']),
         dtype=np.float64
     )
