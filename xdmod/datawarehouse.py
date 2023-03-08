@@ -1,11 +1,8 @@
-import csv
-from datetime import datetime
-import html
 import numpy as np
 import pandas as pd
-import re
 from xdmod._descriptors import _Descriptors
 from xdmod._http_requester import _HttpRequester
+import xdmod._response_processor as _response_processor
 import xdmod._validator as _validator
 
 
@@ -136,72 +133,9 @@ class DataWarehouse:
             self, self.__descriptors, locals()
         )
         response = self.__http_requester._request_data(params)
-        return self.__process_get_data_response(params, response)
-
-    def __process_get_data_response(self, params, response):
-        csvdata = csv.reader(response.splitlines())
-        if not params['timeseries']:
-            return self.__xdmod_csv_to_pandas(csvdata)
-        else:
-            labelre = re.compile(r'\[([^\]]+)\].*')
-            timestamps = []
-            data = []
-            for line_num, line in enumerate(csvdata):
-                if line_num == 5:
-                    start_date, end_date = line
-                elif line_num == 7:
-                    dimensions = []
-                    for label in line[1:]:
-                        match = labelre.match(label)
-                        if match:
-                            dimensions.append(html.unescape(match.group(1)))
-                        else:
-                            dimensions.append(html.unescape(label))
-                elif line_num > 7 and len(line) > 1:
-                    date_string = line[0]
-                    # Match YYYY-MM-DD
-                    if re.match(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', line[0]):
-                        format = '%Y-%m-%d'
-                    # Match YYYY-MM
-                    elif re.match(r'^[0-9]{4}-[0-9]{2}$', line[0]):
-                        format = '%Y-%m'
-                    # Match YYYY
-                    elif re.match(r'^[0-9]{4}$', line[0]):
-                        format = '%Y'
-                    # Match YYYY Q#
-                    elif re.match(r'^[0-9]{4} Q[0-9]$', line[0]):
-                        year, quarter = line[0].split(' ')
-                        if quarter == 'Q1':
-                            month = '01'
-                        elif quarter == 'Q2':
-                            month = '04'
-                        elif quarter == 'Q3':
-                            month = '07'
-                        elif quarter == 'Q4':
-                            month = '10'
-                        else:
-                            raise Exception(
-                                'Unsupported date quarter specification '
-                                + line[0] + '.'
-                            )
-                        date_string = year + '-' + month + '-01'
-                        format = '%Y-%m-%d'
-                    else:
-                        raise Exception(
-                            'Unsupported date specification ' + line[0] + '.'
-                        )
-                    timestamps.append(datetime.strptime(date_string, format))
-                    data.append(np.asarray(line[1:], dtype=np.float64))
-            return pd.DataFrame(
-                data=data,
-                index=pd.Series(data=timestamps, name='Time'),
-                columns=pd.Series(
-                    dimensions,
-                    name=self.__get_dimension_label(
-                        params['realm'], params['dimension']
-                    )
-                )
-            )
+        return _response_processor._process_get_data_response(
+            self, params, response
+        )
 
     def get_raw_data(
         self, duration, realm, fields=(), filters={}, show_progress=False
@@ -449,27 +383,7 @@ class DataWarehouse:
             ('id', 'label', 'description')
         )
 
-    def __xdmod_csv_to_pandas(self, rd):
-        groups = []
-        data = []
-        for line_num, line in enumerate(rd):
-            if line_num == 5:
-                start_date, end_date = line
-            elif line_num == 7:
-                dimension, metric = line
-            elif line_num > 7 and len(line) > 1:
-                groups.append(html.unescape(line[0]))
-                data.append(np.float64(line[1]))
-        if len(data) == 0:
-            return pd.Series(dtype=np.float64)
-        return pd.Series(
-            data=data,
-            name=metric,
-            index=pd.Series(data=groups, name=dimension),
-            dtype=np.float64
-        )
-
-    def __get_dimension_label(self, realm, dimension_id):
+    def _get_dimension_label(self, realm, dimension_id):
         if dimension_id == 'none':
             return None
         d = self.__descriptors._get_aggregate()
