@@ -42,8 +42,6 @@ def __parse_aggregate_csv_data(params, csv_data):
         if line_num > 7 and len(line) > 1:
             dimension_values.append(html.unescape(line[0]))
             data.append(line[1])
-    if len(data) == 0:
-        return pd.Series()
     return pd.Series(
         data=data,
         name=params['metric'],
