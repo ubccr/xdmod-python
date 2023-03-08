@@ -23,7 +23,7 @@ class _HttpRequester:
     def _start_up(self):
         self.__in_runtime_context = True
         self.__crl = pycurl.Curl()
-        self._assert_connection_to_xdmod_host()
+        self.__assert_connection_to_xdmod_host()
         if self.__api_token:
             _, self.__cookie_file = tempfile.mkstemp()
             self.__crl.setopt(pycurl.COOKIEJAR, self.__cookie_file)
@@ -45,19 +45,6 @@ class _HttpRequester:
         if self.__crl:
             self.__crl.close()
         self.__in_runtime_context = False
-
-    def _assert_connection_to_xdmod_host(self):
-        try:
-            self._request()
-        except RuntimeError as e:
-            raise RuntimeError(
-                'Could not connect to xdmod_host \'' + self.__xdmod_host
-                + '\': ' + str(e)
-            ) from None
-
-    def _request_json(self, path, post_fields=None):
-        response = self._request(path, post_fields)
-        return json.loads(response)
 
     def _request(self, path='', post_fields=None):
         _validator._assert_runtime_context(self.__in_runtime_context)
@@ -88,6 +75,10 @@ class _HttpRequester:
             raise RuntimeError('Error ' + str(code) + msg) from None
         return response
 
+    def _request_json(self, path, post_fields=None):
+        response = self._request(path, post_fields)
+        return json.loads(response)
+
     def __init_api_token(self):
         if not self.__api_token:
             username = self.__get_environment_variable('XDMOD_USER')
@@ -96,6 +87,15 @@ class _HttpRequester:
                 'username': username,
                 'password': password
             }
+
+    def __assert_connection_to_xdmod_host(self):
+        try:
+            self._request()
+        except RuntimeError as e:
+            raise RuntimeError(
+                'Could not connect to xdmod_host \'' + self.__xdmod_host
+                + '\': ' + str(e)
+            ) from None
 
     def __get_environment_variable(self, name):
         try:
