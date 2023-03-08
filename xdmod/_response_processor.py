@@ -23,15 +23,8 @@ def __parse_timeseries_csv_data(dw, params, csv_data):
         elif line_num > 7 and len(line) > 1:
             time_values.append(__parse_timeseries_date_string(line[0]))
             data.append(np.asarray(line[1:]))
-    return pd.DataFrame(
-        data=data,
-        index=pd.Series(data=time_values, name='Time'),
-        columns=pd.Series(
-            dimension_values,
-            name=dw._get_dimension_label(
-                params['realm'], params['dimension']
-            )
-        )
+    return __get_timeseries_data_frame(
+        dw, params, data, time_values, dimension_values
     )
 
 
@@ -81,6 +74,14 @@ def __parse_timeseries_date_string(date_string):
     return datetime.strptime(date_string, format_)
 
 
+def __get_timeseries_data_frame(
+    dw, params, data, time_values, dimension_values
+):
+    index = pd.Series(data=time_values, name='Time')
+    columns = __get_timeseries_data_frame_columns(dw, params, dimension_values)
+    return pd.DataFrame(data=data, index=index, columns=columns)
+
+
 def __parse_quarter_date_string(date_string):
     year, quarter = date_string.split(' ')
     if quarter == 'Q1':
@@ -99,3 +100,28 @@ def __parse_quarter_date_string(date_string):
     date_string = year + '-' + month + '-01'
     format_ = '%Y-%m-%d'
     return (date_string, format_)
+
+
+def __get_timeseries_data_frame_columns(dw, params, dimension_values):
+    metric_label = dw._get_metric_label(
+        params['realm'], params['metric']
+    )
+    dimension_label = dw._get_dimension_label(
+        params['realm'], params['dimension']
+    )
+    metric_series_name = 'Metric'
+    if params['dimension'] == 'none':
+        columns = pd.Series(
+            data=metric_label, name=metric_series_name
+        )
+    else:
+        column_headings = [
+            (
+                metric_label, dimension_value
+            ) for dimension_value in dimension_values
+        ]
+        columns = pd.MultiIndex.from_tuples(
+            tuples=column_headings,
+            names=(metric_series_name, dimension_label),
+        )
+    return columns

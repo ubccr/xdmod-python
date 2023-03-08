@@ -383,6 +383,10 @@ class DataWarehouse:
             ('id', 'label', 'description')
         )
 
+    def _get_metric_label(self, realm, metric_id):
+        d = self.__descriptors._get_aggregate()
+        return d[realm]['metrics'][metric_id]['label']
+
     def _get_dimension_label(self, realm, dimension_id):
         if dimension_id == 'none':
             return None
