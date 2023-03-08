@@ -4,7 +4,6 @@ import html
 import numpy as np
 import pandas as pd
 import re
-from urllib.parse import urlencode
 from xdmod._descriptors import _Descriptors
 from xdmod._http_requester import _HttpRequester
 import xdmod._validator as _validator
@@ -136,10 +135,7 @@ class DataWarehouse:
         params = _validator._validate_get_data_params(
             self, self.__descriptors, locals()
         )
-        post_fields = self.__get_data_post_fields(params)
-        response = self.__http_requester._request(
-            '/controllers/user_interface.php', post_fields
-        )
+        response = self.__http_requester._request_data(params)
         return self.__process_get_data_response(params, response)
 
     def __process_get_data_response(self, params, response):
@@ -261,8 +257,7 @@ class DataWarehouse:
         params = _validator._validate_get_raw_data_params(
             self, self.__descriptors, locals()
         )
-        url_params = self.__get_raw_data_url_params(params)
-        (data, columns) = self.__request_raw_data(url_params, show_progress)
+        (data, columns) = self.__http_requester._request_raw_data(params)
         return pd.DataFrame(data=data, columns=columns).fillna(value=np.nan)
 
     def get_realms(self):
@@ -453,86 +448,6 @@ class DataWarehouse:
             self.__descriptors._get_raw()[realm_id]['fields'],
             ('id', 'label', 'description')
         )
-
-    def __get_raw_data_url_params(self, params):
-        results = {
-            'realm': params['realm'],
-            'start_date': params['start_date'],
-            'end_date': params['end_date'],
-        }
-        if (params['fields']):
-            results['fields'] = ','.join(params['fields'])
-        if (params['filters']):
-            results['filter_keys'] = ','.join(params['filters'])
-            for dimension in params['filters']:
-                results[dimension + '_filter'] = ','.join(
-                    params['filters'][dimension]
-                )
-        return urlencode(results)
-
-    def __request_raw_data(self, url_params, show_progress):
-        data = []
-        limit = 0
-        num_rows = 0
-        offset = 0
-        while num_rows == limit:
-            response = self.__http_requester._request_json(
-                path='/rest/v1/warehouse/raw-data?' + url_params
-                + '&offset=' + str(offset)
-            )
-            partial_data = response['data']
-            data += partial_data
-            if show_progress:
-                progress_msg = 'Got ' + str(len(data)) + ' rows...'
-                print(progress_msg, end='\r')
-            limit = int(response['limit'])
-            num_rows = len(partial_data)
-            offset += limit
-        if show_progress:
-            print(progress_msg + 'DONE')
-        return (data, response['fields'])
-
-    def __get_data_post_fields(self, params):
-        post_fields = {
-            'operation': 'get_data',
-            'start_date': params['start_date'],
-            'end_date': params['end_date'],
-            'realm': params['realm'],
-            'statistic': params['metric'],
-            'group_by': params['dimension'],
-            'dataset_type': (
-                'timeseries' if params['timeseries'] else 'aggregate'
-            ),
-            'aggregation_unit': params['aggregation_unit'],
-            'public_user': 'true',
-            'timeframe_label': '2016',
-            'scale': '1',
-            'thumbnail': 'n',
-            'query_group': 'po_usage',
-            'display_type': 'line',
-            'combine_type': 'side',
-            'limit': '10',
-            'offset': '0',
-            'log_scale': 'n',
-            'show_guide_lines': 'y',
-            'show_trend_line': 'y',
-            'show_percent_alloc': 'n',
-            'show_error_bars': 'y',
-            'show_aggregate_labels': 'n',
-            'show_error_labels': 'n',
-            'show_title': 'y',
-            'width': '916',
-            'height': '484',
-            'legend_type': 'bottom_center',
-            'font_size': '3',
-            'inline': 'n',
-            'format': 'csv'
-        }
-        for dimension in params['filters']:
-            post_fields[dimension + '_filter'] = ','.join(
-                params['filters'][dimension]
-            )
-        return post_fields
 
     def __xdmod_csv_to_pandas(self, rd):
         groups = []
