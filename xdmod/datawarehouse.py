@@ -207,7 +207,7 @@ class DataWarehouse:
             )
 
     def get_raw_data(
-        self, duration, realm, fields=(), filters={}, show_progress=True
+        self, duration, realm, fields=(), filters={}, show_progress=False
     ):
         """Get a data frame containing raw data from the warehouse.
 
