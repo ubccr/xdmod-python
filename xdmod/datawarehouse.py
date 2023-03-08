@@ -58,9 +58,10 @@ class DataWarehouse:
         self.__in_runtime_context = False
 
     def get_data(
-            self, duration='Previous month', realm='Jobs',
-            metric='CPU Hours: Total', dimension='None', filters={},
-            timeseries=True, aggregation_unit='Auto'):
+        self, duration='Previous month', realm='Jobs',
+        metric='CPU Hours: Total', dimension='None', filters={},
+        timeseries=True, aggregation_unit='Auto'
+    ):
         """Get a data frame or series containing data from the warehouse.
 
            If `timeseries` is True, a Pandas DataFrame is returned. In that
