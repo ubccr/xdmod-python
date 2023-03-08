@@ -59,7 +59,7 @@ def _process_get_data_response(dw, params, response):
                         'Unsupported date specification ' + line[0] + '.'
                     )
                 time_values.append(datetime.strptime(date_string, format_))
-                data.append(np.asarray(line[1:], dtype=np.float64))
+                data.append(np.asarray(line[1:])
         return pd.DataFrame(
             data=data,
             index=pd.Series(data=time_values, name='Time'),
@@ -78,12 +78,11 @@ def __xdmod_csv_to_pandas(params, csv_data):
     for line_num, line in enumerate(csv_data):
         if line_num > 7 and len(line) > 1:
             dimension_values.append(html.unescape(line[0]))
-            data.append(np.float64(line[1]))
+            data.append(line[1])
     if len(data) == 0:
-        return pd.Series(dtype=np.float64)
+        return pd.Series()
     return pd.Series(
         data=data,
         name=params['metric'],
         index=pd.Series(data=dimension_values, name=params['dimension']),
-        dtype=np.float64
     )
