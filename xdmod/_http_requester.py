@@ -18,6 +18,7 @@ class _HttpRequester:
         self.__crl = None
         self.__cookie_file = None
         self.__headers = []
+        self.__raw_data_limit = None
         self.__init_api_token()
 
     def _start_up(self):
@@ -54,9 +55,9 @@ class _HttpRequester:
 
     def _request_raw_data(self, params):
         url_params = self.__get_raw_data_url_params(params)
+        limit = self.__get_raw_data_limit()
         data = []
-        limit = 0
-        num_rows = 0
+        num_rows = limit
         offset = 0
         while num_rows == limit:
             response = self._request_json(
@@ -68,7 +69,6 @@ class _HttpRequester:
             if params['show_progress']:
                 progress_msg = 'Got ' + str(len(data)) + ' rows...'
                 print(progress_msg, end='\r')
-            limit = int(response['limit'])
             num_rows = len(partial_data)
             offset += limit
         if params['show_progress']:
@@ -183,6 +183,12 @@ class _HttpRequester:
                     params['filters'][dimension]
                 )
         return urlencode(results)
+
+    def __get_raw_data_limit(self):
+        if self.__raw_data_limit is None:
+            response = self._request_json('/rest/v1/warehouse/raw-data/limit')
+            self.__raw_data_limit = int(response['data'])
+        return self.__raw_data_limit
 
     def __get_environment_variable(self, name):
         try:
