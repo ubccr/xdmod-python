@@ -186,8 +186,8 @@ class _HttpRequester:
 
     def __get_raw_data_limit(self):
         if self.__raw_data_limit is None:
-            response = self.__request('/rest/v1/warehouse/raw-data/limit')
-            self.__raw_data_limit = int(response)
+            response = self._request_json('/rest/v1/warehouse/raw-data/limit')
+            self.__raw_data_limit = int(response['data'])
         return self.__raw_data_limit
 
     def __get_environment_variable(self, name):
