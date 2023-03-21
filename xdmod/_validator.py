@@ -2,13 +2,17 @@ from datetime import date, timedelta
 
 
 def _assert_str(name, value):
-    if not isinstance(value, str):
-        raise TypeError('`' + name + '` must be a string.')
+    return __assert_type(name, value, str, 'string')
 
 
-def __assert_bool(name, obj):
-    if not isinstance(obj, bool):
-        raise TypeError('`' + name + '` must be a Boolean.')
+def __assert_bool(name, value):
+    return __assert_type(name, value, bool, 'Boolean')
+
+
+def __assert_type(name, value, type_, type_name):
+    if not isinstance(value, type_):
+        raise TypeError('`' + name + '` must be a ' + type_name + '.')
+    return value
 
 
 def _assert_runtime_context(in_runtime_context):
@@ -34,14 +38,12 @@ def _validate_get_data_params(data_warehouse, descriptors, params):
     results['filters'] = __validate_filters(
         data_warehouse, descriptors, results['realm'], params['filters']
     )
-    __assert_bool('timeseries', params['timeseries'])
-    results['timeseries'] = params['timeseries']
-    __assert_str_in_sequence(
+    results['timeseries'] = __assert_bool('timeseries', params['timeseries'])
+    results['aggregation_unit'] = __find_str_in_sequence(
         params['aggregation_unit'],
         _get_aggregation_units(),
         'aggregation_unit',
     )
-    results['aggregation_unit'] = params['aggregation_unit']
     return results
 
 
@@ -56,6 +58,9 @@ def _validate_get_raw_data_params(data_warehouse, descriptors, params):
     )
     results['filters'] = __validate_filters(
         data_warehouse, descriptors, params['realm'], params['filters']
+    )
+    results['show_progress'] = __assert_bool(
+        'show_progress', params['show_progress']
     )
     return results
 
@@ -167,7 +172,7 @@ def __validate_raw_fields(data_warehouse, realm, fields):
 
 def __validate_duration(duration):
     if isinstance(duration, str):
-        __assert_str_in_sequence(
+        duration = __find_str_in_sequence(
             duration, _get_durations(), 'duration'
         )
         (start_date, end_date) = __get_dates_from_duration(duration)
@@ -256,13 +261,11 @@ def __date_add_years(old_date, year_delta):
     return new_date + timedelta(days=days_above)
 
 
-def __find_value_in_df(label, valid_df, value):
-    if value in valid_df.index:
+def __find_value_in_df(label, df, value):
+    if value in df.index:
         return value
-    elif value in valid_df['label'].values:
-        return valid_df.index[
-            valid_df['label'] == value
-        ].tolist()[0]
+    elif value in df['label'].values:
+        return df.index[df['label'] == value].tolist()[0]
     else:
         raise KeyError(label + ' \'' + value + '\' not found.')
 
@@ -277,10 +280,18 @@ def __find_id_in_descriptor(descriptor, name, value):
     )
 
 
-def __assert_str_in_sequence(value, sequence, label):
+def __find_str_in_sequence(value, sequence, label):
     _assert_str(label, value)
-    if value not in sequence:
-        raise KeyError(
-            'Invalid value for `' + label + '`: \'' + value + '\''
-            + '. Valid values are: \'' + '\', \''.join(sequence) + '\'.'
-        ) from None
+    transformed_value = __lowercase_and_remove_spaces(value)
+    for valid_value in sequence:
+        transformed_valid_value = __lowercase_and_remove_spaces(valid_value)
+        if transformed_valid_value == transformed_value:
+            return valid_value
+    raise KeyError(
+        'Invalid value for `' + label + '`: \'' + value + '\''
+        + '. Valid values are: \'' + '\', \''.join(sequence) + '\'.'
+    ) from None
+
+
+def __lowercase_and_remove_spaces(value):
+    return value.lower().replace(' ', '')

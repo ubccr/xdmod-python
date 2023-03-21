@@ -1,12 +1,8 @@
-import csv
-from datetime import datetime
-import html
 import numpy as np
 import pandas as pd
-import re
-from urllib.parse import urlencode
 from xdmod._descriptors import _Descriptors
 from xdmod._http_requester import _HttpRequester
+import xdmod._response_processor as _response_processor
 import xdmod._validator as _validator
 
 
@@ -58,10 +54,11 @@ class DataWarehouse:
         self.__in_runtime_context = False
 
     def get_data(
-            self, duration='Previous month', realm='Jobs',
-            metric='CPU Hours: Total', dimension='None', filters={},
-            timeseries=True, aggregation_unit='Auto'):
-        """Get a DataFrame containing data from the warehouse.
+        self, duration='Previous month', realm='Jobs',
+        metric='CPU Hours: Total', dimension='None', filters={},
+        timeseries=True, aggregation_unit='Auto'
+    ):
+        """Get a data frame or series containing data from the warehouse.
 
            If `timeseries` is True, a Pandas DataFrame is returned. In that
            DataFrame, the index has the name 'Time' and contains
@@ -70,33 +67,44 @@ class DataWarehouse:
            a Pandas Series that has the same properties as the Series that is
            returned if `timeseries` were instead False (see paragraph below).
            The data in the DataFrame are the float64 values for the
-           corresponding time value, `metric`, and `dimension` value.
+           corresponding values of time, `metric`, and `dimension`.
 
            If `timeseries` is False, a Pandas Series is returned. The name of
            the Series is the value of `metric`. The index of the Series
-           has a name equal to `dimension`, and its data are the corresponding
-           values for that `dimension` (as can be obtained via
+           has a name equal to `dimension`, and the index has the
+           corresponding values for that `dimension` (as can be obtained via
            `get_filters()`). If `dimension` is None, the Series has a name
            equal to the organization name configured by the instance of XDMoD
            whose URL is passed into the `DataWarehouse()` constructor as
-           `xdmod_host`.
+           `xdmod_host`. The data in the series are the float64 values for the
+           corresponding values of `metric` and `dimension`.
 
            Parameters
            ----------
            duration : str or object of length 2 of str, optional
-               ...
+               The time period over which to collect data. Either a string
+               value from `get_durations()` (case insensitive) or an object of
+               length two with start and end dates specified in 'YYYY-MM-DD'
+               format.
            realm : str, optional
-               ...
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
            metric : str, optional
-               ...
+               A metric in the given realm of the data warehouse. Can be
+               specified by its ID or its label. See `get_metrics()`.
            dimension : str, optional
-               ...
+               A dimension of the given realm in the data warehouse. Can be
+               specified by its ID or its label. See `get_dimensions()`.
            filters : mapping, optional
-               ...
+               A mapping of dimensions to their possible values. Results will
+               only be included whose values for each of the given dimensions
+               match one of the corresponding given values.
            timeseries : bool, optional
-               ...
+               Whether to return timeseries data (True) or aggregate data
+               (False).
            aggregation_unit : str, optional
-               ...
+               The units by which to aggregate data. Must be one of the valid
+               values from `get_aggregation_units()` (case insensitive).
 
            Returns
            -------
@@ -124,95 +132,44 @@ class DataWarehouse:
         params = _validator._validate_get_data_params(
             self, self.__descriptors, locals()
         )
-        post_fields = self.__get_data_post_fields(params)
-        response = self.__http_requester._request(
-            '/controllers/user_interface.php', post_fields
+        response = self.__http_requester._request_data(params)
+        return _response_processor._process_get_data_response(
+            self, params, response
         )
-        return self.__process_get_data_response(params, response)
 
-    def __process_get_data_response(self, params, response):
-        csvdata = csv.reader(response.splitlines())
-        if not params['timeseries']:
-            return self.__xdmod_csv_to_pandas(csvdata)
-        else:
-            labelre = re.compile(r'\[([^\]]+)\].*')
-            timestamps = []
-            data = []
-            for line_num, line in enumerate(csvdata):
-                if line_num == 5:
-                    start_date, end_date = line
-                elif line_num == 7:
-                    dimensions = []
-                    for label in line[1:]:
-                        match = labelre.match(label)
-                        if match:
-                            dimensions.append(html.unescape(match.group(1)))
-                        else:
-                            dimensions.append(html.unescape(label))
-                elif line_num > 7 and len(line) > 1:
-                    date_string = line[0]
-                    # Match YYYY-MM-DD
-                    if re.match(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$', line[0]):
-                        format = '%Y-%m-%d'
-                    # Match YYYY-MM
-                    elif re.match(r'^[0-9]{4}-[0-9]{2}$', line[0]):
-                        format = '%Y-%m'
-                    # Match YYYY
-                    elif re.match(r'^[0-9]{4}$', line[0]):
-                        format = '%Y'
-                    # Match YYYY Q#
-                    elif re.match(r'^[0-9]{4} Q[0-9]$', line[0]):
-                        year, quarter = line[0].split(' ')
-                        if quarter == 'Q1':
-                            month = '01'
-                        elif quarter == 'Q2':
-                            month = '04'
-                        elif quarter == 'Q3':
-                            month = '07'
-                        elif quarter == 'Q4':
-                            month = '10'
-                        else:
-                            raise Exception(
-                                'Unsupported date quarter specification '
-                                + line[0] + '.'
-                            )
-                        date_string = year + '-' + month + '-01'
-                        format = '%Y-%m-%d'
-                    else:
-                        raise Exception(
-                            'Unsupported date specification ' + line[0] + '.'
-                        )
-                    timestamps.append(datetime.strptime(date_string, format))
-                    data.append(np.asarray(line[1:], dtype=np.float64))
-            return pd.DataFrame(
-                data=data,
-                index=pd.Series(data=timestamps, name='Time'),
-                columns=pd.Series(
-                    dimensions,
-                    name=self.__get_dimension_label(
-                        params['realm'], params['dimension']
-                    )
-                )
-            )
-
-    def get_raw_data(self, duration, realm, fields=(), filters={}):
-        """Get a DataFrame containing raw data from the warehouse.
+    def get_raw_data(
+        self, duration, realm, fields=(), filters={}, show_progress=False
+    ):
+        """Get a data frame containing raw data from the warehouse.
 
            Parameters
            ----------
            duration : str or object of length 2 of str
-               ...
+               The time period over which to collect data. Either a string
+               value from `get_durations()` (case insensitive) or an object of
+               length two with start and end dates specified in 'YYYY-MM-DD'
+               format.
            realm : str
-               ...
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
            fields : sequence of str, optional
-               ...
+               The raw data fields to include in the results. See
+               `get_raw_fields()`.
            filters : mapping, optional
-               ...
+               A mapping of dimensions to their possible values. Results will
+               only be included whose values for each of the given dimensions
+               match one of the corresponding given values.
+           show_progress : bool, optional
+               If true, periodically print how many rows have been gotten so
+               far.
 
            Returns
            -------
            pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the data...
+               The columns of the data frame are each of the given `fields`.
+               The data in the data frame are each of the corresponding values
+               for the given `fields`. Missing values are filled with the value
+               `numpy.nan`.
 
            Raises
            ------
@@ -234,12 +191,11 @@ class DataWarehouse:
         params = _validator._validate_get_raw_data_params(
             self, self.__descriptors, locals()
         )
-        url_params = self.__get_raw_data_url_params(params)
-        (data, columns) = self.__request_raw_data(url_params)
+        (data, columns) = self.__http_requester._request_raw_data(params)
         return pd.DataFrame(data=data, columns=columns).fillna(value=np.nan)
 
     def get_realms(self):
-        """Get a DataFrame containing the valid realms in the data warehouse.
+        """Get a data frame containing the valid realms in the data warehouse.
 
            Returns
            -------
@@ -257,12 +213,13 @@ class DataWarehouse:
         )
 
     def get_metrics(self, realm):
-        """Get a DataFrame containing the valid metrics for the given realm.
+        """Get a data frame containing the valid metrics for the given realm.
 
            Parameters
            ----------
            realm : str
-               A realm in the data warehouse.
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
 
            Returns
            -------
@@ -282,12 +239,14 @@ class DataWarehouse:
         return self.__get_metrics_or_dimensions(realm, 'metrics')
 
     def get_dimensions(self, realm):
-        """Get a DataFrame containing the valid dimensions for the given realm.
+        """Get a data frame containing the valid dimensions for the given
+           realm.
 
            Parameters
            ----------
            realm : str
-               A realm in the data warehouse.
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
 
            Returns
            -------
@@ -307,15 +266,17 @@ class DataWarehouse:
         return self.__get_metrics_or_dimensions(realm, 'dimensions')
 
     def get_filters(self, realm, dimension):
-        """Get a DataFrame containing the valid filters for the given dimension
-           of the given realm.
+        """Get a data frame containing the valid filters for the given
+           dimension of the given realm.
 
            Parameters
            ----------
            realm : str
-               A realm in the data warehouse.
+               A realm in the data warehouse. Can be specified by its ID or its
+               label. See `get_realms()`.
            dimension : str
-               A dimension of the given realm in the data warehouse.
+               A dimension of the given realm in the data warehouse. Can be
+               specified by its ID or its label. See `get_dimensions()`.
 
            Returns
            -------
@@ -352,7 +313,8 @@ class DataWarehouse:
         return result
 
     def get_durations(self):
-        """Get the collection of valid duration values.
+        """Get the valid values of the `duration` parameter of `get_data()` and
+           `get_raw_data()`.
 
            Returns
            -------
@@ -361,7 +323,8 @@ class DataWarehouse:
         return _validator._get_durations()
 
     def get_aggregation_units(self):
-        """Get the collection of valid aggregation units.
+        """Get the valid values for the `aggregation_unit` parameter of
+           `get_data()`.
 
            Returns
            -------
@@ -370,13 +333,14 @@ class DataWarehouse:
         return _validator._get_aggregation_units()
 
     def get_raw_realms(self):
-        """Get a DataFrame containing the valid raw data realms in the data
+        """Get a data frame containing the valid raw data realms in the data
            warehouse.
 
            Returns
            -------
            pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the ID and label of each realm.
+               A Pandas DataFrame containing the ID and label of each raw data
+               realm.
 
            Raises
            ------
@@ -389,12 +353,13 @@ class DataWarehouse:
         )
 
     def get_raw_fields(self, realm):
-        """Get a DataFrame containing the raw data fields for the given realm.
+        """Get a data frame containing the raw data fields for the given realm.
 
            Parameters
            ----------
            realm : str
-               A raw data realm in the data warehouse.
+               A raw data realm in the data warehouse. Can be specified by its
+               ID or its label. See `get_raw_realms()`.
 
            Returns
            -------
@@ -418,102 +383,13 @@ class DataWarehouse:
             ('id', 'label', 'description')
         )
 
-    def __get_raw_data_url_params(self, params):
-        results = {
-            'realm': params['realm'],
-            'start_date': params['start_date'],
-            'end_date': params['end_date'],
-        }
-        if (params['fields']):
-            results['fields'] = ','.join(params['fields'])
-        if (params['filters']):
-            results['filter_keys'] = ','.join(params['filters'])
-            for dimension in params['filters']:
-                results[dimension + '_filter'] = ','.join(
-                    params['filters'][dimension]
-                )
-        return urlencode(results)
+    def _get_metric_label(self, realm, metric_id):
+        d = self.__descriptors._get_aggregate()
+        return d[realm]['metrics'][metric_id]['label']
 
-    def __request_raw_data(self, url_params):
-        data = []
-        limit = 0
-        num_rows = 0
-        offset = 0
-        while num_rows == limit:
-            response = self.__http_requester._request_json(
-                path='/rest/v1/warehouse/raw-data?' + url_params
-                + '&offset=' + str(offset)
-            )
-            partial_data = response['data']
-            data += partial_data
-            limit = int(response['limit'])
-            num_rows = len(partial_data)
-            offset += limit
-        return (data, response['fields'])
-
-    def __get_data_post_fields(self, params):
-        post_fields = {
-            'operation': 'get_data',
-            'start_date': params['start_date'],
-            'end_date': params['end_date'],
-            'realm': params['realm'],
-            'statistic': params['metric'],
-            'group_by': params['dimension'],
-            'dataset_type': (
-                'timeseries' if params['timeseries'] else 'aggregate'
-            ),
-            'aggregation_unit': params['aggregation_unit'],
-            'public_user': 'true',
-            'timeframe_label': '2016',
-            'scale': '1',
-            'thumbnail': 'n',
-            'query_group': 'po_usage',
-            'display_type': 'line',
-            'combine_type': 'side',
-            'limit': '10',
-            'offset': '0',
-            'log_scale': 'n',
-            'show_guide_lines': 'y',
-            'show_trend_line': 'y',
-            'show_percent_alloc': 'n',
-            'show_error_bars': 'y',
-            'show_aggregate_labels': 'n',
-            'show_error_labels': 'n',
-            'show_title': 'y',
-            'width': '916',
-            'height': '484',
-            'legend_type': 'bottom_center',
-            'font_size': '3',
-            'inline': 'n',
-            'format': 'csv'
-        }
-        for dimension in params['filters']:
-            post_fields[dimension + '_filter'] = ','.join(
-                params['filters'][dimension]
-            )
-        return post_fields
-
-    def __xdmod_csv_to_pandas(self, rd):
-        groups = []
-        data = []
-        for line_num, line in enumerate(rd):
-            if line_num == 5:
-                start_date, end_date = line
-            elif line_num == 7:
-                dimension, metric = line
-            elif line_num > 7 and len(line) > 1:
-                groups.append(html.unescape(line[0]))
-                data.append(np.float64(line[1]))
-        if len(data) == 0:
-            return pd.Series(dtype=np.float64)
-        return pd.Series(
-            data=data,
-            name=metric,
-            index=pd.Series(data=groups, name=dimension),
-            dtype=np.float64
-        )
-
-    def __get_dimension_label(self, realm, dimension_id):
+    def _get_dimension_label(self, realm, dimension_id):
+        if dimension_id == 'none':
+            return None
         d = self.__descriptors._get_aggregate()
         return d[realm]['dimensions'][dimension_id]['label']
 
