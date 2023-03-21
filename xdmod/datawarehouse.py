@@ -19,25 +19,19 @@ class DataWarehouse:
        ----------
        xdmod_host : str
            The URL of the XDMoD server.
-       api_token : str, optional
-           The API token used to connect. If not provided, the
-           `XDMOD_USER` and `XDMOD_PASS` environment variables must be
-           set.
+       api_token : str
+           The API token used to connect.
 
        Raises
        ------
-       KeyError
-           If `api_token` is None and either or both of the environment
-           variables `XDMOD_USER` and `XDMOD_PASS` have not been set.
        RuntimeError
            If a connection cannot be made to the XDMoD server specified by
            `xdmod_host`.
        TypeError
-           If `xdmod_host` is not a string or if `api_token` is not None and is
-           not a string.
+           If `xdmod_host` or `api_token` are not strings.
     """
 
-    def __init__(self, xdmod_host, api_token=None):
+    def __init__(self, xdmod_host, api_token):
         self.__in_runtime_context = False
         self.__http_requester = _HttpRequester(xdmod_host, api_token)
         self.__descriptors = _Descriptors(self.__http_requester)

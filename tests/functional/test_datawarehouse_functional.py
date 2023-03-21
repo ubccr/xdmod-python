@@ -4,12 +4,13 @@ import pandas
 import os
 
 XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
+API_KEY = os.getenv('API_KEY')
 DATA_DIR = os.path.dirname(__file__) + '/data'
 
 
 @pytest.fixture(scope='module')
 def valid_dw():
-    with xdw.DataWarehouse(XDMOD_URL) as dw:
+    with xdw.DataWarehouse(XDMOD_URL, API_KEY) as dw:
         yield dw
 
 

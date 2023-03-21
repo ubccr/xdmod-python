@@ -1,9 +1,11 @@
 import pytest
 import xdmod.datawarehouse as xdw
 import pandas
+import os
 
 INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
+API_KEY = os.getenv('API_KEY')
 METHOD_PARAMS = {
     'get_data': (
         'duration', 'realm', 'metric', 'dimension', 'filters', 'timeseries',
@@ -84,13 +86,13 @@ for method in METHOD_PARAMS:
 
 @pytest.fixture(scope='module')
 def dw_methods():
-    with xdw.DataWarehouse(VALID_XDMOD_URL) as dw:
+    with xdw.DataWarehouse(VALID_XDMOD_URL, API_KEY) as dw:
         yield __get_dw_methods(dw)
 
 
 @pytest.fixture(scope='module')
 def dw_methods_outside_runtime_context():
-    dw = xdw.DataWarehouse(VALID_XDMOD_URL)
+    dw = xdw.DataWarehouse(VALID_XDMOD_URL, API_KEY)
     return __get_dw_methods(dw)
 
 
