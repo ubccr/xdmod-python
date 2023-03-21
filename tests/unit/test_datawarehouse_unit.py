@@ -1,6 +1,5 @@
 import pytest
 import xdmod.datawarehouse as xdw
-import os
 
 
 VALID_XDMOD_URL = 'https://xdmod.access-ci.org'
