@@ -12,28 +12,28 @@ class DataWarehouse:
        Methods must be called within a runtime context using the ``with``
        keyword, e.g.,
 
-       >>> with DataWarehouse(XDMOD_URL, XDMOD_API_TOKEN) as dw:
+       >>> with DataWarehouse(XDMOD_URL) as dw:
        ...     dw.get_data()
 
        Parameters
        ----------
        xdmod_host : str
            The URL of the XDMoD server.
-       api_token : str
-           The API token used to connect.
 
        Raises
        ------
+       KeyError
+           If the `XDMOD_API_TOKEN` environment variable has not been set.
        RuntimeError
            If a connection cannot be made to the XDMoD server specified by
            `xdmod_host`.
        TypeError
-           If `xdmod_host` or `api_token` are not strings.
+           If `xdmod_host` is not a string.
     """
 
-    def __init__(self, xdmod_host, api_token):
+    def __init__(self, xdmod_host):
         self.__in_runtime_context = False
-        self.__http_requester = _HttpRequester(xdmod_host, api_token)
+        self.__http_requester = _HttpRequester(xdmod_host)
         self.__descriptors = _Descriptors(self.__http_requester)
         self.__username = None
 

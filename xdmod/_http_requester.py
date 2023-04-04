@@ -7,14 +7,18 @@ import xdmod._validator as _validator
 
 
 class _HttpRequester:
-    def __init__(self, xdmod_host, api_token):
+    def __init__(self, xdmod_host):
         self.__in_runtime_context = False
         _validator._assert_str('xdmod_host', xdmod_host)
         self.__xdmod_host = xdmod_host
-        _validator._assert_str('api_token', api_token)
-        self.__api_token = api_token
-        self.__crl = None
+        try:
+            self.__api_token = os.environ['XDMOD_API_TOKEN']
+        except KeyError:
+            raise KeyError(
+                '`XDMOD_API_TOKEN` environment variable has not been set.'
+            ) from None
         self.__headers = ['Authorization: Bearer ' + self.__api_token]
+        self.__crl = None
         self.__raw_data_limit = None
 
     def _start_up(self):

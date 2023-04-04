@@ -1,11 +1,9 @@
 import pytest
 import xdmod.datawarehouse as xdw
 import pandas
-import os
 
 INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
-API_KEY = os.getenv('API_KEY')
 METHOD_PARAMS = {
     'get_data': (
         'duration', 'realm', 'metric', 'dimension', 'filters', 'timeseries',
@@ -86,13 +84,13 @@ for method in METHOD_PARAMS:
 
 @pytest.fixture(scope='module')
 def dw_methods():
-    with xdw.DataWarehouse(VALID_XDMOD_URL, API_KEY) as dw:
+    with xdw.DataWarehouse(VALID_XDMOD_URL) as dw:
         yield __get_dw_methods(dw)
 
 
 @pytest.fixture(scope='module')
 def dw_methods_outside_runtime_context():
-    dw = xdw.DataWarehouse(VALID_XDMOD_URL, API_KEY)
+    dw = xdw.DataWarehouse(VALID_XDMOD_URL)
     return __get_dw_methods(dw)
 
 
@@ -120,7 +118,9 @@ def __test_exception(dw_methods, method, additional_params, error, match):
 
 
 @pytest.mark.parametrize(
-    'method, params, match', key_error_test_params, ids=key_error_test_names
+    'method, params, match',
+    key_error_test_params,
+    ids=key_error_test_names
 )
 def test_KeyError(dw_methods, method, params, match):
     __test_exception(dw_methods, method, params, KeyError, match)
@@ -140,10 +140,15 @@ def test_KeyError(dw_methods, method, params, match):
     ],
 )
 def test_RuntimeError_outside_context(
-        dw_methods_outside_runtime_context, method):
+    dw_methods_outside_runtime_context,
+    method,
+):
     __test_exception(
-        dw_methods_outside_runtime_context, method, {}, RuntimeError,
-        'outside of the runtime context'
+        dw_methods_outside_runtime_context,
+        method,
+        {},
+        RuntimeError,
+        'outside of the runtime context',
     )
 
 
@@ -154,7 +159,11 @@ def test_RuntimeError_outside_context(
 )
 def test_RuntimeError_date_malformed(dw_methods, method, param, params):
     __test_exception(
-        dw_methods, method, params, RuntimeError, param
+        dw_methods,
+        method,
+        params,
+        RuntimeError,
+        param,
     )
 
 
@@ -174,8 +183,11 @@ def test_TypeError(dw_methods, method, param):
 )
 def test_ValueError_duration(dw_methods, method):
     __test_exception(
-        dw_methods, method, {'duration': ('1', '2', '3')}, ValueError,
-        'duration'
+        dw_methods,
+        method,
+        {'duration': ('1', '2', '3')},
+        ValueError,
+        'duration',
     )
 
 
@@ -203,7 +215,7 @@ def test_DataFrame_return_type(dw_methods, method):
         ('get_data', 'duration', 'Quarter to date', '  quaRterto dAte '),
         ('get_data', 'aggregation_unit', 'Month', ' m O ntH  '),
     ],
-    ids=('get_data:duration', 'get_data:aggregation_unit')
+    ids=('get_data:duration', 'get_data:aggregation_unit'),
 )
 def test_case_insensitive(dw_methods, method, param, value1, value2):
     data1 = __run_method(dw_methods, method, {param: value1})
