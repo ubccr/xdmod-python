@@ -7,6 +7,14 @@ import re
 
 
 def _process_get_data_response(dw, params, response):
+    params['metric'] = dw._get_metric_label(
+        params['realm'],
+        params['metric'],
+    )
+    params['dimension'] = dw._get_dimension_label(
+        params['realm'],
+        params['dimension'],
+    )
     csv_data = csv.reader(response.splitlines())
     if params['timeseries']:
         return __parse_timeseries_csv_data(dw, params, csv_data)
@@ -111,29 +119,20 @@ def __parse_quarter_date_string(date_string):
 
 
 def __get_timeseries_data_frame_columns(dw, params, dimension_values):
-    metric_label = dw._get_metric_label(
-        params['realm'],
-        params['metric'],
-    )
-    dimension_label = dw._get_dimension_label(
-        params['realm'],
-        params['dimension'],
-    )
-    metric_series_name = 'Metric'
     if params['dimension'] == 'none':
         columns = pd.Series(
-            data=metric_label,
-            name=metric_series_name,
+            data=params['metric'],
+            name='Metric',
         )
     else:
         column_headings = [
             (
-                metric_label,
+                params['metric'],
                 dimension_value,
             ) for dimension_value in dimension_values
         ]
         columns = pd.MultiIndex.from_tuples(
             tuples=column_headings,
-            names=(metric_series_name, dimension_label),
+            names=('Metric', params['dimension']),
         )
     return columns
