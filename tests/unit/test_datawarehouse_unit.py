@@ -17,7 +17,7 @@ def test___init___KeyError():
     del os.environ['XDMOD_API_TOKEN']
     with pytest.raises(
         KeyError,
-        match='`XDMOD_API_TOKEN` environment variable has not been set.'
+        match='`XDMOD_API_TOKEN` environment variable has not been set.',
     ):
         xdw.DataWarehouse(VALID_XDMOD_URL)
     os.environ['XDMOD_API_TOKEN'] = token
@@ -26,7 +26,7 @@ def test___init___KeyError():
 def test___enter___RuntimeError_xdmod_host_malformed():
     with pytest.raises(
         RuntimeError,
-        match='Could not connect to xdmod_host \'\': Malformed URL.'
+        match='Could not connect to xdmod_host \'\': Malformed URL.',
     ):
         with xdw.DataWarehouse(''):
             pass
@@ -37,7 +37,7 @@ def test___enter___RuntimeError_xdmod_host_unresolved():
     with pytest.raises(
         RuntimeError,
         match='Could not connect to xdmod_host \'' + invalid_host
-        + '\': Could not resolve host: ' + invalid_host
+        + '\': Could not resolve host: ' + invalid_host,
     ):
         with xdw.DataWarehouse(invalid_host):
             pass
@@ -49,7 +49,7 @@ def test___enter___RuntimeError_xdmod_host_unsupported_protocol():
         RuntimeError,
         match='Could not connect to xdmod_host \'' + invalid_host
         + '\': Protocol "' + INVALID_STR
-        + '" not supported or disabled in libcurl'
+        + '" not supported or disabled in libcurl',
     ):
         with xdw.DataWarehouse(invalid_host):
             pass

@@ -6,11 +6,20 @@ INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
 METHOD_PARAMS = {
     'get_data': (
-        'duration', 'realm', 'metric', 'dimension', 'filters', 'timeseries',
+        'duration',
+        'realm',
+        'metric',
+        'dimension',
+        'filters',
+        'timeseries',
         'aggregation_unit',
     ),
     'get_raw_data': (
-        'duration', 'realm', 'filters', 'fields', 'show_progress',
+        'duration',
+        'realm',
+        'filters',
+        'fields',
+        'show_progress',
     ),
     'get_realms': (),
     'get_metrics': ('realm',),
@@ -44,7 +53,8 @@ KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     ),
     'aggregation_unit': (INVALID_STR, 'Invalid value for `aggregation_unit`'),
     'parameter': (
-        INVALID_STR, 'Parameter .* does not have a list of valid values'
+        INVALID_STR,
+        'Parameter .* does not have a list of valid values',
     ),
     'field': (INVALID_STR, r'Field .* not found'),
 }
@@ -73,7 +83,8 @@ for method in METHOD_PARAMS:
         if param == 'duration':
             duration_test_names += [method + ':duration']
             start_end_test_names += [
-                method + ':start_date', method + ':end_date'
+                method + ':start_date',
+                method + ':end_date',
             ]
             date_malformed_test_params += [
                 (method, 'start_date', {'duration': (INVALID_STR, VALID_DATE)}),
@@ -120,7 +131,7 @@ def __test_exception(dw_methods, method, additional_params, error, match):
 @pytest.mark.parametrize(
     'method, params, match',
     key_error_test_params,
-    ids=key_error_test_names
+    ids=key_error_test_names,
 )
 def test_KeyError(dw_methods, method, params, match):
     __test_exception(dw_methods, method, params, KeyError, match)
@@ -205,7 +216,8 @@ def test_ValueError_duration(dw_methods, method):
 )
 def test_DataFrame_return_type(dw_methods, method):
     assert isinstance(
-        __run_method(dw_methods, method), pandas.core.frame.DataFrame
+        __run_method(dw_methods, method),
+        pandas.core.frame.DataFrame,
     )
 
 
