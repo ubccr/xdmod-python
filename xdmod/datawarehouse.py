@@ -48,9 +48,14 @@ class DataWarehouse:
         self.__in_runtime_context = False
 
     def get_data(
-        self, duration='Previous month', realm='Jobs',
-        metric='CPU Hours: Total', dimension='None', filters={},
-        timeseries=True, aggregation_unit='Auto'
+        self,
+        duration='Previous month',
+        realm='Jobs',
+        metric='CPU Hours: Total',
+        dimension='None',
+        filters={},
+        timeseries=True,
+        aggregation_unit='Auto',
     ):
         """Get a data frame or series containing data from the warehouse.
 
@@ -124,15 +129,24 @@ class DataWarehouse:
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
         params = _validator._validate_get_data_params(
-            self, self.__descriptors, locals()
+            self,
+            self.__descriptors,
+            locals(),
         )
         response = self.__http_requester._request_data(params)
         return _response_processor._process_get_data_response(
-            self, params, response
+            self,
+            params,
+            response,
         )
 
     def get_raw_data(
-        self, duration, realm, fields=(), filters={}, show_progress=False
+        self,
+        duration,
+        realm,
+        fields=(),
+        filters={},
+        show_progress=False,
     ):
         """Get a data frame containing raw data from the warehouse.
 
@@ -183,7 +197,9 @@ class DataWarehouse:
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
         params = _validator._validate_get_raw_data_params(
-            self, self.__descriptors, locals()
+            self,
+            self.__descriptors,
+            locals(),
         )
         (data, columns) = self.__http_requester._request_raw_data(params)
         return pd.DataFrame(data=data, columns=columns).fillna(value=np.nan)
@@ -203,7 +219,8 @@ class DataWarehouse:
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
         return self.__get_indexed_data_frame_from_descriptor(
-            self.__descriptors._get_aggregate(), ('id', 'label')
+            self.__descriptors._get_aggregate(),
+            ('id', 'label'),
         )
 
     def get_metrics(self, realm):
@@ -291,14 +308,16 @@ class DataWarehouse:
         _validator._assert_runtime_context(self.__in_runtime_context)
         realm_id = _validator._find_realm_id(self.__descriptors, realm)
         dimension_id = _validator._find_dimension_id(
-            self.__descriptors, realm_id, dimension
+            self.__descriptors,
+            realm_id,
+            dimension,
         )
         path = '/controllers/metric_explorer.php'
         post_fields = {
             'operation': 'get_dimension',
             'dimension_id': dimension_id,
             'realm': realm_id,
-            'limit': 10000
+            'limit': 10000,
         }
         response = self.__http_requester._request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
@@ -343,7 +362,8 @@ class DataWarehouse:
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
         return self.__get_indexed_data_frame_from_descriptor(
-            self.__descriptors._get_raw(), ('id', 'label')
+            self.__descriptors._get_raw(),
+            ('id', 'label'),
         )
 
     def get_raw_fields(self, realm):
@@ -374,7 +394,7 @@ class DataWarehouse:
         realm_id = _validator._find_raw_realm_id(self.__descriptors, realm)
         return self.__get_indexed_data_frame_from_descriptor(
             self.__descriptors._get_raw()[realm_id]['fields'],
-            ('id', 'label', 'description')
+            ('id', 'label', 'description'),
         )
 
     def _get_metric_label(self, realm, metric_id):
@@ -401,7 +421,7 @@ class DataWarehouse:
         realm_id = _validator._find_realm_id(self.__descriptors, realm)
         return self.__get_indexed_data_frame_from_descriptor(
             self.__descriptors._get_aggregate()[realm_id][m_or_d],
-            ('id', 'label', 'description')
+            ('id', 'label', 'description'),
         )
 
     def whoami(self):
@@ -412,7 +432,7 @@ class DataWarehouse:
     def compliance(self, timeframe):
         response = self.__http_requester._request_json(
             '/controllers/compliance.php',
-            {'timeframe_mode': timeframe}
+            {'timeframe_mode': timeframe},
         )
         return response
 
@@ -437,17 +457,20 @@ class DataWarehouse:
             'hardware': '% of jobs with hardware perf information',
             'cpu': '% of jobs with cpu usage information',
             'script': '% of jobs with Job Batch Script information',
-            'realms': '% of jobs in the SUPReMM realm compared to Jobs realm'
+            'realms': '% of jobs in the SUPReMM realm compared to Jobs realm',
         }
         response = self.__http_requester._request_json(
-            '/rest/supremm_dataflow/quality', params
+            '/rest/supremm_dataflow/quality',
+            params,
         )
         if response['success']:
             result = response['result']
             jobs = [job for job in result]
             dates = [
                 date.strftime('%Y-%m-%d') for date in pd.date_range(
-                    params['start'], params['end'], freq='D'
+                    params['start'],
+                    params['end'],
+                    freq='D',
                 ).date
             ]
             quality = np.empty((len(jobs), len(dates)))

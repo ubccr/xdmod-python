@@ -34,7 +34,7 @@ class _HttpRequester:
     def _request_data(self, params):
         return self.__request(
             path='/controllers/user_interface.php',
-            post_fields=self.__get_data_post_fields(params)
+            post_fields=self.__get_data_post_fields(params),
         )
 
     def _request_raw_data(self, params):
@@ -139,7 +139,7 @@ class _HttpRequester:
             'legend_type': 'bottom_center',
             'font_size': '3',
             'inline': 'n',
-            'format': 'csv'
+            'format': 'csv',
         }
         for dimension in params['filters']:
             post_fields[dimension + '_filter'] = ','.join(

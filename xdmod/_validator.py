@@ -31,12 +31,20 @@ def _validate_get_data_params(data_warehouse, descriptors, params):
     )
     results['realm'] = _find_realm_id(descriptors, params['realm'])
     results['metric'] = __find_metric_id(
-        descriptors, results['realm'], params['metric'])
+        descriptors,
+        results['realm'],
+        params['metric'],
+    )
     results['dimension'] = _find_dimension_id(
-        descriptors, results['realm'], params['dimension']
+        descriptors,
+        results['realm'],
+        params['dimension'],
     )
     results['filters'] = __validate_filters(
-        data_warehouse, descriptors, results['realm'], params['filters']
+        data_warehouse,
+        descriptors,
+        results['realm'],
+        params['filters'],
     )
     results['timeseries'] = __assert_bool('timeseries', params['timeseries'])
     results['aggregation_unit'] = __find_str_in_sequence(
@@ -54,32 +62,46 @@ def _validate_get_raw_data_params(data_warehouse, descriptors, params):
     )
     results['realm'] = _find_raw_realm_id(descriptors, params['realm'])
     results['fields'] = __validate_raw_fields(
-        data_warehouse, params['realm'], params['fields']
+        data_warehouse,
+        params['realm'],
+        params['fields'],
     )
     results['filters'] = __validate_filters(
-        data_warehouse, descriptors, params['realm'], params['filters']
+        data_warehouse,
+        descriptors,
+        params['realm'],
+        params['filters'],
     )
     results['show_progress'] = __assert_bool(
-        'show_progress', params['show_progress']
+        'show_progress',
+        params['show_progress'],
     )
     return results
 
 
 def _find_realm_id(descriptors, realm):
     return __find_id_in_descriptor(
-        descriptors._get_aggregate(), 'realm', realm
+        descriptors._get_aggregate(),
+        'realm',
+        realm,
     )
 
 
 def __find_metric_id(descriptors, realm, metric):
     return __find_metric_or_dimension_id(
-        descriptors, realm, 'metric', metric
+        descriptors,
+        realm,
+        'metric',
+        metric,
     )
 
 
 def _find_dimension_id(descriptors, realm, dimension):
     return __find_metric_or_dimension_id(
-        descriptors, realm, 'dimension', dimension
+        descriptors,
+        realm,
+        'dimension',
+        dimension,
     )
 
 
@@ -87,7 +109,7 @@ def __find_metric_or_dimension_id(descriptors, realm, m_or_d, value):
     return __find_id_in_descriptor(
         descriptors._get_aggregate()[realm][m_or_d + 's'],
         m_or_d,
-        value
+        value,
     )
 
 
@@ -113,7 +135,7 @@ def _get_durations():
             '2 year',
             '3 year',
             '5 year',
-            '10 year'
+            '10 year',
         )
         + last_seven_years
     )
@@ -121,13 +143,19 @@ def _get_durations():
 
 def _get_aggregation_units():
     return (
-        'Auto', 'Day', 'Month', 'Quarter', 'Year'
+        'Auto',
+        'Day',
+        'Month',
+        'Quarter',
+        'Year',
     )
 
 
 def _find_raw_realm_id(descriptors, realm):
     return __find_id_in_descriptor(
-        descriptors._get_raw(), 'realm', realm
+        descriptors._get_raw(),
+        'realm',
+        realm,
     )
 
 
@@ -144,7 +172,7 @@ def __validate_filters(data_warehouse, descriptors, realm, filters):
                 new_filter_value = __find_value_in_df(
                     'Filter value',
                     data_warehouse.get_filters(realm, dimension),
-                    filter_value
+                    filter_value,
                 )
                 result[dimension_id].append(new_filter_value)
         return result
@@ -160,7 +188,9 @@ def __validate_raw_fields(data_warehouse, realm, fields):
         results = []
         for field in fields:
             new_field = __find_value_in_df(
-                'Field', data_warehouse.get_raw_fields(realm), field
+                'Field',
+                data_warehouse.get_raw_fields(realm),
+                field,
             )
             results.append(new_field)
         return results
@@ -173,7 +203,9 @@ def __validate_raw_fields(data_warehouse, realm, fields):
 def __validate_duration(duration):
     if isinstance(duration, str):
         duration = __find_str_in_sequence(
-            duration, _get_durations(), 'duration'
+            duration,
+            _get_durations(),
+            'duration',
         )
         (start_date, end_date) = __get_dates_from_duration(duration)
     else:
@@ -203,13 +235,13 @@ def __get_dates_from_duration(duration):
     last_full_month_start = date(
         last_full_month_start_year,
         last_full_month_start_month,
-        1
+        1,
     )
     last_full_month_end = this_month_start + timedelta(days=-1)
     this_quarter_start = date(
         today.year,
         ((today.month - 1) // 3) * 3 + 1,
-        1
+        1,
     )
     if today.month < 4:
         last_quarter_start_year = today.year - 1
@@ -218,7 +250,7 @@ def __get_dates_from_duration(duration):
     last_quarter_start = date(
         last_quarter_start_year,
         (((today.month - 1) - ((today.month - 1) % 3) + 9) % 12) + 1,
-        1
+        1,
     )
     last_quarter_end = this_quarter_start + timedelta(days=-1)
     this_year_start = date(today.year, 1, 1)
@@ -239,7 +271,7 @@ def __get_dates_from_duration(duration):
         '2 year': (__date_add_years(today, -2), today),
         '3 year': (__date_add_years(today, -3), today),
         '5 year': (__date_add_years(today, -5), today),
-        '10 year': (__date_add_years(today, -10), today)
+        '10 year': (__date_add_years(today, -10), today),
     }[duration]
 
 

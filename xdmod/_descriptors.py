@@ -17,7 +17,7 @@ class _Descriptors:
     def __request_aggregate(self):
         response = self.__http_requester._request_json(
             '/controllers/metric_explorer.php',
-            {'operation': 'get_dw_descripter'}
+            {'operation': 'get_dw_descripter'},
         )
         if response['totalCount'] != 1:
             raise RuntimeError(
@@ -41,7 +41,7 @@ class _Descriptors:
                 for id_ in m_or_d_descriptor:
                     result[realm][m_or_d][id_] = {
                         'label': m_or_d_descriptor[id_]['text'],
-                        'description': m_or_d_descriptor[id_]['info']
+                        'description': m_or_d_descriptor[id_]['info'],
                     }
         return result
 
@@ -55,6 +55,6 @@ class _Descriptors:
             for field in fields:
                 result[realm_id]['fields'][field['alias']] = {
                     'label': field['display'],
-                    'description': field['documentation']
+                    'description': field['documentation'],
                 }
         return result

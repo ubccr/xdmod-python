@@ -24,7 +24,11 @@ def __parse_timeseries_csv_data(dw, params, csv_data):
             time_values.append(__parse_timeseries_date_string(line[0]))
             data.append(np.asarray(line[1:]))
     return __get_timeseries_data_frame(
-        dw, params, data, time_values, dimension_values
+        dw,
+        params,
+        data,
+        time_values,
+        dimension_values,
     )
 
 
@@ -75,7 +79,11 @@ def __parse_timeseries_date_string(date_string):
 
 
 def __get_timeseries_data_frame(
-    dw, params, data, time_values, dimension_values
+    dw,
+    params,
+    data,
+    time_values,
+    dimension_values,
 ):
     index = pd.Series(data=time_values, name='Time')
     columns = __get_timeseries_data_frame_columns(dw, params, dimension_values)
@@ -104,20 +112,24 @@ def __parse_quarter_date_string(date_string):
 
 def __get_timeseries_data_frame_columns(dw, params, dimension_values):
     metric_label = dw._get_metric_label(
-        params['realm'], params['metric']
+        params['realm'],
+        params['metric'],
     )
     dimension_label = dw._get_dimension_label(
-        params['realm'], params['dimension']
+        params['realm'],
+        params['dimension'],
     )
     metric_series_name = 'Metric'
     if params['dimension'] == 'none':
         columns = pd.Series(
-            data=metric_label, name=metric_series_name
+            data=metric_label,
+            name=metric_series_name,
         )
     else:
         column_headings = [
             (
-                metric_label, dimension_value
+                metric_label,
+                dimension_value,
             ) for dimension_value in dimension_values
         ]
         columns = pd.MultiIndex.from_tuples(
