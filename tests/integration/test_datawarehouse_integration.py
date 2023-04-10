@@ -2,8 +2,8 @@ import pytest
 import xdmod.datawarehouse as xdw
 import pandas
 
-INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
+INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 METHOD_PARAMS = {
     'get_data': (
         'duration',
@@ -81,7 +81,7 @@ for method in METHOD_PARAMS:
             (value, match) = KEY_ERROR_TEST_VALUES_AND_MATCHES[param]
             key_error_test_params += [(method, {param: value}, match)]
         if param == 'duration':
-            duration_test_names += [method + ':duration']
+            duration_test_names += [method]
             start_end_test_names += [
                 method + ':start_date',
                 method + ':end_date',
