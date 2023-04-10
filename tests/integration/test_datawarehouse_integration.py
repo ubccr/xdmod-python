@@ -91,6 +91,11 @@ for method in METHOD_PARAMS:
                 (method, 'end_date', {'duration': (VALID_DATE, INVALID_STR)}),
             ]
             value_error_test_methods += [method]
+    if 'filters' in METHOD_PARAMS[method]:
+        for param in ('filter_key', 'filter_value'):
+            key_error_test_names += [method + ':' + param]
+            (value, match) = KEY_ERROR_TEST_VALUES_AND_MATCHES[param]
+            key_error_test_params += [(method, {'filters': value}, match)]
 
 
 @pytest.fixture(scope='module')
