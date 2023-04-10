@@ -15,7 +15,6 @@ def set_environ():
     os.environ['XDMOD_API_TOKEN'] = token
 
 
-
 def test___init___TypeError_xdmod_host():
     with pytest.raises(TypeError, match='`xdmod_host` must be a string.'):
         xdw.DataWarehouse(2)
