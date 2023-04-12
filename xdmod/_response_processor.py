@@ -47,11 +47,7 @@ def __parse_aggregate_csv_data(params, csv_data):
         if line_num > 7 and len(line) > 1:
             dimension_values.append(html.unescape(line[0]))
             data.append(line[1])
-    return pd.Series(
-        data=data,
-        name=params['metric'],
-        index=pd.Series(data=dimension_values, name=params['dimension']),
-    )
+    return __get_aggregate_series(params, data, dimension_values)
 
 
 def __parse_timeseries_dimension_values(labels):
@@ -93,9 +89,39 @@ def __get_timeseries_data_frame(
     time_values,
     dimension_values,
 ):
-    index = pd.Series(data=time_values, name='Time')
-    columns = __get_timeseries_data_frame_columns(dw, params, dimension_values)
-    return pd.DataFrame(data=data, index=index, columns=columns)
+    return pd.DataFrame(
+        data=data,
+        index=pd.Series(
+            data=time_values,
+            dtype='datetime64[ns]',
+            name='Time',
+        ),
+        columns=__get_timeseries_data_frame_columns(
+            dw,
+            params,
+            dimension_values,
+        ),
+        dtype='Float64',
+    ).fillna(value=np.nan)
+
+
+def __get_aggregate_series(params, data, dimension_values):
+    if params['dimension'] is None:
+        index_data = params['metric']
+        series_name = None
+    else:
+        index_data = dimension_values
+        series_name = params['metric']
+    return pd.Series(
+        data=data,
+        index=pd.Series(
+            data=index_data,
+            dtype='string',
+            name=params['dimension'],
+        ),
+        dtype='Float64',
+        name=series_name,
+    ).fillna(value=np.nan)
 
 
 def __parse_quarter_date_string(date_string):
@@ -119,9 +145,10 @@ def __parse_quarter_date_string(date_string):
 
 
 def __get_timeseries_data_frame_columns(dw, params, dimension_values):
-    if params['dimension'] == 'none':
+    if params['dimension'] is None:
         columns = pd.Series(
             data=params['metric'],
+            dtype='string',
             name='Metric',
         )
     else:
@@ -131,8 +158,10 @@ def __get_timeseries_data_frame_columns(dw, params, dimension_values):
                 dimension_value,
             ) for dimension_value in dimension_values
         ]
-        columns = pd.MultiIndex.from_tuples(
-            tuples=column_headings,
-            names=('Metric', params['dimension']),
+        columns_df = pd.DataFrame(
+            data=column_headings,
+            columns=('Metric', params['dimension']),
+            dtype='string',
         )
+        columns = pd.MultiIndex.from_frame(columns_df)
     return columns

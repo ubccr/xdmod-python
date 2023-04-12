@@ -59,24 +59,28 @@ class DataWarehouse:
     ):
         """Get a data frame or series containing data from the warehouse.
 
-           If `timeseries` is True, a Pandas DataFrame is returned. In that
-           DataFrame, the index has the name 'Time' and contains
-           the time values for the given `duration` in increments
-           determined by `aggregation_unit`. The columns of the DataFrame are
-           a Pandas Series that has the same properties as the Series that is
-           returned if `timeseries` were instead False (see paragraph below).
-           The data in the DataFrame are the float64 values for the
-           corresponding values of time, `metric`, and `dimension`.
+           If `timeseries` is True, a Pandas DataFrame is returned. The data in
+           the DataFrame are the float64 values for the corresponding values of
+           time, `metric`, and `dimension`. Missing values are filled in with
+           the value `np.nan`. In the DataFrame, the index is a DatetimeIndex
+           with the name 'Time' that contains the time values for the given
+           `duration` in increments determined by `aggregation_unit`.
+           If `dimension` is not 'None', the columns of the DataFrame are a
+           MultiIndex with names 'Metric' and the label of the given
+           `dimension`. The MultiIndex contains the label of the given `metric`
+           and the labels of each of the values of the given `dimension`.
+           If `dimension` is 'None', the DataFrame columns are an
+           index named 'Metric' containing the label of the given `metric`.
 
-           If `timeseries` is False, a Pandas Series is returned. The name of
-           the Series is the value of `metric`. The index of the Series
-           has a name equal to `dimension`, and the index has the
-           corresponding values for that `dimension` (as can be obtained via
-           `get_filters()`). If `dimension` is None, the Series has a name
-           equal to the organization name configured by the instance of XDMoD
-           whose URL is passed into the `DataWarehouse()` constructor as
-           `xdmod_host`. The data in the series are the float64 values for the
-           corresponding values of `metric` and `dimension`.
+           If `timeseries` is False, a Pandas Series is returned. The data in
+           the series are the float64 values for the corresponding value of
+           `dimension`. Missing values are filled in with the value `np.nan`.
+           If `dimension` is not 'None', the name of the Series is the label of
+           the given `metric`, the name of the index is the label of the given
+           `dimension`, and the index contains the labels of each of the values
+           of the given `dimension`.
+           If `dimension` is 'None', the Series is unnamed, and the index is
+           unnamed and contains only the label of the given `metric`.
 
            Parameters
            ----------
@@ -201,8 +205,8 @@ class DataWarehouse:
             self.__descriptors,
             locals(),
         )
-        (data, columns) = self.__http_requester._request_raw_data(params)
-        return pd.DataFrame(data=data, columns=columns).fillna(value=np.nan)
+        (data, column_data) = self.__http_requester._request_raw_data(params)
+        return self.__get_data_frame(data, column_data)
 
     def get_realms(self):
         """Get a data frame containing the valid realms in the data warehouse.
@@ -218,9 +222,10 @@ class DataWarehouse:
                If this method is called outside the runtime context.
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
-        return self.__get_indexed_data_frame_from_descriptor(
+        return self.__get_data_frame_from_descriptor(
             self.__descriptors._get_aggregate(),
             ('id', 'label'),
+            'id',
         )
 
     def get_metrics(self, realm):
@@ -321,8 +326,7 @@ class DataWarehouse:
         }
         response = self.__http_requester._request_json(path, post_fields)
         data = [(datum['id'], datum['name']) for datum in response['data']]
-        result = pd.DataFrame(data=data, columns=('id', 'label'))
-        result = result.set_index('id')
+        result = self.__get_data_frame(data, ('id', 'label'), 'id')
         return result
 
     def get_durations(self):
@@ -361,9 +365,10 @@ class DataWarehouse:
                If this method is called outside the runtime context.
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
-        return self.__get_indexed_data_frame_from_descriptor(
+        return self.__get_data_frame_from_descriptor(
             self.__descriptors._get_raw(),
             ('id', 'label'),
+            'id',
         )
 
     def get_raw_fields(self, realm):
@@ -392,9 +397,10 @@ class DataWarehouse:
         """
         _validator._assert_runtime_context(self.__in_runtime_context)
         realm_id = _validator._find_raw_realm_id(self.__descriptors, realm)
-        return self.__get_indexed_data_frame_from_descriptor(
+        return self.__get_data_frame_from_descriptor(
             self.__descriptors._get_raw()[realm_id]['fields'],
             ('id', 'label', 'description'),
+            'id',
         )
 
     def _get_metric_label(self, realm, metric_id):
@@ -407,21 +413,38 @@ class DataWarehouse:
         d = self.__descriptors._get_aggregate()
         return d[realm]['dimensions'][dimension_id]['label']
 
-    def __get_indexed_data_frame_from_descriptor(self, descriptor, columns):
+    def __get_data_frame(self, data, column_data, index=None):
+        result = pd.DataFrame(
+            data=data,
+            columns=pd.Series(
+                data=column_data,
+                dtype='string',
+            ),
+            dtype='string',
+        ).fillna(value=np.nan)
+        if index:
+            result = result.set_index(index)
+        return result
+
+    def __get_data_frame_from_descriptor(
+        self,
+        descriptor,
+        columns,
+        index=None,
+    ):
         data = [
             [id_] + [descriptor[id_][column] for column in columns[1:]]
             for id_ in descriptor
         ]
-        result = pd.DataFrame(data=data, columns=columns)
-        result = result.set_index('id')
-        return result
+        return self.__get_data_frame(data, columns, index)
 
     def __get_metrics_or_dimensions(self, realm, m_or_d):
         _validator._assert_runtime_context(self.__in_runtime_context)
         realm_id = _validator._find_realm_id(self.__descriptors, realm)
-        return self.__get_indexed_data_frame_from_descriptor(
+        return self.__get_data_frame_from_descriptor(
             self.__descriptors._get_aggregate()[realm_id][m_or_d],
             ('id', 'label', 'description'),
+            'id',
         )
 
     def whoami(self):
