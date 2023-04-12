@@ -102,6 +102,10 @@ class _HttpRequester:
                 msg = ': ' + response_json['message']
             except json.JSONDecodeError:
                 pass
+            if code == 401:
+                msg = (
+                    ': Make sure XDMOD_API_TOKEN is set to a valid API token.'
+                )
             raise RuntimeError('Error ' + str(code) + msg) from None
         return response
 
