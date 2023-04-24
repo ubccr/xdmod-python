@@ -5,16 +5,6 @@ def _assert_str(name, value):
     return __assert_type(name, value, str, 'string')
 
 
-def __assert_bool(name, value):
-    return __assert_type(name, value, bool, 'Boolean')
-
-
-def __assert_type(name, value, type_, type_name):
-    if not isinstance(value, type_):
-        raise TypeError('`' + name + '` must be a ' + type_name + '.')
-    return value
-
-
 def _assert_runtime_context(in_runtime_context):
     if not in_runtime_context:
         raise RuntimeError(
@@ -87,29 +77,12 @@ def _find_realm_id(descriptors, realm):
     )
 
 
-def __find_metric_id(descriptors, realm, metric):
-    return __find_metric_or_dimension_id(
-        descriptors,
-        realm,
-        'metric',
-        metric,
-    )
-
-
 def _find_dimension_id(descriptors, realm, dimension):
     return __find_metric_or_dimension_id(
         descriptors,
         realm,
         'dimension',
         dimension,
-    )
-
-
-def __find_metric_or_dimension_id(descriptors, realm, m_or_d, value):
-    return __find_id_in_descriptor(
-        descriptors._get_aggregate()[realm][m_or_d + 's'],
-        m_or_d,
-        value,
     )
 
 
@@ -159,6 +132,40 @@ def _find_raw_realm_id(descriptors, realm):
     )
 
 
+def __assert_type(name, value, type_, type_name):
+    if not isinstance(value, type_):
+        raise TypeError('`' + name + '` must be a ' + type_name + '.')
+    return value
+
+
+def __validate_duration(duration):
+    if isinstance(duration, str):
+        duration = __find_str_in_sequence(
+            duration,
+            _get_durations(),
+            'duration',
+        )
+        (start_date, end_date) = __get_dates_from_duration(duration)
+    else:
+        try:
+            (start_date, end_date) = duration
+        except (TypeError, ValueError) as error:
+            raise type(error)(
+                '`duration` must be a string or an object'
+                + ' with 2 items.'
+            ) from None
+    return (start_date, end_date)
+
+
+def __find_metric_id(descriptors, realm, metric):
+    return __find_metric_or_dimension_id(
+        descriptors,
+        realm,
+        'metric',
+        metric,
+    )
+
+
 def __validate_filters(data_warehouse, descriptors, realm, filters):
     try:
         result = {}
@@ -183,6 +190,23 @@ def __validate_filters(data_warehouse, descriptors, realm, filters):
         ) from None
 
 
+def __assert_bool(name, value):
+    return __assert_type(name, value, bool, 'Boolean')
+
+
+def __find_str_in_sequence(value, sequence, label):
+    _assert_str(label, value)
+    transformed_value = __lowercase_and_remove_spaces(value)
+    for valid_value in sequence:
+        transformed_valid_value = __lowercase_and_remove_spaces(valid_value)
+        if transformed_valid_value == transformed_value:
+            return valid_value
+    raise KeyError(
+        'Invalid value for `' + label + '`: \'' + value + '\''
+        + '. Valid values are: \'' + '\', \''.join(sequence) + '\'.'
+    ) from None
+
+
 def __validate_raw_fields(data_warehouse, realm, fields):
     try:
         results = []
@@ -200,23 +224,22 @@ def __validate_raw_fields(data_warehouse, realm, fields):
         ) from None
 
 
-def __validate_duration(duration):
-    if isinstance(duration, str):
-        duration = __find_str_in_sequence(
-            duration,
-            _get_durations(),
-            'duration',
-        )
-        (start_date, end_date) = __get_dates_from_duration(duration)
-    else:
-        try:
-            (start_date, end_date) = duration
-        except (TypeError, ValueError) as error:
-            raise type(error)(
-                '`duration` must be a string or an object'
-                + ' with 2 items.'
-            ) from None
-    return (start_date, end_date)
+def __find_id_in_descriptor(descriptor, name, value):
+    _assert_str(name, value)
+    for id_ in descriptor:
+        if id_ == value or descriptor[id_]['label'] == value:
+            return id_
+    raise KeyError(
+        name.capitalize() + ' \'' + value + '\' not found.'
+    )
+
+
+def __find_metric_or_dimension_id(descriptors, realm, m_or_d, value):
+    return __find_id_in_descriptor(
+        descriptors._get_aggregate()[realm][m_or_d + 's'],
+        m_or_d,
+        value,
+    )
 
 
 def __get_dates_from_duration(duration):
@@ -275,6 +298,19 @@ def __get_dates_from_duration(duration):
     }[duration]
 
 
+def __find_value_in_df(label, df, value):
+    if value in df.index:
+        return value
+    elif value in df['label'].values:
+        return df.index[df['label'] == value].tolist()[0]
+    else:
+        raise KeyError(label + ' \'' + value + '\' not found.')
+
+
+def __lowercase_and_remove_spaces(value):
+    return value.lower().replace(' ', '')
+
+
 def __date_add_years(old_date, year_delta):
     # Make dates behave like Ext.JS, i.e., if a date is specified
     # with a day value that is too big, add days to the last valid
@@ -291,39 +327,3 @@ def __date_add_years(old_date, year_delta):
             new_date_day -= 1
             days_above += 1
     return new_date + timedelta(days=days_above)
-
-
-def __find_value_in_df(label, df, value):
-    if value in df.index:
-        return value
-    elif value in df['label'].values:
-        return df.index[df['label'] == value].tolist()[0]
-    else:
-        raise KeyError(label + ' \'' + value + '\' not found.')
-
-
-def __find_id_in_descriptor(descriptor, name, value):
-    _assert_str(name, value)
-    for id_ in descriptor:
-        if id_ == value or descriptor[id_]['label'] == value:
-            return id_
-    raise KeyError(
-        name.capitalize() + ' \'' + value + '\' not found.'
-    )
-
-
-def __find_str_in_sequence(value, sequence, label):
-    _assert_str(label, value)
-    transformed_value = __lowercase_and_remove_spaces(value)
-    for valid_value in sequence:
-        transformed_valid_value = __lowercase_and_remove_spaces(valid_value)
-        if transformed_valid_value == transformed_value:
-            return valid_value
-    raise KeyError(
-        'Invalid value for `' + label + '`: \'' + value + '\''
-        + '. Valid values are: \'' + '\', \''.join(sequence) + '\'.'
-    ) from None
-
-
-def __lowercase_and_remove_spaces(value):
-    return value.lower().replace(' ', '')
