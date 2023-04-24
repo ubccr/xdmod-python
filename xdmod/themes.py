@@ -70,13 +70,13 @@ pio.templates["timeseries"] = go.layout.Template(
             "#339966",
             "#C42525",
             "#A6C96A",
-            "#111111"
+            "#111111",
         ],
         'xaxis': {
             'titlefont': {
                 'family': 'Arial, sans-serif',
                 'size': 12,
-                'color': '#5078a0'
+                'color': '#5078a0',
             },
             'color': '#606060',
             'ticks': 'outside',
@@ -88,13 +88,13 @@ pio.templates["timeseries"] = go.layout.Template(
             'zerolinecolor': '#c0cfe1',
             'showline': True,
             'zerolinewidth': 4,
-            'tickformat': "%Y-%m-%d"
+            'tickformat': "%Y-%m-%d",
         },
         'yaxis': {
             'titlefont': {
                 'family': 'Arial, sans-serif',
                 'size': 12,
-                'color': '#1199FF'
+                'color': '#1199FF',
             },
             'color': '#606060',
             'gridcolor': '#bfc0c0',
@@ -102,22 +102,22 @@ pio.templates["timeseries"] = go.layout.Template(
             'zerolinecolor': '#c0cfe1',
             'showline': True,
             'rangemode': 'tozero',
-            'zerolinewidth': 4
+            'zerolinewidth': 4,
         },
         'title': {
             'font': {
                 'color': '#444b6e',
-                'size': 16
-            }
+                'size': 16,
+            },
         },
         'hovermode': 'closest',
         'showlegend': True,
         'legend': {
             'orientation': 'h',
-            'y': -0.2
+            'y': -0.2,
         },
         'margin': {
-            't': 50
-        }
-    }
+            't': 50,
+        },
+    },
 )
