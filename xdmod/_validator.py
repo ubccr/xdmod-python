@@ -277,9 +277,10 @@ def __get_dates_from_duration(duration):
     )
     last_quarter_end = this_quarter_start + timedelta(days=-1)
     this_year_start = date(today.year, 1, 1)
+    this_year_end = date(today.year, 12, 31)
     previous_year_start = date(today.year - 1, 1, 1)
     previous_year_end = date(today.year - 1, 12, 31)
-    return {
+    durations_to_dates = {
         'Yesterday': (yesterday, yesterday),
         '7 day': (last_week, today),
         '30 day': (last_month, today),
@@ -295,7 +296,18 @@ def __get_dates_from_duration(duration):
         '3 year': (__date_add_years(today, -3), today),
         '5 year': (__date_add_years(today, -5), today),
         '10 year': (__date_add_years(today, -10), today),
-    }[duration]
+        str(today.year): (this_year_start, this_year_end),
+        str(__date_add_years(today, -1).year): (
+            previous_year_start,
+            previous_year_end,
+        ),
+    }
+    for num_years in range(2, 7):
+        durations_to_dates[str(__date_add_years(today, -num_years).year)] = (
+            date(today.year - num_years, 1, 1),
+            date(today.year - num_years, 12, 31),
+        )
+    return durations_to_dates[duration]
 
 
 def __find_value_in_df(label, df, value):
