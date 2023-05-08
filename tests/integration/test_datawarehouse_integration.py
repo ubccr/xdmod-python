@@ -213,9 +213,9 @@ def __test_DataFrame_return_value(
     method,
     additional_params,
     dtype,
-    columns_type,
     columns_name,
     columns_data,
+    columns_data_subset,
     index_type,
     index_dtype,
     index_name,
@@ -225,22 +225,14 @@ def __test_DataFrame_return_value(
     assert isinstance(df, pandas.core.frame.DataFrame)
     for actual_dtype in df.dtypes:
         assert actual_dtype == dtype
-    assert isinstance(df.columns, columns_type)
-    if columns_type == pandas.core.indexes.base.Index:
-        assert df.columns.dtype == 'string'
-        assert df.columns.name == columns_name
-        assert df.columns.tolist() == columns_data
-    elif columns_type == pandas.core.indexes.multi.MultiIndex:
-        for dtype in df.columns.dtypes:
-            assert dtype == 'string'
-        assert df.columns.names == columns_name
-        dimension_values = dw_methods['get_filter_values'](
-            additional_params['realm'],
-            additional_params['dimension'],
-        )['label'].to_list()
+    assert isinstance(df.columns, pandas.core.indexes.base.Index)
+    assert df.columns.dtype == 'string'
+    assert df.columns.name == columns_name
+    if columns_data_subset:
         for column in df.columns.to_list():
-            assert column[0] == additional_params['metric']
-            assert column[1] in dimension_values
+            assert column in columns_data
+    else:
+        assert df.columns.to_list() == columns_data
     assert isinstance(df.index, index_type)
     assert df.index.dtype == index_dtype
     assert df.index.name == index_name
@@ -260,24 +252,21 @@ get_data_return_value_test_params = {
 
 
 @pytest.mark.parametrize(
-    'additional_params, columns_type, columns_name, index_size',
+    'additional_params, columns_name, index_size',
     [
         (
             {},
-            pandas.core.indexes.base.Index,
             'Metric',
             31,
         ),
         (
             {'filters': {'Service Provider': 'StonyBrook'}},
-            pandas.core.indexes.base.Index,
             'Metric',
             0,
         ),
         (
             {'dimension': 'Resource'},
-            pandas.core.indexes.multi.MultiIndex,
-            ['Metric', 'Resource'],
+            'Resource',
             31,
         ),
         (
@@ -285,8 +274,7 @@ get_data_return_value_test_params = {
                 'dimension': 'Resource',
                 'filters': {'Service Provider': 'StonyBrook'}
             },
-            pandas.core.indexes.multi.MultiIndex,
-            ['Metric', 'Resource'],
+            'Resource',
             0,
         ),
     ],
@@ -300,19 +288,27 @@ get_data_return_value_test_params = {
 def test_get_data_timeseries_return_value(
     dw_methods,
     additional_params,
-    columns_type,
     columns_name,
     index_size,
 ):
     params = {**get_data_return_value_test_params, **additional_params}
+    if columns_name == 'Metric':
+        columns_data = [get_data_return_value_test_params['metric']]
+        columns_data_subset = False
+    else:
+        columns_data = dw_methods['get_filter_values'](
+            params['realm'],
+            params['dimension'],
+        )['label'].to_list()
+        columns_data_subset = True
     __test_DataFrame_return_value(
         dw_methods,
         method='get_data',
         additional_params=params,
         dtype='Float64',
-        columns_type=columns_type,
         columns_name=columns_name,
-        columns_data=[get_data_return_value_test_params['metric']],
+        columns_data=columns_data,
+        columns_data_subset=columns_data_subset,
         index_type=pandas.core.indexes.datetimes.DatetimeIndex,
         index_dtype='datetime64[ns]',
         index_name='Time',
@@ -375,14 +371,14 @@ def test_get_data_aggregate_return_value(
     assert series.dtype == 'Float64'
     if index_name is None:
         assert series.name is None
-        assert series.index.tolist() == [params['metric']]
+        assert series.index.to_list() == [params['metric']]
     else:
         assert series.name == params['metric']
         dimension_values = dw_methods['get_filter_values'](
             params['realm'],
             params['dimension'],
         )['label'].to_list()
-        assert series.index.tolist().sort() == dimension_values.sort()
+        assert series.index.to_list().sort() == dimension_values.sort()
     assert isinstance(series.index, pandas.core.indexes.base.Index)
     assert series.index.dtype == 'string'
     assert series.index.name == index_name
@@ -414,9 +410,9 @@ def test_get_descriptors_return_value(dw_methods, method, columns_data):
         method,
         additional_params={},
         dtype='string',
-        columns_type=pandas.core.indexes.base.Index,
         columns_name=None,
         columns_data=columns_data,
+        columns_data_subset=False,
         index_type=pandas.core.indexes.base.Index,
         index_dtype='string',
         index_name='id',

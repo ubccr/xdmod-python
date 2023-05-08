@@ -152,16 +152,9 @@ def __get_timeseries_data_frame_columns(dw, params, dimension_values):
             name='Metric',
         )
     else:
-        column_headings = [
-            (
-                params['metric'],
-                dimension_value,
-            ) for dimension_value in dimension_values
-        ]
-        columns_df = pd.DataFrame(
-            data=column_headings,
-            columns=('Metric', params['dimension']),
+        columns = pd.Series(
+            data=dimension_values,
             dtype='string',
+            name=params['dimension'],
         )
-        columns = pd.MultiIndex.from_frame(columns_df)
     return columns
