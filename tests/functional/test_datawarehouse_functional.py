@@ -24,6 +24,8 @@ def __assert_dfs_equal(
         DATA_DIR + '/' + data_file,
         dtype=dtype,
         index_col=index_col,
+        keep_default_na=False,
+        na_values=[''],
     ).fillna(numpy.nan)
     expected.columns = expected.columns.astype('string')
     assert expected.equals(actual)
