@@ -117,9 +117,7 @@ class _HttpRequester:
             'realm': params['realm'],
             'statistic': params['metric'],
             'group_by': params['dimension'],
-            'dataset_type': (
-                'timeseries' if params['timeseries'] else 'aggregate'
-            ),
+            'dataset_type': params['dataset_type'],
             'aggregation_unit': params['aggregation_unit'],
             'format': 'csv',
         }

@@ -54,31 +54,31 @@ class DataWarehouse:
         metric='CPU Hours: Total',
         dimension='None',
         filters={},
-        timeseries=True,
+        dataset_type='timeseries',
         aggregation_unit='Auto',
     ):
         """Get a data frame or series containing data from the warehouse.
 
-           If `timeseries` is True, a Pandas DataFrame is returned. The data in
-           the DataFrame are the float64 values for the corresponding values of
-           time, `metric`, and `dimension`. Missing values are filled in with
-           the value `np.nan`. In the DataFrame, the index is a DatetimeIndex
-           with the name 'Time' that contains the time values for the given
-           `duration` in increments determined by `aggregation_unit`.
-           If `dimension` is not 'None', the columns of the DataFrame are a
-           MultiIndex with names 'Metric' and the label of the given
-           `dimension`. The MultiIndex contains the label of the given `metric`
-           and the labels of each of the values of the given `dimension`.
-           If `dimension` is 'None', the DataFrame columns are an
+           If `dataset_type` is 'timeseries', a Pandas DataFrame is returned.
+           The data in the DataFrame are the float64 values for the
+           corresponding values of time, `metric`, and `dimension`. Missing
+           values are filled in with the value `np.nan`. In the DataFrame, the
+           index is a DatetimeIndex with the name 'Time' that contains the time
+           values for the given `duration` in increments determined by
+           `aggregation_unit`.  If `dimension` is not 'None', the columns of
+           the DataFrame are a MultiIndex with names 'Metric' and the label of
+           the given `dimension`. The MultiIndex contains the label of the
+           given `metric` and the labels of each of the values of the given
+           `dimension`.  If `dimension` is 'None', the DataFrame columns are an
            index named 'Metric' containing the label of the given `metric`.
 
-           If `timeseries` is False, a Pandas Series is returned. The data in
-           the series are the float64 values for the corresponding value of
-           `dimension`. Missing values are filled in with the value `np.nan`.
-           If `dimension` is not 'None', the name of the Series is the label of
-           the given `metric`, the name of the index is the label of the given
-           `dimension`, and the index contains the labels of each of the values
-           of the given `dimension`.
+           If `dataset_type` is 'aggregate', a Pandas Series is returned. The
+           data in the series are the float64 values for the corresponding
+           value of `dimension`. Missing values are filled in with the value
+           `np.nan`.  If `dimension` is not 'None', the name of the Series is
+           the label of the given `metric`, the name of the index is the label
+           of the given `dimension`, and the index contains the labels of each
+           of the values of the given `dimension`.
            If `dimension` is 'None', the Series is unnamed, and the index is
            unnamed and contains only the label of the given `metric`.
 
@@ -102,9 +102,8 @@ class DataWarehouse:
                A mapping of dimensions to their possible values. Results will
                only be included whose values for each of the given dimensions
                match one of the corresponding given values.
-           timeseries : bool, optional
-               Whether to return timeseries data (True) or aggregate data
-               (False).
+           dataset_type : str, optional
+               Either 'timeseries' or 'aggregate'.
            aggregation_unit : str, optional
                The units by which to aggregate data. Must be one of the valid
                values from `get_aggregation_units()` (case insensitive).

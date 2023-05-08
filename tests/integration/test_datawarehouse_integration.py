@@ -11,7 +11,7 @@ METHOD_PARAMS = {
         'metric',
         'dimension',
         'filters',
-        'timeseries',
+        'dataset_type',
         'aggregation_unit',
     ),
     'get_raw_data': (
@@ -36,7 +36,7 @@ VALID_VALUES = {
   'metric': 'CPU Hours: Total',
   'dimension': VALID_DIMENSION,
   'filters': {VALID_DIMENSION: 'Expanse'},
-  'timeseries': True,
+  'dataset_type': 'timeseries',
   'aggregation_unit': 'Auto',
   'parameter': 'duration',
   'fields': ['Nodes'],
@@ -51,6 +51,7 @@ KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     'filter_value': (
         {VALID_DIMENSION: INVALID_STR}, r'Filter value .* not found'
     ),
+    'dataset_type': (INVALID_STR, 'Invalid value for `dataset_type`'),
     'aggregation_unit': (INVALID_STR, 'Invalid value for `aggregation_unit`'),
     'parameter': (
         INVALID_STR,
@@ -253,7 +254,7 @@ get_data_return_value_test_params = {
     'metric': 'Number of Users: Active',
     'dimension': 'None',
     'filters': {},
-    'timeseries': True,
+    'dataset_type': 'timeseries',
     'aggregation_unit': 'Day',
 }
 
@@ -321,7 +322,7 @@ def test_get_data_timeseries_return_value(
 
 get_data_aggregate_return_value_test_params = {
     **get_data_return_value_test_params,
-    **{'timeseries': False},
+    **{'dataset_type': 'aggregate'},
 }
 
 

@@ -36,7 +36,11 @@ def _validate_get_data_params(data_warehouse, descriptors, params):
         results['realm'],
         params['filters'],
     )
-    results['timeseries'] = __assert_bool('timeseries', params['timeseries'])
+    results['dataset_type'] = __find_str_in_sequence(
+        params['dataset_type'],
+        ('timeseries', 'aggregate'),
+        'dataset_type',
+    )
     results['aggregation_unit'] = __find_str_in_sequence(
         params['aggregation_unit'],
         _get_aggregation_units(),
