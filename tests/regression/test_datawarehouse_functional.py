@@ -86,8 +86,8 @@ def test_get_dimensions(valid_dw):
     )
 
 
-def test_get_filters(valid_dw):
+def test_get_filter_values(valid_dw):
     __assert_descriptor_dfs_equal(
-        'xdmod-dev-jobs-fieldofscience-filters.csv',
-        valid_dw.get_filters('Jobs', 'Field of Science'),
+        'xdmod-dev-jobs-fieldofscience-filter-values.csv',
+        valid_dw.get_filter_values('Jobs', 'Field of Science'),
     )

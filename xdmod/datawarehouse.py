@@ -120,7 +120,7 @@ class DataWarehouse:
                come from `get_realms()`, valid metrics come from
                `get_metrics()`, valid dimensions and filter keys come from
                `get_dimensions()`, valid filter values come from
-               `get_filters()`, valid durations come from
+               `get_filter_values()`, valid durations come from
                `get_durations()`, and aggregation units come from
                `get_aggregation_units()`.
            RuntimeError
@@ -190,7 +190,8 @@ class DataWarehouse:
                come from `get_durations()`, valid realms come from
                `get_raw_realms()`, valid filters keys come from
                `get_dimensions()`, valid filter values come from
-               `get_filters()`, and valid fields come from `get_raw_fields()`.
+               `get_filter_values()`, and valid fields come from
+               `get_raw_fields()`.
            RuntimeError
                If this method is called outside the runtime context or if
                there is an error requesting data from the warehouse.
@@ -281,8 +282,8 @@ class DataWarehouse:
         """
         return self.__get_metrics_or_dimensions(realm, 'dimensions')
 
-    def get_filters(self, realm, dimension):
-        """Get a data frame containing the valid filters for the given
+    def get_filter_values(self, realm, dimension):
+        """Get a data frame containing the valid filter values for the given
            dimension of the given realm.
 
            Parameters
@@ -297,7 +298,8 @@ class DataWarehouse:
            Returns
            -------
            pandas.core.frame.DataFrame
-               A Pandas DataFrame containing the ID and label of each filter.
+               A Pandas DataFrame containing the ID and label of each filter
+               value.
 
            Raises
            ------

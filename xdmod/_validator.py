@@ -178,7 +178,7 @@ def __validate_filters(data_warehouse, descriptors, realm, filters):
             for filter_value in filter_values:
                 new_filter_value = __find_value_in_df(
                     'Filter value',
-                    data_warehouse.get_filters(realm, dimension),
+                    data_warehouse.get_filter_values(realm, dimension),
                     filter_value,
                 )
                 result[dimension_id].append(new_filter_value)

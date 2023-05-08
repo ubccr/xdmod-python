@@ -24,7 +24,7 @@ METHOD_PARAMS = {
     'get_realms': (),
     'get_metrics': ('realm',),
     'get_dimensions': ('realm',),
-    'get_filters': ('realm', 'dimension',),
+    'get_filter_values': ('realm', 'dimension',),
     'get_raw_realms': (),
     'get_raw_fields': ('realm',),
 }
@@ -117,7 +117,7 @@ def __get_dw_methods(dw):
         'get_realms': dw.get_realms,
         'get_metrics': dw.get_metrics,
         'get_dimensions': dw.get_dimensions,
-        'get_filters': dw.get_filters,
+        'get_filter_values': dw.get_filter_values,
         'get_raw_realms': dw.get_raw_realms,
         'get_raw_fields': dw.get_raw_fields,
     }
@@ -150,7 +150,7 @@ def test_KeyError(dw_methods, method, params, match):
         'get_realms',
         'get_metrics',
         'get_dimensions',
-        'get_filters',
+        'get_filter_values',
         'get_raw_realms',
         'get_raw_fields',
     ],
@@ -233,7 +233,7 @@ def __test_DataFrame_return_value(
         for dtype in df.columns.dtypes:
             assert dtype == 'string'
         assert df.columns.names == columns_name
-        dimension_values = dw_methods['get_filters'](
+        dimension_values = dw_methods['get_filter_values'](
             additional_params['realm'],
             additional_params['dimension'],
         )['label'].to_list()
@@ -377,7 +377,7 @@ def test_get_data_aggregate_return_value(
         assert series.index.tolist() == [params['metric']]
     else:
         assert series.name == params['metric']
-        dimension_values = dw_methods['get_filters'](
+        dimension_values = dw_methods['get_filter_values'](
             params['realm'],
             params['dimension'],
         )['label'].to_list()
@@ -392,7 +392,7 @@ get_descriptors_return_value_test_columns_data = {
     'get_realms': ['label'],
     'get_metrics': ['label', 'description'],
     'get_dimensions': ['label', 'description'],
-    'get_filters': ['label'],
+    'get_filter_values': ['label'],
     'get_raw_realms': ['label'],
     'get_raw_fields': ['label', 'description'],
 }
