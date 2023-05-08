@@ -138,9 +138,8 @@ class _HttpRequester:
         if (params['fields']):
             results['fields'] = ','.join(params['fields'])
         if (params['filters']):
-            results['filter_keys'] = ','.join(params['filters'])
             for dimension in params['filters']:
-                results[dimension + '_filter'] = ','.join(
+                results['filters[' + dimension + ']'] = ','.join(
                     params['filters'][dimension]
                 )
         return urlencode(results)
