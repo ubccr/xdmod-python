@@ -90,13 +90,13 @@ class DataWarehouse:
                format.
            realm : str, optional
                A realm in the data warehouse. Can be specified by its ID or its
-               label. See `get_realms()`.
+               label. See `describe_realms()`.
            metric : str, optional
                A metric in the given realm of the data warehouse. Can be
-               specified by its ID or its label. See `get_metrics()`.
+               specified by its ID or its label. See `describe_metrics()`.
            dimension : str, optional
                A dimension of the given realm in the data warehouse. Can be
-               specified by its ID or its label. See `get_dimensions()`.
+               specified by its ID or its label. See `describe_dimensions()`.
            filters : mapping, optional
                A mapping of dimensions to their possible values. Results will
                only be included whose values for each of the given dimensions
@@ -115,9 +115,9 @@ class DataWarehouse:
            ------
            KeyError
                If any of the parameters have invalid values. Valid realms
-               come from `get_realms()`, valid metrics come from
-               `get_metrics()`, valid dimensions and filter keys come from
-               `get_dimensions()`, valid filter values come from
+               come from `describe_realms()`, valid metrics come from
+               `describe_metrics()`, valid dimensions and filter keys come from
+               `describe_dimensions()`, valid filter values come from
                `get_filter_values()`, valid durations come from
                `get_durations()`, and aggregation units come from
                `get_aggregation_units()`.
@@ -161,10 +161,10 @@ class DataWarehouse:
                format.
            realm : str
                A realm in the data warehouse. Can be specified by its ID or its
-               label. See `get_realms()`.
+               label. See `describe_realms()`.
            fields : sequence of str, optional
                The raw data fields to include in the results. See
-               `get_raw_fields()`.
+               `describe_raw_fields()`.
            filters : mapping, optional
                A mapping of dimensions to their possible values. Results will
                only be included whose values for each of the given dimensions
@@ -186,10 +186,10 @@ class DataWarehouse:
            KeyError
                If any of the parameters have invalid values. Valid durations
                come from `get_durations()`, valid realms come from
-               `get_raw_realms()`, valid filters keys come from
-               `get_dimensions()`, valid filter values come from
+               `describe_raw_realms()`, valid filters keys come from
+               `describe_dimensions()`, valid filter values come from
                `get_filter_values()`, and valid fields come from
-               `get_raw_fields()`.
+               `describe_raw_fields()`.
            RuntimeError
                If this method is called outside the runtime context or if
                there is an error requesting data from the warehouse.
@@ -207,8 +207,8 @@ class DataWarehouse:
         (data, column_data) = self.__http_requester._request_raw_data(params)
         return self.__get_data_frame(data, column_data)
 
-    def get_realms(self):
-        """Get a data frame containing the valid realms in the data warehouse.
+    def describe_realms(self):
+        """Get a data frame describing the valid realms in the data warehouse.
 
            Returns
            -------
@@ -227,14 +227,14 @@ class DataWarehouse:
             'id',
         )
 
-    def get_metrics(self, realm):
-        """Get a data frame containing the valid metrics for the given realm.
+    def describe_metrics(self, realm):
+        """Get a data frame describing the valid metrics for the given realm.
 
            Parameters
            ----------
            realm : str
                A realm in the data warehouse. Can be specified by its ID or its
-               label. See `get_realms()`.
+               label. See `describe_realms()`.
 
            Returns
            -------
@@ -245,23 +245,23 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If `realm` is not one of the values from `get_realms()`.
+               If `realm` is not one of the values from `describe_realms()`.
            RuntimeError
                If this method is called outside the runtime context.
            TypeError
                If `realm` is not a string.
         """
-        return self.__get_metrics_or_dimensions(realm, 'metrics')
+        return self.__describe_metrics_or_dimensions(realm, 'metrics')
 
-    def get_dimensions(self, realm):
-        """Get a data frame containing the valid dimensions for the given
+    def describe_dimensions(self, realm):
+        """Get a data frame describing the valid dimensions for the given
            realm.
 
            Parameters
            ----------
            realm : str
                A realm in the data warehouse. Can be specified by its ID or its
-               label. See `get_realms()`.
+               label. See `describe_realms()`.
 
            Returns
            -------
@@ -272,13 +272,13 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If `realm` is not one of the values from `get_realms()`.
+               If `realm` is not one of the values from `describe_realms()`.
            RuntimeError
                If this method is called outside the runtime context.
            TypeError
                If `realm` is not a string.
         """
-        return self.__get_metrics_or_dimensions(realm, 'dimensions')
+        return self.__describe_metrics_or_dimensions(realm, 'dimensions')
 
     def get_filter_values(self, realm, dimension):
         """Get a data frame containing the valid filter values for the given
@@ -288,10 +288,10 @@ class DataWarehouse:
            ----------
            realm : str
                A realm in the data warehouse. Can be specified by its ID or its
-               label. See `get_realms()`.
+               label. See `describe_realms()`.
            dimension : str
                A dimension of the given realm in the data warehouse. Can be
-               specified by its ID or its label. See `get_dimensions()`.
+               specified by its ID or its label. See `describe_dimensions()`.
 
            Returns
            -------
@@ -302,9 +302,9 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If `realm` is not one of the values from `get_realms()` or
+               If `realm` is not one of the values from `describe_realms()` or
                `dimension` is not one of the IDs or labels from
-               `get_dimensions()`.
+               `describe_dimensions()`.
            RuntimeError
                If this method is called outside the runtime context.
            TypeError
@@ -349,8 +349,8 @@ class DataWarehouse:
         """
         return _validator._get_aggregation_units()
 
-    def get_raw_realms(self):
-        """Get a data frame containing the valid raw data realms in the data
+    def describe_raw_realms(self):
+        """Get a data frame describing the valid raw data realms in the data
            warehouse.
 
            Returns
@@ -371,14 +371,14 @@ class DataWarehouse:
             'id',
         )
 
-    def get_raw_fields(self, realm):
-        """Get a data frame containing the raw data fields for the given realm.
+    def describe_raw_fields(self, realm):
+        """Get a data frame describing the raw data fields for the given realm.
 
            Parameters
            ----------
            realm : str
                A raw data realm in the data warehouse. Can be specified by its
-               ID or its label. See `get_raw_realms()`.
+               ID or its label. See `describe_raw_realms()`.
 
            Returns
            -------
@@ -389,7 +389,8 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If `realm` is not one of the values from `get_raw_realms()`.
+               If `realm` is not one of the values from
+               `describe_raw_realms()`.
            RuntimeError
                If this method is called outside the runtime context.
            TypeError
@@ -438,7 +439,7 @@ class DataWarehouse:
         ]
         return self.__get_data_frame(data, columns, index)
 
-    def __get_metrics_or_dimensions(self, realm, m_or_d):
+    def __describe_metrics_or_dimensions(self, realm, m_or_d):
         _validator._assert_runtime_context(self.__in_runtime_context)
         realm_id = _validator._find_realm_id(self.__descriptors, realm)
         return self.__get_data_frame_from_descriptor(

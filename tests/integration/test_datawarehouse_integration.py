@@ -21,12 +21,12 @@ METHOD_PARAMS = {
         'fields',
         'show_progress',
     ),
-    'get_realms': (),
-    'get_metrics': ('realm',),
-    'get_dimensions': ('realm',),
+    'describe_realms': (),
+    'describe_metrics': ('realm',),
+    'describe_dimensions': ('realm',),
     'get_filter_values': ('realm', 'dimension',),
-    'get_raw_realms': (),
-    'get_raw_fields': ('realm',),
+    'describe_raw_realms': (),
+    'describe_raw_fields': ('realm',),
 }
 VALID_DATE = '2020-01-01'
 VALID_DIMENSION = 'Resource'
@@ -115,12 +115,12 @@ def __get_dw_methods(dw):
     return {
         'get_data': dw.get_data,
         'get_raw_data': dw.get_raw_data,
-        'get_realms': dw.get_realms,
-        'get_metrics': dw.get_metrics,
-        'get_dimensions': dw.get_dimensions,
+        'describe_realms': dw.describe_realms,
+        'describe_metrics': dw.describe_metrics,
+        'describe_dimensions': dw.describe_dimensions,
         'get_filter_values': dw.get_filter_values,
-        'get_raw_realms': dw.get_raw_realms,
-        'get_raw_fields': dw.get_raw_fields,
+        'describe_raw_realms': dw.describe_raw_realms,
+        'describe_raw_fields': dw.describe_raw_fields,
     }
 
 
@@ -148,12 +148,12 @@ def test_KeyError(dw_methods, method, params, match):
     [
         'get_data',
         'get_raw_data',
-        'get_realms',
-        'get_metrics',
-        'get_dimensions',
+        'describe_realms',
+        'describe_metrics',
+        'describe_dimensions',
         'get_filter_values',
-        'get_raw_realms',
-        'get_raw_fields',
+        'describe_raw_realms',
+        'describe_raw_fields',
     ],
 )
 def test_RuntimeError_outside_context(
@@ -386,12 +386,12 @@ def test_get_data_aggregate_return_value(
 
 
 get_descriptors_return_value_test_columns_data = {
-    'get_realms': ['label'],
-    'get_metrics': ['label', 'description'],
-    'get_dimensions': ['label', 'description'],
+    'describe_realms': ['label'],
+    'describe_metrics': ['label', 'description'],
+    'describe_dimensions': ['label', 'description'],
     'get_filter_values': ['label'],
-    'get_raw_realms': ['label'],
-    'get_raw_fields': ['label', 'description'],
+    'describe_raw_realms': ['label'],
+    'describe_raw_fields': ['label', 'description'],
 }
 get_descriptors_return_value_test_params = [
     (method, columns_data) for method, columns_data

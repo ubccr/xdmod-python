@@ -217,7 +217,7 @@ def __validate_raw_fields(data_warehouse, realm, fields):
         for field in fields:
             new_field = __find_value_in_df(
                 'Field',
-                data_warehouse.get_raw_fields(realm),
+                data_warehouse.describe_raw_fields(realm),
                 field,
             )
             results.append(new_field)
