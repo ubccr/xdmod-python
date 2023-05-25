@@ -36,7 +36,11 @@ def _validate_get_data_params(data_warehouse, descriptors, params):
         results['realm'],
         params['filters'],
     )
-    results['timeseries'] = __assert_bool('timeseries', params['timeseries'])
+    results['dataset_type'] = __find_str_in_sequence(
+        params['dataset_type'],
+        ('timeseries', 'aggregate'),
+        'dataset_type',
+    )
     results['aggregation_unit'] = __find_str_in_sequence(
         params['aggregation_unit'],
         _get_aggregation_units(),
@@ -178,7 +182,7 @@ def __validate_filters(data_warehouse, descriptors, realm, filters):
             for filter_value in filter_values:
                 new_filter_value = __find_value_in_df(
                     'Filter value',
-                    data_warehouse.get_filters(realm, dimension),
+                    data_warehouse.get_filter_values(realm, dimension),
                     filter_value,
                 )
                 result[dimension_id].append(new_filter_value)
@@ -213,7 +217,7 @@ def __validate_raw_fields(data_warehouse, realm, fields):
         for field in fields:
             new_field = __find_value_in_df(
                 'Field',
-                data_warehouse.get_raw_fields(realm),
+                data_warehouse.describe_raw_fields(realm),
                 field,
             )
             results.append(new_field)

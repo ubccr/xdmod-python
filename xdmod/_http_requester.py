@@ -117,9 +117,7 @@ class _HttpRequester:
             'realm': params['realm'],
             'statistic': params['metric'],
             'group_by': params['dimension'],
-            'dataset_type': (
-                'timeseries' if params['timeseries'] else 'aggregate'
-            ),
+            'dataset_type': params['dataset_type'],
             'aggregation_unit': params['aggregation_unit'],
             'format': 'csv',
         }
@@ -138,9 +136,8 @@ class _HttpRequester:
         if (params['fields']):
             results['fields'] = ','.join(params['fields'])
         if (params['filters']):
-            results['filter_keys'] = ','.join(params['filters'])
             for dimension in params['filters']:
-                results[dimension + '_filter'] = ','.join(
+                results['filters[' + dimension + ']'] = ','.join(
                     params['filters'][dimension]
                 )
         return urlencode(results)

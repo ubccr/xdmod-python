@@ -11,7 +11,7 @@ METHOD_PARAMS = {
         'metric',
         'dimension',
         'filters',
-        'timeseries',
+        'dataset_type',
         'aggregation_unit',
     ),
     'get_raw_data': (
@@ -21,12 +21,12 @@ METHOD_PARAMS = {
         'fields',
         'show_progress',
     ),
-    'get_realms': (),
-    'get_metrics': ('realm',),
-    'get_dimensions': ('realm',),
-    'get_filters': ('realm', 'dimension',),
-    'get_raw_realms': (),
-    'get_raw_fields': ('realm',),
+    'describe_realms': (),
+    'describe_metrics': ('realm',),
+    'describe_dimensions': ('realm',),
+    'get_filter_values': ('realm', 'dimension',),
+    'describe_raw_realms': (),
+    'describe_raw_fields': ('realm',),
 }
 VALID_DATE = '2020-01-01'
 VALID_DIMENSION = 'Resource'
@@ -36,7 +36,7 @@ VALID_VALUES = {
   'metric': 'CPU Hours: Total',
   'dimension': VALID_DIMENSION,
   'filters': {VALID_DIMENSION: 'Expanse'},
-  'timeseries': True,
+  'dataset_type': 'timeseries',
   'aggregation_unit': 'Auto',
   'parameter': 'duration',
   'fields': ['Nodes'],
@@ -51,6 +51,7 @@ KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     'filter_value': (
         {VALID_DIMENSION: INVALID_STR}, r'Filter value .* not found'
     ),
+    'dataset_type': (INVALID_STR, 'Invalid value for `dataset_type`'),
     'aggregation_unit': (INVALID_STR, 'Invalid value for `aggregation_unit`'),
     'parameter': (
         INVALID_STR,
@@ -114,12 +115,12 @@ def __get_dw_methods(dw):
     return {
         'get_data': dw.get_data,
         'get_raw_data': dw.get_raw_data,
-        'get_realms': dw.get_realms,
-        'get_metrics': dw.get_metrics,
-        'get_dimensions': dw.get_dimensions,
-        'get_filters': dw.get_filters,
-        'get_raw_realms': dw.get_raw_realms,
-        'get_raw_fields': dw.get_raw_fields,
+        'describe_realms': dw.describe_realms,
+        'describe_metrics': dw.describe_metrics,
+        'describe_dimensions': dw.describe_dimensions,
+        'get_filter_values': dw.get_filter_values,
+        'describe_raw_realms': dw.describe_raw_realms,
+        'describe_raw_fields': dw.describe_raw_fields,
     }
 
 
@@ -147,12 +148,12 @@ def test_KeyError(dw_methods, method, params, match):
     [
         'get_data',
         'get_raw_data',
-        'get_realms',
-        'get_metrics',
-        'get_dimensions',
-        'get_filters',
-        'get_raw_realms',
-        'get_raw_fields',
+        'describe_realms',
+        'describe_metrics',
+        'describe_dimensions',
+        'get_filter_values',
+        'describe_raw_realms',
+        'describe_raw_fields',
     ],
 )
 def test_RuntimeError_outside_context(
@@ -212,9 +213,9 @@ def __test_DataFrame_return_value(
     method,
     additional_params,
     dtype,
-    columns_type,
     columns_name,
     columns_data,
+    columns_data_subset,
     index_type,
     index_dtype,
     index_name,
@@ -224,22 +225,14 @@ def __test_DataFrame_return_value(
     assert isinstance(df, pandas.core.frame.DataFrame)
     for actual_dtype in df.dtypes:
         assert actual_dtype == dtype
-    assert isinstance(df.columns, columns_type)
-    if columns_type == pandas.core.indexes.base.Index:
-        assert df.columns.dtype == 'string'
-        assert df.columns.name == columns_name
-        assert df.columns.tolist() == columns_data
-    elif columns_type == pandas.core.indexes.multi.MultiIndex:
-        for dtype in df.columns.dtypes:
-            assert dtype == 'string'
-        assert df.columns.names == columns_name
-        dimension_values = dw_methods['get_filters'](
-            additional_params['realm'],
-            additional_params['dimension'],
-        )['label'].to_list()
+    assert isinstance(df.columns, pandas.core.indexes.base.Index)
+    assert df.columns.dtype == 'string'
+    assert df.columns.name == columns_name
+    if columns_data_subset:
         for column in df.columns.to_list():
-            assert column[0] == additional_params['metric']
-            assert column[1] in dimension_values
+            assert column in columns_data
+    else:
+        assert df.columns.to_list() == columns_data
     assert isinstance(df.index, index_type)
     assert df.index.dtype == index_dtype
     assert df.index.name == index_name
@@ -253,30 +246,27 @@ get_data_return_value_test_params = {
     'metric': 'Number of Users: Active',
     'dimension': 'None',
     'filters': {},
-    'timeseries': True,
+    'dataset_type': 'timeseries',
     'aggregation_unit': 'Day',
 }
 
 
 @pytest.mark.parametrize(
-    'additional_params, columns_type, columns_name, index_size',
+    'additional_params, columns_name, index_size',
     [
         (
             {},
-            pandas.core.indexes.base.Index,
             'Metric',
             31,
         ),
         (
             {'filters': {'Service Provider': 'StonyBrook'}},
-            pandas.core.indexes.base.Index,
             'Metric',
             0,
         ),
         (
             {'dimension': 'Resource'},
-            pandas.core.indexes.multi.MultiIndex,
-            ['Metric', 'Resource'],
+            'Resource',
             31,
         ),
         (
@@ -284,8 +274,7 @@ get_data_return_value_test_params = {
                 'dimension': 'Resource',
                 'filters': {'Service Provider': 'StonyBrook'}
             },
-            pandas.core.indexes.multi.MultiIndex,
-            ['Metric', 'Resource'],
+            'Resource',
             0,
         ),
     ],
@@ -299,19 +288,27 @@ get_data_return_value_test_params = {
 def test_get_data_timeseries_return_value(
     dw_methods,
     additional_params,
-    columns_type,
     columns_name,
     index_size,
 ):
     params = {**get_data_return_value_test_params, **additional_params}
+    if columns_name == 'Metric':
+        columns_data = [get_data_return_value_test_params['metric']]
+        columns_data_subset = False
+    else:
+        columns_data = dw_methods['get_filter_values'](
+            params['realm'],
+            params['dimension'],
+        )['label'].to_list()
+        columns_data_subset = True
     __test_DataFrame_return_value(
         dw_methods,
         method='get_data',
         additional_params=params,
         dtype='Float64',
-        columns_type=columns_type,
         columns_name=columns_name,
-        columns_data=[get_data_return_value_test_params['metric']],
+        columns_data=columns_data,
+        columns_data_subset=columns_data_subset,
         index_type=pandas.core.indexes.datetimes.DatetimeIndex,
         index_dtype='datetime64[ns]',
         index_name='Time',
@@ -321,7 +318,7 @@ def test_get_data_timeseries_return_value(
 
 get_data_aggregate_return_value_test_params = {
     **get_data_return_value_test_params,
-    **{'timeseries': False},
+    **{'dataset_type': 'aggregate'},
 }
 
 
@@ -374,14 +371,14 @@ def test_get_data_aggregate_return_value(
     assert series.dtype == 'Float64'
     if index_name is None:
         assert series.name is None
-        assert series.index.tolist() == [params['metric']]
+        assert series.index.to_list() == [params['metric']]
     else:
         assert series.name == params['metric']
-        dimension_values = dw_methods['get_filters'](
+        dimension_values = dw_methods['get_filter_values'](
             params['realm'],
             params['dimension'],
         )['label'].to_list()
-        assert series.index.tolist().sort() == dimension_values.sort()
+        assert series.index.to_list().sort() == dimension_values.sort()
     assert isinstance(series.index, pandas.core.indexes.base.Index)
     assert series.index.dtype == 'string'
     assert series.index.name == index_name
@@ -389,12 +386,12 @@ def test_get_data_aggregate_return_value(
 
 
 get_descriptors_return_value_test_columns_data = {
-    'get_realms': ['label'],
-    'get_metrics': ['label', 'description'],
-    'get_dimensions': ['label', 'description'],
-    'get_filters': ['label'],
-    'get_raw_realms': ['label'],
-    'get_raw_fields': ['label', 'description'],
+    'describe_realms': ['label'],
+    'describe_metrics': ['label', 'description'],
+    'describe_dimensions': ['label', 'description'],
+    'get_filter_values': ['label'],
+    'describe_raw_realms': ['label'],
+    'describe_raw_fields': ['label', 'description'],
 }
 get_descriptors_return_value_test_params = [
     (method, columns_data) for method, columns_data
@@ -413,9 +410,9 @@ def test_get_descriptors_return_value(dw_methods, method, columns_data):
         method,
         additional_params={},
         dtype='string',
-        columns_type=pandas.core.indexes.base.Index,
         columns_name=None,
         columns_data=columns_data,
+        columns_data_subset=False,
         index_type=pandas.core.indexes.base.Index,
         index_dtype='string',
         index_name='id',
