@@ -19,7 +19,7 @@ In order to use the API, you will need to generate an API token through the port
 
     ![Screenshot of "API Token" tab](docs/screenshots/api-token/api-token-tab.jpg)
 
-    **Note:** If the "API Token" tab does not appear, it means that instance of XDMoD is not configured for API access through `xdmod-data`.
+    **Note:** If the "API Token" tab does not appear, it means the instance of XDMoD is not configured for API access through `xdmod-data`.
 
 1. If you already have an existing token, delete it:
 
