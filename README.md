@@ -11,7 +11,7 @@ In order to use the API, you will need to generate an API token through the port
 
     ![Screenshot of "Sign In" button](docs/screenshots/api-token/sign-in.jpg)
 
-1. Next, click the "My Profile" button in the top-right corner of the window:
+1. Next, click the "My Profile" button in the top-right corner:
 
     ![Screenshot of "My Profile" button](docs/screenshots/api-token/my-profile.jpg)
 
