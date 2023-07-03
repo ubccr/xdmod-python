@@ -8,17 +8,29 @@ The details of the API are documented through [Read the Docs]().
 ## Generating an API token
 In order to use the API, you will need to generate an API token through the portal of the XDMoD instance whose data you want to access.
 1. First, if you are not already signed in to the portal, sign in in the top-left corner:
+
     ![Screenshot of "Sign In" button](docs/img/api-token-1.jpg)
+
 1. Next, click the "My Profile" button in the top-right corner of the window:
+
     ![Screenshot of "My Profile" button](docs/img/api-token-2.jpg)
+
 1. The "My Profile" window will appear. Click the "API Token" tab:
+
     ![Screenshot of "API Token" tab](docs/img/api-token-3.jpg)
+
     **Note:** If the "API Token" tab does not appear, it means that instance of XDMoD is not configured for API access through `xdmod-data`.
+
 1. Click the "Generate API Token" button:
+
     ![Screenshot of "Generate API Token" button](docs/img/api-token-4.jpg)
+
     **Note:** If you already have a token and want to generate a new one, first delete the existing one:
+
     ![Screenshot of "Delete API Token" button](docs/img/api-token-5.jpg)
+
 1. Copy the token to your clipboard. Make sure to paste it somewhere for saving, as you will not be able to see the token again once you close the window (if you lose your token, simply delete it and generate a new one):
+
     ![Screenshot of "Copy API Token to Clipboard" button](docs/img/api-token-6.jpg)
 
 ## Support
