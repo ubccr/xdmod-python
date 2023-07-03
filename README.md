@@ -1,5 +1,5 @@
 # xdmod-data
-This Python package provides API access to the data warehouse of a running instance of [XDMoD](https://open.xdmod.org/).
+As part of the [XDMoD Data Analytics Framework](), this Python package provides API access to the data warehouse of a running instance of XDMoD.
 
 Example usage is documented through Jupyter notebooks in the [xdmod-notebooks](https://github.com/ubccr/xdmod-notebooks) repository.
 
