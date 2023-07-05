@@ -7,7 +7,10 @@ The details of the API are documented through [Read the Docs]().
 
 ## Support
 For support, please see [this page](https://open.xdmod.org/support.html). If you email for support, please include the following:
-* `xdmod-data` version number (obtained from the file `xdmod_data/__version__.py`).
+* `xdmod-data` version number, obtained by running the command:
+    ```
+    python3 -m pip freeze | grep xdmod-data
+    ```
 * Operating system version.
 * A description of the problem you are experiencing.
 * Detailed steps to reproduce the problem.
