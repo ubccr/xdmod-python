@@ -12,7 +12,7 @@ class DataWarehouse:
        Methods must be called within a runtime context using the ``with``
        keyword, e.g.,
 
-       >>> with DataWarehouse(XDMOD_URL) as dw:
+       >>> with DataWarehouse('https://xdmod.access-ci.org') as dw:
        ...     dw.get_data()
 
        Parameters
