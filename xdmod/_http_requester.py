@@ -1,7 +1,6 @@
-import io
 import json
 import os
-import pycurl
+import requests
 from urllib.parse import urlencode
 import xdmod._validator as _validator
 
@@ -17,18 +16,18 @@ class _HttpRequester:
             raise KeyError(
                 '`XDMOD_API_TOKEN` environment variable has not been set.'
             ) from None
-        self.__headers = ['Authorization: Bearer ' + self.__api_token]
-        self.__crl = None
+        self.__headers = {'Authorization': 'Bearer ' + self.__api_token}
+        self.__requests_session = None
         self.__raw_data_limit = None
 
     def _start_up(self):
         self.__in_runtime_context = True
-        self.__crl = pycurl.Curl()
+        self.__requests_session = requests.Session()
         self.__assert_connection_to_xdmod_host()
 
     def _tear_down(self):
-        if self.__crl:
-            self.__crl.close()
+        if self.__requests_session is not None:
+            self.__requests_session.close()
         self.__in_runtime_context = False
 
     def _request_data(self, params):
@@ -74,40 +73,33 @@ class _HttpRequester:
 
     def __request(self, path='', post_fields=None):
         _validator._assert_runtime_context(self.__in_runtime_context)
-        self.__crl.reset()
         url = self.__xdmod_host + path
         if post_fields:
             post_fields['Bearer'] = self.__api_token
-            self.__crl.setopt(pycurl.POSTFIELDS, urlencode(post_fields))
+            response = self.__requests_session.post(
+                url,
+                headers=self.__headers,
+                data=post_fields,
+            )
         else:
             url += '&' if '?' in url else '?'
             url += 'Bearer=' + self.__api_token
-        self.__crl.setopt(pycurl.URL, url)
-        self.__crl.setopt(pycurl.HTTPHEADER, self.__headers)
-        buffer = io.BytesIO()
-        self.__crl.setopt(pycurl.WRITEDATA, buffer)
-        try:
-            self.__crl.perform()
-        except pycurl.error as e:
-            code, msg = e.args
-            if code == pycurl.E_URL_MALFORMAT:
-                msg = 'Malformed URL.'
-            raise RuntimeError(msg) from None
-        response = buffer.getvalue().decode()
-        code = self.__crl.getinfo(pycurl.RESPONSE_CODE)
-        if code != 200:
+            response = self.__requests_session.get(url, headers=self.__headers)
+        if response.status_code != 200:
             msg = ''
             try:
-                response_json = json.loads(response)
+                response_json = json.loads(response.text)
                 msg = ': ' + response_json['message']
             except json.JSONDecodeError:
                 pass
-            if code == 401:
+            if response.status_code == 401:
                 msg = (
                     ': Make sure XDMOD_API_TOKEN is set to a valid API token.'
                 )
-            raise RuntimeError('Error ' + str(code) + msg) from None
-        return response
+            raise RuntimeError(
+                'Error ' + str(response.status_code) + msg
+            ) from None
+        return response.text
 
     def __get_data_post_fields(self, params):
         post_fields = {

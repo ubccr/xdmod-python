@@ -12,7 +12,7 @@ setup(
     install_requires=[
         'numpy',
         'pandas',
-        'pycurl',
-        'plotly'
+        'plotly',
+        'requests',
     ]
 )

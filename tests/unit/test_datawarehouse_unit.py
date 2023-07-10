@@ -1,6 +1,7 @@
 import pytest
-from xdmod.datawarehouse import DataWarehouse
 import os
+import requests
+from xdmod.datawarehouse import DataWarehouse
 
 
 VALID_XDMOD_URL = 'https://xdmod.access-ci.org'
@@ -33,19 +34,19 @@ def test___init___KeyError():
 
 def test___enter___RuntimeError_xdmod_host_malformed():
     with pytest.raises(
-        RuntimeError,
-        match='Could not connect to xdmod_host \'\': Malformed URL.',
+        requests.exceptions.InvalidURL,
+        match=r'Invalid URL \'.*\': No host supplied'
     ):
-        with DataWarehouse(''):
+        with DataWarehouse('https://'):
             pass
 
 
 def test___enter___RuntimeError_xdmod_host_unresolved():
-    invalid_host = INVALID_STR + '.xdmod.org'
+    invalid_host = 'https://' + INVALID_STR + '.xdmod.org'
     with pytest.raises(
-        RuntimeError,
-        match='Could not connect to xdmod_host \'' + invalid_host
-        + '\': Could not resolve host: ' + invalid_host,
+        requests.exceptions.ConnectionError,
+        match='Failed to resolve \'' + INVALID_STR + '.xdmod.org\''
+        + ' \\(\\[Errno -2\\] Name or service not known\\)'
     ):
         with DataWarehouse(invalid_host):
             pass
@@ -54,10 +55,8 @@ def test___enter___RuntimeError_xdmod_host_unresolved():
 def test___enter___RuntimeError_xdmod_host_unsupported_protocol():
     invalid_host = INVALID_STR + '://' + INVALID_STR
     with pytest.raises(
-        RuntimeError,
-        match='Could not connect to xdmod_host \'' + invalid_host
-        + '\': Protocol "' + INVALID_STR
-        + '" not supported or disabled in libcurl',
+        requests.exceptions.InvalidSchema,
+        match='No connection adapters were found for \'' + invalid_host
     ):
         with DataWarehouse(invalid_host):
             pass
