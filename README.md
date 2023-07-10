@@ -1,9 +1,40 @@
 # xdmod-data
-As part of the [XDMoD Data Analytics Framework](https://open.xdmod.org/data-analytics-framework.html), this Python package provides API access to the data warehouse of an instance of XDMoD version ≥10.5.
+As part of the [XDMoD](https://open.xdmod.org) Data Analytics Framework, this Python package provides API access to the data warehouse of an instance of XDMoD version ≥10.5.
 
 Example usage is documented through Jupyter notebooks in the [xdmod-notebooks](https://github.com/ubccr/xdmod-notebooks) repository.
 
 The details of the API are documented through [Read the Docs]().
+
+## API Token Access
+Use of the Data Analytics Framework requires an API token. To obtain an API token, follow the steps below to obtain an API token from the XDMoD portal.
+
+1. First, if you are not already signed in to the portal, sign in in the top-left corner:
+
+    ![Screenshot of "Sign In" button]({{ site.baseurl }}/docs/images/api-token/sign-in.jpg)
+
+1. Next, click the "My Profile" button in the top-right corner:
+
+    ![Screenshot of "My Profile" button]({{ site.baseurl }}/docs/images/api-token/my-profile.jpg)
+
+1. The "My Profile" window will appear. Click the "API Token" tab:
+
+    ![Screenshot of "API Token" tab]({{ site.baseurl }}/docs/images/api-token/api-token-tab.jpg)
+
+    **Note:** If the "API Token" tab does not appear, it means this instance of XDMoD is not configured for the Data Analytics Framework.
+
+1. If you already have an existing token, delete it:
+
+    ![Screenshot of "Delete API Token" button]({{ site.baseurl }}/docs/images/api-token/delete.jpg)
+
+1. Click the "Generate API Token" button:
+
+    ![Screenshot of "Generate API Token" button]({{ site.baseurl }}/docs/images/api-token/generate.jpg)
+
+1. Copy the token to your clipboard. Make sure to paste it somewhere for saving, as you will not be able to see the token again once you close the window:
+
+    ![Screenshot of "Copy API Token to Clipboard" button]({{ site.baseurl }}/docs/images/api-token/copy.jpg)
+
+    **Note:** If you lose your token, simply delete it and generate a new one.
 
 ## Support
 For support, please see [this page](https://open.xdmod.org/support.html). If you email for support, please include the following:
