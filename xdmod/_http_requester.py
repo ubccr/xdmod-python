@@ -3,6 +3,7 @@ import os
 import requests
 from urllib.parse import urlencode
 import xdmod._validator as _validator
+from xdmod.__version__ import __title__, __version__
 
 
 class _HttpRequester:
@@ -16,7 +17,10 @@ class _HttpRequester:
             raise KeyError(
                 '`XDMOD_API_TOKEN` environment variable has not been set.'
             ) from None
-        self.__headers = {'Authorization': 'Bearer ' + self.__api_token}
+        self.__headers = {
+            'Authorization': 'Bearer ' + self.__api_token,
+            'User-Agent': __title__ + ' Python v' + __version__,
+        }
         self.__requests_session = None
         self.__raw_data_limit = None
 
