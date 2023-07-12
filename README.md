@@ -14,29 +14,29 @@ Use of the Data Analytics Framework requires an API token. To obtain an API toke
 
 1. First, if you are not already signed in to the portal, sign in in the top-left corner:
 
-    ![Screenshot of "Sign In" button](docs/images/api-token/sign-in.jpg)
+    ![Screenshot of "Sign In" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/sign-in.jpg)
 
 1. Next, click the "My Profile" button in the top-right corner:
 
-    ![Screenshot of "My Profile" button](docs/images/api-token/my-profile.jpg)
+    ![Screenshot of "My Profile" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/my-profile.jpg)
 
 1. The "My Profile" window will appear. Click the "API Token" tab:
 
-    ![Screenshot of "API Token" tab](docs/images/api-token/api-token-tab.jpg)
+    ![Screenshot of "API Token" tab](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/api-token-tab.jpg)
 
     **Note:** If the "API Token" tab does not appear, it means this instance of XDMoD is not configured for the Data Analytics Framework.
 
 1. If you already have an existing token, delete it:
 
-    ![Screenshot of "Delete API Token" button](docs/images/api-token/delete.jpg)
+    ![Screenshot of "Delete API Token" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/delete.jpg)
 
 1. Click the "Generate API Token" button:
 
-    ![Screenshot of "Generate API Token" button](docs/images/api-token/generate.jpg)
+    ![Screenshot of "Generate API Token" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/generate.jpg)
 
 1. Copy the token to your clipboard. Make sure to paste it somewhere for saving, as you will not be able to see the token again once you close the window:
 
-    ![Screenshot of "Copy API Token to Clipboard" button](docs/images/api-token/copy.jpg)
+    ![Screenshot of "Copy API Token to Clipboard" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/copy.jpg)
 
     **Note:** If you lose your token, simply delete it and generate a new one.
 
