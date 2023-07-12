@@ -7,8 +7,6 @@ It has dependencies on [NumPy](https://pypi.org/project/numpy/), [Pandas](https:
 
 Example usage is documented through Jupyter notebooks in the [xdmod-notebooks](https://github.com/ubccr/xdmod-notebooks) repository.
 
-The details of the API are documented [here](https://open.xdmod.org/data-analytics-framework/api).
-
 ## API Token Access
 Use of the Data Analytics Framework requires an API token. To obtain an API token, follow the steps below to obtain an API token from the XDMoD portal.
 
