@@ -40,9 +40,10 @@ Use of the Data Analytics Framework requires an API token. To obtain an API toke
 
 ## Support
 For support, please see [this page](https://open.xdmod.org/support.html). If you email for support, please include the following:
-* `xdmod-data` version number, obtained by running the command:
+* `xdmod-data` version number, obtained by running this Python code:
     ```
-    python3 -m pip freeze | grep xdmod-data
+    from xdmod_data import __version__
+    print(__version__)
     ```
 * Operating system version.
 * A description of the problem you are experiencing.
