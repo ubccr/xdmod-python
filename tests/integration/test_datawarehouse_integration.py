@@ -1,5 +1,5 @@
 import pytest
-import xdmod.datawarehouse as xdw
+from xdmod_data.warehouse import DataWarehouse
 import pandas
 
 VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
@@ -101,13 +101,13 @@ for method in METHOD_PARAMS:
 
 @pytest.fixture(scope='module')
 def dw_methods():
-    with xdw.DataWarehouse(VALID_XDMOD_URL) as dw:
+    with DataWarehouse(VALID_XDMOD_URL) as dw:
         yield __get_dw_methods(dw)
 
 
 @pytest.fixture(scope='module')
 def dw_methods_outside_runtime_context():
-    dw = xdw.DataWarehouse(VALID_XDMOD_URL)
+    dw = DataWarehouse(VALID_XDMOD_URL)
     return __get_dw_methods(dw)
 
 

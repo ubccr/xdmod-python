@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-from xdmod._descriptors import _Descriptors
-from xdmod._http_requester import _HttpRequester
-import xdmod._response_processor as _response_processor
-import xdmod._validator as _validator
+from xdmod_data._descriptors import _Descriptors
+from xdmod_data._http_requester import _HttpRequester
+import xdmod_data._response_processor as _response_processor
+import xdmod_data._validator as _validator
 
 
 class DataWarehouse:
@@ -12,7 +12,7 @@ class DataWarehouse:
        Methods must be called within a runtime context using the ``with``
        keyword, e.g.,
 
-       >>> with DataWarehouse(XDMOD_URL) as dw:
+       >>> with DataWarehouse('https://xdmod.access-ci.org') as dw:
        ...     dw.get_data()
 
        Parameters
@@ -35,7 +35,6 @@ class DataWarehouse:
         self.__in_runtime_context = False
         self.__http_requester = _HttpRequester(xdmod_host)
         self.__descriptors = _Descriptors(self.__http_requester)
-        self.__username = None
 
     def __enter__(self):
         self.__in_runtime_context = True
@@ -44,7 +43,6 @@ class DataWarehouse:
 
     def __exit__(self, type_, value, traceback):
         self.__http_requester._tear_down()
-        self.__username = None
         self.__in_runtime_context = False
 
     def get_data(
@@ -447,66 +445,3 @@ class DataWarehouse:
             ('id', 'label', 'description'),
             'id',
         )
-
-    def whoami(self):
-        if self.__username:
-            return self.__username
-        return 'Not logged in'
-
-    def compliance(self, timeframe):
-        response = self.__http_requester._request_json(
-            '/controllers/compliance.php',
-            {'timeframe_mode': timeframe},
-        )
-        return response
-
-    def resources(self):
-        names = []
-        types = []
-        resource_ids = []
-        cdata = self.compliance('to_date')
-        for resource in cdata['metaData']['fields']:
-            if resource['name'] == 'requirement':
-                continue
-            names.append(
-                resource['header'][:-7].split('>')[1].replace('-', ' ')
-            )
-            types.append(resource['status'].split('|')[0].strip())
-            resource_ids.append(resource['resource_id'])
-        return pd.Series(data=types, index=names)
-
-    def get_qualitydata(self, params, is_numpy=False):
-        type_to_title = {
-            'gpu': '% of jobs with GPU information',
-            'hardware': '% of jobs with hardware perf information',
-            'cpu': '% of jobs with cpu usage information',
-            'script': '% of jobs with Job Batch Script information',
-            'realms': '% of jobs in the SUPReMM realm compared to Jobs realm',
-        }
-        response = self.__http_requester._request_json(
-            '/rest/supremm_dataflow/quality',
-            params,
-        )
-        if response['success']:
-            result = response['result']
-            jobs = [job for job in result]
-            dates = [
-                date.strftime('%Y-%m-%d') for date in pd.date_range(
-                    params['start'],
-                    params['end'],
-                    freq='D',
-                ).date
-            ]
-            quality = np.empty((len(jobs), len(dates)))
-            for i in range(len(jobs)):
-                for j in range(len(dates)):
-                    job_i = result[jobs[i]]
-                    if job_i.get(dates[j], np.nan) != 'N/A':
-                        quality[i, j] = job_i.get(dates[j], np.nan)
-                    else:
-                        quality[i, j] = np.nan
-            if is_numpy:
-                return quality
-            df = pd.DataFrame(data=quality, index=jobs, columns=dates)
-            df.name = type_to_title[params['type']]
-            return df

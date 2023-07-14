@@ -1,23 +1,15 @@
-.. XDMoD Data Analytics Framework documentation master file, created by
-   sphinx-quickstart on Fri Feb  3 17:15:03 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+XDMoD Data Analytics Framework |version|
+========================================
 
-XDMoD Data Analytics Framework
-==============================
+This documents the `xdmod-data <https://github.com/ubccr/xdmod-data>`_ Python
+module.
 
-.. automodule:: xdmod.datawarehouse
-    :members:
+Example usage is documented through Jupyter notebooks in the
+`xdmod-notebooks <https://github.com/ubccr/xdmod-notebooks>`_ repository.
+
+.. automodule:: xdmod_data.warehouse
+   :members:
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Contents:
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   :maxdepth: 2
+   :caption: Contents:

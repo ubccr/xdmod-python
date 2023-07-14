@@ -1,7 +1,7 @@
 import pytest
 import os
 import requests
-from xdmod.datawarehouse import DataWarehouse
+from xdmod_data.warehouse import DataWarehouse
 
 
 VALID_XDMOD_URL = 'https://xdmod.access-ci.org'

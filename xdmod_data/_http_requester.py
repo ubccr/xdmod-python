@@ -2,8 +2,8 @@ import json
 import os
 import requests
 from urllib.parse import urlencode
-import xdmod._validator as _validator
-from xdmod.__version__ import __title__, __version__
+import xdmod_data._validator as _validator
+from xdmod_data.__version__ import __title__, __version__
 
 
 class _HttpRequester:

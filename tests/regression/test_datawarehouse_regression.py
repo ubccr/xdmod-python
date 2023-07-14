@@ -1,5 +1,5 @@
 import pytest
-import xdmod.datawarehouse as xdw
+from xdmod_data.warehouse import DataWarehouse
 import pandas
 import numpy
 import os
@@ -10,7 +10,7 @@ DATA_DIR = os.path.dirname(__file__) + '/data'
 
 @pytest.fixture(scope='module')
 def valid_dw():
-    with xdw.DataWarehouse(XDMOD_URL) as dw:
+    with DataWarehouse(XDMOD_URL) as dw:
         yield dw
 
 
