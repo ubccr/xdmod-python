@@ -32,7 +32,7 @@ Use of the Data Analytics Framework requires an API token. To obtain an API toke
 
     ![Screenshot of "Generate API Token" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/generate.jpg)
 
-1. Copy the token to your clipboard. Make sure to paste it somewhere for saving, as you will not be able to see the token again once you close the window:
+1. Copy the token to your clipboard. Make sure to paste it somewhere secure for saving, as you will not be able to see the token again once you close the window:
 
     ![Screenshot of "Copy API Token to Clipboard" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/copy.jpg)
 
