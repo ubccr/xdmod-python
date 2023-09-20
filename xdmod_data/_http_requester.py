@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import json
 import os
 import requests
@@ -41,23 +42,36 @@ class _HttpRequester:
         )
 
     def _request_raw_data(self, params):
-        url_params = self.__get_raw_data_url_params(params)
         limit = self.__get_raw_data_limit()
+        start_date = datetime.strptime(params['start_date'], '%Y-%m-%d')
+        end_date = datetime.strptime(params['end_date'], '%Y-%m-%d')
         data = []
-        num_rows = limit
-        offset = 0
-        while num_rows == limit:
-            response = self._request_json(
-                path='/rest/v1/warehouse/raw-data?' + url_params
-                + '&offset=' + str(offset)
-            )
-            partial_data = response['data']
-            data += partial_data
-            if params['show_progress']:
-                progress_msg = 'Got ' + str(len(data)) + ' rows...'
-                print(progress_msg, end='\r')
-            num_rows = len(partial_data)
-            offset += limit
+        current_date = start_date
+        while current_date <= end_date:
+            current_date_str = current_date.strftime('%Y-%m-%d')
+            current_params = {
+                **params,
+                **{
+                    'start_date': current_date_str,
+                    'end_date': current_date_str,
+                },
+            }
+            url_params = self.__get_raw_data_url_params(current_params)
+            num_rows = limit
+            offset = 0
+            while num_rows == limit:
+                response = self._request_json(
+                    path='/rest/v1/warehouse/raw-data?' + url_params
+                    + '&offset=' + str(offset)
+                )
+                partial_data = response['data']
+                data += partial_data
+                if params['show_progress']:
+                    progress_msg = 'Got ' + str(len(data)) + ' rows...'
+                    print(progress_msg, end='\r')
+                num_rows = len(partial_data)
+                offset += limit
+            current_date = current_date + timedelta(days=1)
         if params['show_progress']:
             print(progress_msg + 'DONE')
         return (data, response['fields'])
