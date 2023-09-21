@@ -67,11 +67,19 @@ class _HttpRequester:
                 partial_data = response['data']
                 data += partial_data
                 if params['show_progress']:
-                    progress_msg = 'Got ' + str(len(data)) + ' rows...'
-                    print(progress_msg, end='\r')
+                    progress_msg = self.__show_progress(
+                        start_date,
+                        current_date,
+                        len(data),
+                    )
                 num_rows = len(partial_data)
                 offset += limit
             current_date = current_date + timedelta(days=1)
+            progress_msg = self.__show_progress(
+                start_date,
+                current_date,
+                len(data),
+            )
         if params['show_progress']:
             print(progress_msg + 'DONE')
         return (data, response['fields'])
@@ -157,3 +165,15 @@ class _HttpRequester:
             response = self._request_json('/rest/v1/warehouse/raw-data/limit')
             self.__raw_data_limit = int(response['data'])
         return self.__raw_data_limit
+
+    def __show_progress(self, start_date, current_date, num_rows):
+        num_days = (current_date - start_date).days
+        progress_msg = (
+            'Got ' + str(num_rows) + ' row'
+            + ('s' if num_rows != 1 else '')
+            + ' (' + str(num_days) + ' day'
+            + ('s' if num_days != 1 else '')
+            + ')...'
+        )
+        print(progress_msg, end='\r')
+        return progress_msg
