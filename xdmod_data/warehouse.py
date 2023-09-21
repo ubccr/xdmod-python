@@ -168,8 +168,8 @@ class DataWarehouse:
                only be included whose values for each of the given dimensions
                match one of the corresponding given values.
            show_progress : bool, optional
-               If true, periodically print how many rows have been gotten so
-               far.
+               If true, periodically print how many rows and how many days in
+               the date range have been gotten so far.
 
            Returns
            -------
