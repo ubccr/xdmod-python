@@ -24,7 +24,7 @@
 ## Checklist:
 <!--- Go over all the following points and make sure they have all been completed -->
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
-- [ ] The pull request description is suitable for a Changelog entry
+- [ ] `CHANGELOG.md` has been updated
 - [ ] The milestone is set correctly on the pull request
 - [ ] The appropriate labels have been added to the pull request
 - [ ] The following command produces no errors (replace your own token from https://xdmod.access-ci.org): `XDMOD_API_TOKEN=YOUR_TOKEN_HERE pytest -vvs -o log_cli=true tests/`
