@@ -1,12 +1,30 @@
 id,label,description
+avg_ace,ACCESS Credit Equivalents Charged: Per Job (SU),"The average amount of ACCESS Credit Equivalents charged per compute job.<br/>
+
+The ACCESS Credit Equivalent is a measure of how much compute time was used on each resource.
+One ACCESS Credit Equivalent is defined as one CPU Hour on SDSC Expanse (an AMD EPYC 7742 based compute resource).
+The ACCESS Credit Equivalent allows comparison between usage of node-allocated, core-allocated and GPU-allocated 
+resources. It also allows a comparison between resources with different compute power per core.
+The <a href=""https://allocations.access-ci.org/exchange_calculator"" target=""_blank"" rel=""noopener noreferrer"">ACCESS allocations exchange calculator</a>
+lists conversion rates between an ACCESS Credit Equivalent and a service unit on a resource."
+total_ace,ACCESS Credit Equivalents Charged: Total (SU),"The total amount of ACCESS Credit Equivalents charged.<br/>
+
+The ACCESS Credit Equivalent is a measure of how much compute time was used on each resource.
+One ACCESS Credit Equivalent is defined as one CPU Hour on SDSC Expanse (an AMD EPYC 7742 based compute resource).
+The ACCESS Credit Equivalent allows comparison between usage of node-allocated, core-allocated and GPU-allocated 
+resources. It also allows a comparison between resources with different compute power per core.
+The <a href=""https://allocations.access-ci.org/exchange_calculator"" target=""_blank"" rel=""noopener noreferrer"">ACCESS allocations exchange calculator</a>
+lists conversion rates between an ACCESS Credit Equivalent and a service unit on a resource."
 utilization,ACCESS Utilization (%),"The percentage of the ACCESS obligation of a resource that has been utilized by ACCESS jobs.<br/><i> ACCESS Utilization:</i> The ratio of the total CPU hours consumed by ACCESS jobs over a given time period divided by the total CPU hours that the system is contractually required to provide to ACCESS during that period. It does not include non-ACCESS jobs.<br/>It is worth noting that this value is a rough estimate in certain cases where the resource providers don't provide accurate records of their system specifications, over time."
 rate_of_usage,Allocation Usage Rate (XD SU/Hour),The rate of ACCESS allocation usage in XD SUs per hour.
+rate_of_usage_ace,Allocation Usage Rate ACEs (SU/Hour),The rate of ACCESS allocation usage in ACCESS Credit Equivalents per hour.
 avg_cpu_hours,CPU Hours: Per Job,"The average CPU hours (number of CPU cores x wall time hours) per ACCESS job.<br/>For each job, the CPU usage is aggregated. For example, if a job used 1000 CPUs for one minute, it would be aggregated as 1000 CPU minutes or 16.67 CPU hours."
 total_cpu_hours,CPU Hours: Total,"The total CPU hours (number of CPU cores x wall time hours) used by ACCESS jobs.<br/>For each job, the CPU usage is aggregated. For example, if a job used 1000 CPUs for one minute, it would be aggregated as 1000 CPU minutes or 16.67 CPU hours."
 max_processors,Job Size: Max (Core Count),The maximum size ACCESS job in number of cores.<br/><i>Job Size: </i>The total number of processor cores used by a (parallel) job.
 min_processors,Job Size: Min (Core Count),The minimum size ACCESS job in number of cores.<br/><i>Job Size: </i>The total number of processor cores used by a (parallel) job.
 normalized_avg_processors,Job Size: Normalized (% of Total Cores),The percentage average size ACCESS job over total machine cores.<br><i>Normalized Job Size: </i>The percentage total number of processor cores used by a (parallel) job over the total number of cores on the machine.
 avg_processors,Job Size: Per Job (Core Count),The average job size per ACCESS job.<br><i>Job Size: </i>The number of processor cores used by a (parallel) job.
+avg_job_size_weighted_by_ace,Job Size: Weighted By ACEs (Core Count),The average job size weighted by charge in ACCESS Credit Equivalents (ACEs). Defined as <br><i>Average Job Size Weighted By ACEs: </i> sum(i = 0 to n){job i core count*job i charge in ACEs}/sum(i =  0 to n){job i charge in ACEs}
 avg_job_size_weighted_by_cpu_hours,Job Size: Weighted By CPU Hours (Core Count),The average ACCESS job size weighted by CPU Hours. Defined as <br><i>Average Job Size Weighted By CPU Hours: </i> sum(i = 0 to n){ job i core count * job i cpu hours}/sum(i =  0 to n){job i cpu hours}
 avg_job_size_weighted_by_xd_su,Job Size: Weighted By XD SUs (Core Count),The average ACCESS job size weighted by charge in XD SUs. Defined as <br><i>Average Job Size Weighted By XD SUs: </i> sum(i = 0 to n){job i core count*job i charge in xd sus}/sum(i =  0 to n){job i charge in xd sus}
 avg_nu,NUs Charged: Per Job,"The average amount of NUs charged per ACCESS job.<br/>

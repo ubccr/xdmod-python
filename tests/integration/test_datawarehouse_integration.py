@@ -1,8 +1,12 @@
+from dotenv import load_dotenv
+from os.path import expanduser
+import pandas
+from pathlib import Path
 import pytest
 from xdmod_data.warehouse import DataWarehouse
-import pandas
 
-VALID_XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
+VALID_XDMOD_URL = 'https://xdmod.access-ci.org'
+TOKEN_PATH = '~/.xdmod-data-token'
 INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 METHOD_PARAMS = {
     'get_data': (
@@ -60,10 +64,10 @@ KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     'field': (INVALID_STR, r'Field .* not found'),
 }
 
-key_error_test_names = []
-duration_test_names = []
-start_end_test_names = []
-type_error_test_names = []
+key_error_test_ids = []
+duration_test_ids = []
+start_end_test_ids = []
+type_error_test_ids = []
 
 default_valid_params = {}
 key_error_test_params = []
@@ -75,15 +79,15 @@ for method in METHOD_PARAMS:
     default_valid_params[method] = {}
     for param in METHOD_PARAMS[method]:
         default_valid_params[method][param] = VALID_VALUES[param]
-        type_error_test_names += [method + ':' + param]
+        type_error_test_ids += [method + ':' + param]
         type_error_test_params += [(method, param)]
         if param in KEY_ERROR_TEST_VALUES_AND_MATCHES:
-            key_error_test_names += [method + ':' + param]
+            key_error_test_ids += [method + ':' + param]
             (value, match) = KEY_ERROR_TEST_VALUES_AND_MATCHES[param]
             key_error_test_params += [(method, {param: value}, match)]
         if param == 'duration':
-            duration_test_names += [method]
-            start_end_test_names += [
+            duration_test_ids += [method]
+            start_end_test_ids += [
                 method + ':start_date',
                 method + ':end_date',
             ]
@@ -94,9 +98,12 @@ for method in METHOD_PARAMS:
             value_error_test_methods += [method]
     if 'filters' in METHOD_PARAMS[method]:
         for param in ('filter_key', 'filter_value'):
-            key_error_test_names += [method + ':' + param]
+            key_error_test_ids += [method + ':' + param]
             (value, match) = KEY_ERROR_TEST_VALUES_AND_MATCHES[param]
             key_error_test_params += [(method, {'filters': value}, match)]
+
+
+load_dotenv(Path(expanduser(TOKEN_PATH)), override=True)
 
 
 @pytest.fixture(scope='module')
@@ -137,7 +144,7 @@ def __test_exception(dw_methods, method, additional_params, error, match):
 @pytest.mark.parametrize(
     'method, params, match',
     key_error_test_params,
-    ids=key_error_test_names,
+    ids=key_error_test_ids,
 )
 def test_KeyError(dw_methods, method, params, match):
     __test_exception(dw_methods, method, params, KeyError, match)
@@ -172,7 +179,7 @@ def test_RuntimeError_outside_context(
 @pytest.mark.parametrize(
     'method, param, params',
     date_malformed_test_params,
-    ids=start_end_test_names,
+    ids=start_end_test_ids,
 )
 def test_RuntimeError_date_malformed(dw_methods, method, param, params):
     __test_exception(
@@ -187,7 +194,7 @@ def test_RuntimeError_date_malformed(dw_methods, method, param, params):
 @pytest.mark.parametrize(
     'method, param',
     type_error_test_params,
-    ids=type_error_test_names,
+    ids=type_error_test_ids,
 )
 def test_TypeError(dw_methods, method, param):
     __test_exception(dw_methods, method, {param: 2}, TypeError, param)
@@ -196,7 +203,7 @@ def test_TypeError(dw_methods, method, param):
 @pytest.mark.parametrize(
     'method',
     value_error_test_methods,
-    ids=duration_test_names,
+    ids=duration_test_ids,
 )
 def test_ValueError_duration(dw_methods, method):
     __test_exception(

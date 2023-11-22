@@ -27,4 +27,5 @@
 - [ ] `CHANGELOG.md` has been updated
 - [ ] The milestone is set correctly on the pull request
 - [ ] The appropriate labels have been added to the pull request
-- [ ] The following command produces no errors (replace your own token from https://xdmod.access-ci.org): `XDMOD_API_TOKEN=YOUR_TOKEN_HERE pytest -vvs -o log_cli=true tests/`
+- [ ] Running the automated tests (see `docs/developing.md`) produces no errors
+- [ ] Updates have been made to the `xdmod-notebooks` repository as necessary, and the notebooks all run successfully
