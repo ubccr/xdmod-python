@@ -42,24 +42,53 @@ class _HttpRequester:
 
     def _request_raw_data(self, params):
         url_params = self.__get_raw_data_url_params(params)
+        # Once XDMoD 10.5 is no longer supported, there will be no need to call
+        # __get_raw_data_limit(), and the if/else statement below will not be
+        # necessary — only the body of the 'if' branch will be needed.
         limit = self.__get_raw_data_limit()
         data = []
-        num_rows = limit
-        offset = 0
-        while num_rows == limit:
-            response = self._request_json(
-                path='/rest/v1/warehouse/raw-data?' + url_params
-                + '&offset=' + str(offset)
+        if limit == 'NA':
+            response_iter_lines = self.__request(
+                path='/rest/v1/warehouse/raw-data?' + url_params,
+                post_fields=None,
+                stream=True,
             )
-            partial_data = response['data']
-            data += partial_data
+            response_text = ''
+            i = 0
+            for line in response_iter_lines:
+                response_text += line.decode('utf-8')
+                if params['show_progress']:
+                    progress_msg = (
+                        'Got ' + str(i) + ' row' + ('' if i == 1 else 's')
+                        + '...'
+                    )
+                    print(progress_msg, end='\r')
+                i += 1
             if params['show_progress']:
-                progress_msg = 'Got ' + str(len(data)) + ' rows...'
-                print(progress_msg, end='\r')
-            num_rows = len(partial_data)
-            offset += limit
-        if params['show_progress']:
-            print(progress_msg + 'DONE')
+                print(progress_msg + 'DONE')
+            response = json.loads(response_text)
+            data = response['data']
+        else:
+            num_rows = limit
+            offset = 0
+            while num_rows == limit:
+                response = self._request_json(
+                    path='/rest/v1/warehouse/raw-data?' + url_params
+                    + '&offset=' + str(offset)
+                )
+                partial_data = response['data']
+                data += partial_data
+                if params['show_progress']:
+                    progress_msg = (
+                        'Got ' + str(len(data)) + ' row'
+                        + ('' if len(data) == 1 else 's')
+                        + '...'
+                    )
+                    print(progress_msg, end='\r')
+                num_rows = len(partial_data)
+                offset += limit
+            if params['show_progress']:
+                print(progress_msg + 'DONE')
         return (data, response['fields'])
 
     def _request_filter_values(self, realm_id, dimension_id):
@@ -96,7 +125,7 @@ class _HttpRequester:
                 + '\': ' + str(e)
             ) from None
 
-    def __request(self, path='', post_fields=None):
+    def __request(self, path='', post_fields=None, stream=False):
         _validator._assert_runtime_context(self.__in_runtime_context)
         url = self.__xdmod_host + path
         if post_fields:
@@ -124,7 +153,10 @@ class _HttpRequester:
             raise RuntimeError(
                 'Error ' + str(response.status_code) + msg
             ) from None
-        return response.text
+        if stream:
+            return response.iter_lines()
+        else:
+            return response.text
 
     def __get_data_post_fields(self, params):
         post_fields = {
@@ -159,8 +191,18 @@ class _HttpRequester:
                 )
         return urlencode(results)
 
+    # Once XDMoD 10.5 is no longer supported, there will be no need for this
+    # method.
     def __get_raw_data_limit(self):
         if self.__raw_data_limit is None:
-            response = self._request_json('/rest/v1/warehouse/raw-data/limit')
-            self.__raw_data_limit = int(response['data'])
+            try:
+                response = self._request_json(
+                    '/rest/v1/warehouse/raw-data/limit'
+                )
+                self.__raw_data_limit = int(response['data'])
+            except RuntimeError as e:
+                if '404' in str(e):
+                    self.__raw_data_limit = 'NA'
+                else:
+                    raise
         return self.__raw_data_limit
