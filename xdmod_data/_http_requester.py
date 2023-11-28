@@ -62,6 +62,27 @@ class _HttpRequester:
             print(progress_msg + 'DONE')
         return (data, response['fields'])
 
+    def _request_filter_values(self, realm_id, dimension_id):
+        limit = 10000
+        data = []
+        num_rows = limit
+        offset = 0
+        while num_rows == limit:
+            response = self._request_json(
+                path='/controllers/metric_explorer.php',
+                post_fields={
+                    'operation': 'get_dimension',
+                    'realm': realm_id,
+                    'dimension_id': dimension_id,
+                    'start': offset,
+                    'limit': limit,
+                },
+            )
+            data += response['data']
+            num_rows = len(response['data'])
+            offset += limit
+        return data
+
     def _request_json(self, path, post_fields=None):
         response = self.__request(path, post_fields)
         return json.loads(response)

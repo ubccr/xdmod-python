@@ -97,3 +97,15 @@ def test_get_filter_values(valid_dw):
         'jobs-fieldofscience-filter-values.csv',
         valid_dw.get_filter_values('Jobs', 'Field of Science'),
     )
+
+
+def test_get_data_filter_user(valid_dw):
+    # Make sure the filter validation works for a user whose list position is
+    # greater than 10000 — this will raise an exception if it doesn't work.
+    valid_dw.get_data(
+        duration=('2023-01-01', '2023-01-01'),
+        realm='Jobs',
+        metric='CPU Hours: Total',
+        dataset_type='aggregate',
+        filters={'User': '10332'},
+    )

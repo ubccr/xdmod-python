@@ -315,15 +315,11 @@ class DataWarehouse:
             realm_id,
             dimension,
         )
-        path = '/controllers/metric_explorer.php'
-        post_fields = {
-            'operation': 'get_dimension',
-            'dimension_id': dimension_id,
-            'realm': realm_id,
-            'limit': 10000,
-        }
-        response = self.__http_requester._request_json(path, post_fields)
-        data = [(datum['id'], datum['name']) for datum in response['data']]
+        response_data = self.__http_requester._request_filter_values(
+            realm_id,
+            dimension_id,
+        )
+        data = [(datum['id'], datum['name']) for datum in response_data]
         result = self.__get_data_frame(data, ('id', 'label'), 'id')
         return result
 
