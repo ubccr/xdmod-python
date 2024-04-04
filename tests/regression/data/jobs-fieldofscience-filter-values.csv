@@ -1,4 +1,5 @@
 id,label
+189,"Agriculture, Forestry, and Fisheries"
 192,Agriculural Biotechnology
 236,Analytical and Materials Chemistry
 219,Applied Computer Science
@@ -43,6 +44,7 @@ id,label
 240,Magnetospheric and Upper Atmospheric Physics
 177,Materials Engineering
 175,Mechanical Engineering
+201,Media and communications
 187,Medical Biotechnology
 178,Medical Engineering
 182,Nanotechnology
@@ -76,4 +78,5 @@ id,label
 216,Statistics and Probability
 251,Systematics and Population Biology
 208,Training
+191,Veterinary Science
 222,Visualization and Human-Computer Systems

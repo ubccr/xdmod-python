@@ -11,6 +11,8 @@ nsfdirectorate,NSF Directorate,The NSF directorate of the field of science indic
 nodecount,Node Count,A categorization of jobs into discrete groups based on node count.
 pi,PI,The principal investigator of a project.
 pi_institution,PI Institution,Organizations that have PIs with allocations.
+pi_institution_country,PI Institution Country,The country of the institution of the PI of the project associated with compute jobs.
+pi_institution_state,PI Institution State,The location of the institution of the PI of the project associated with the compute jobs.
 parentscience,Parent Science,The parent of the field of science indiciated on the allocation request pertaining to the running jobs.
 queue,Queue,Queue pertains to the low level job queues on each resource.
 resource,Resource,A resource is a remote computer that can run jobs.
@@ -19,4 +21,6 @@ provider,Service Provider,A service provider is an institution that hosts resour
 username,System Username,The specific system username of the users who ran jobs.
 person,User,"A person who is on a PIs allocation, hence able run jobs on resources."
 institution,User Institution,Organizations that have users with allocations.
+institution_country,User Institution Country,The name of the country of the institution of the person who ran the compute job.
+institution_state,User Institution State,The location of the institution of the person who ran the compute job.
 nsfstatus,User NSF Status,Categorization of the users who ran jobs.

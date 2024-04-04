@@ -1,11 +1,17 @@
+from dotenv import load_dotenv
+import numpy
+from os.path import dirname, expanduser
+import pandas
+from pathlib import Path
 import pytest
 from xdmod_data.warehouse import DataWarehouse
-import pandas
-import numpy
-import os
 
-XDMOD_URL = 'https://xdmod-dev.ccr.xdmod.org:9001'
-DATA_DIR = os.path.dirname(__file__) + '/data'
+XDMOD_URL = 'https://xdmod.access-ci.org'
+TOKEN_PATH = '~/.xdmod-data-token'
+DATA_DIR = dirname(__file__) + '/data'
+
+
+load_dotenv(Path(expanduser(TOKEN_PATH)), override=True)
 
 
 @pytest.fixture(scope='module')
@@ -33,7 +39,7 @@ def __assert_dfs_equal(
 
 def test_get_raw_data(valid_dw):
     data = valid_dw.get_raw_data(
-        duration=('2021-05-01', '2021-05-02'),
+        duration=('2023-05-01', '2023-05-02'),
         realm='SUPREMM',
         fields=(
             'CPU User',
@@ -67,27 +73,27 @@ def __assert_descriptor_dfs_equal(data_file, actual):
 
 def test_describe_realms(valid_dw):
     __assert_descriptor_dfs_equal(
-        'xdmod-dev-realms.csv',
+        'realms.csv',
         valid_dw.describe_realms(),
     )
 
 
 def test_describe_metrics(valid_dw):
     __assert_descriptor_dfs_equal(
-        'xdmod-dev-jobs-metrics.csv',
+        'jobs-metrics.csv',
         valid_dw.describe_metrics('Jobs'),
     )
 
 
 def test_describe_dimensions(valid_dw):
     __assert_descriptor_dfs_equal(
-        'xdmod-dev-jobs-dimensions.csv',
+        'jobs-dimensions.csv',
         valid_dw.describe_dimensions('Jobs'),
     )
 
 
 def test_get_filter_values(valid_dw):
     __assert_descriptor_dfs_equal(
-        'xdmod-dev-jobs-fieldofscience-filter-values.csv',
+        'jobs-fieldofscience-filter-values.csv',
         valid_dw.get_filter_values('Jobs', 'Field of Science'),
     )
