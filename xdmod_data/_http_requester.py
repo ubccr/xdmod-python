@@ -53,21 +53,23 @@ class _HttpRequester:
                 post_fields=None,
                 stream=True,
             )
-            response_text = ''
             i = 0
             for line in response_iter_lines:
-                response_text += line.decode('utf-8')
-                if params['show_progress']:
-                    progress_msg = (
-                        'Got ' + str(i) + ' row' + ('' if i == 1 else 's')
-                        + '...'
-                    )
-                    print(progress_msg, end='\r')
+                line_text = line.decode('utf-8').replace('\x1e', '')
+                line_json = json.loads(line_text)
+                if i == 0:
+                    response = {'fields': line_json}
+                else:
+                    data.append(line_json)
+                    if params['show_progress']:
+                        progress_msg = (
+                            'Got ' + str(i) + ' row' + ('' if i == 1 else 's')
+                            + '...'
+                        )
+                        print(progress_msg, end='\r')
                 i += 1
             if params['show_progress']:
                 print(progress_msg + 'DONE')
-            response = json.loads(response_text)
-            data = response['data']
         else:
             num_rows = limit
             offset = 0
