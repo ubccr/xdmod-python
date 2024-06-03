@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import requests
 from urllib.parse import urlencode
 import xdmod_data._validator as _validator
@@ -10,6 +11,7 @@ class _HttpRequester:
     def __init__(self, xdmod_host):
         self.__in_runtime_context = False
         _validator._assert_str('xdmod_host', xdmod_host)
+        xdmod_host = re.sub('/+$', '', xdmod_host)
         self.__xdmod_host = xdmod_host
         try:
             self.__api_token = os.environ['XDMOD_API_TOKEN']

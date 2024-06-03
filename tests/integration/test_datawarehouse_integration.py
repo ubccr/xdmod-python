@@ -35,7 +35,7 @@ METHOD_PARAMS = {
 VALID_DATE = '2020-01-01'
 VALID_DIMENSION = 'Resource'
 VALID_VALUES = {
-  'duration': 'Previous month',
+  'duration': 'Yesterday',
   'realm': 'Jobs',
   'metric': 'CPU Hours: Total',
   'dimension': VALID_DIMENSION,
@@ -44,7 +44,7 @@ VALID_VALUES = {
   'aggregation_unit': 'Auto',
   'parameter': 'duration',
   'fields': ['Nodes'],
-  'show_progress': True,
+  'show_progress': False,
 }
 KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     'duration': (INVALID_STR, 'Invalid value for `duration`'),
@@ -92,8 +92,16 @@ for method in METHOD_PARAMS:
                 method + ':end_date',
             ]
             date_malformed_test_params += [
-                (method, 'start_date', {'duration': (INVALID_STR, VALID_DATE)}),
-                (method, 'end_date', {'duration': (VALID_DATE, INVALID_STR)}),
+                (
+                    method,
+                    'start_date',
+                    {'duration':(INVALID_STR, VALID_DATE)}
+                ),
+                (   
+                    method,
+                    'end_date',
+                    {'duration': (VALID_DATE, INVALID_STR)}
+                ),
             ]
             value_error_test_methods += [method]
     if 'filters' in METHOD_PARAMS[method]:
@@ -107,8 +115,11 @@ load_dotenv(Path(expanduser(TOKEN_PATH)), override=True)
 
 
 @pytest.fixture(scope='module')
-def dw_methods():
-    with DataWarehouse(VALID_XDMOD_URL) as dw:
+def dw_methods(request):
+    xdmod_host = VALID_XDMOD_URL
+    if hasattr(request, "param"):
+        xdmod_host = request.param
+    with DataWarehouse(xdmod_host) as dw:
         yield __get_dw_methods(dw)
 
 
@@ -152,16 +163,7 @@ def test_KeyError(dw_methods, method, params, match):
 
 @pytest.mark.parametrize(
     'method',
-    [
-        'get_data',
-        'get_raw_data',
-        'describe_realms',
-        'describe_metrics',
-        'describe_dimensions',
-        'get_filter_values',
-        'describe_raw_realms',
-        'describe_raw_fields',
-    ],
+    list(METHOD_PARAMS.keys()),
 )
 def test_RuntimeError_outside_context(
     dw_methods_outside_runtime_context,
@@ -439,3 +441,12 @@ def test_case_insensitive(dw_methods, method, param, value1, value2):
     data1 = __run_method(dw_methods, method, {param: value1})
     data2 = __run_method(dw_methods, method, {param: value2})
     assert data1.equals(data2)
+
+
+@pytest.mark.parametrize(
+    'dw_methods,method',
+    [(VALID_XDMOD_URL + "/", method)for method in list(METHOD_PARAMS.keys())],
+    indirect=['dw_methods']
+)
+def test_trailing_slashes(dw_methods, method):
+    __run_method(dw_methods, method)

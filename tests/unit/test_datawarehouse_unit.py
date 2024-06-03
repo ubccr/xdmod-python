@@ -10,7 +10,11 @@ INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 
 @pytest.fixture(scope='module', autouse=True)
 def set_environ():
-    token = os.environ['XDMOD_API_TOKEN'] if 'XDMOD_API_TOKEN' in os.environ else ''
+    token = (
+        os.environ['XDMOD_API_TOKEN']
+        if 'XDMOD_API_TOKEN' in os.environ
+        else ''
+    )
     os.environ['XDMOD_API_TOKEN'] = INVALID_STR
     yield
     os.environ['XDMOD_API_TOKEN'] = token
