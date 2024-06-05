@@ -95,12 +95,12 @@ for method in METHOD_PARAMS:
                 (
                     method,
                     'start_date',
-                    {'duration': (INVALID_STR, VALID_DATE)}
+                    {'duration': (INVALID_STR, VALID_DATE)},
                 ),
                 (
                     method,
                     'end_date',
-                    {'duration': (VALID_DATE, INVALID_STR)}
+                    {'duration': (VALID_DATE, INVALID_STR)},
                 ),
             ]
             value_error_test_methods += [method]
@@ -117,7 +117,7 @@ load_dotenv(Path(expanduser(TOKEN_PATH)), override=True)
 @pytest.fixture(scope='module')
 def dw_methods(request):
     xdmod_host = VALID_XDMOD_URL
-    if hasattr(request, "param"):
+    if hasattr(request, 'param'):
         xdmod_host = request.param
     with DataWarehouse(xdmod_host) as dw:
         yield __get_dw_methods(dw)
@@ -445,8 +445,8 @@ def test_case_insensitive(dw_methods, method, param, value1, value2):
 
 @pytest.mark.parametrize(
     'dw_methods,method',
-    [(VALID_XDMOD_URL + "/", method)for method in list(METHOD_PARAMS.keys())],
-    indirect=['dw_methods']
+    [(VALID_XDMOD_URL + '/', method) for method in list(METHOD_PARAMS.keys())],
+    indirect=['dw_methods'],
 )
 def test_trailing_slashes(dw_methods, method):
     __run_method(dw_methods, method)
