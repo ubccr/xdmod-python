@@ -6,5 +6,7 @@
 - Add a "Feedback / Feature Requests" section to the README ([\#22](https://github.com/ubccr/xdmod-notebooks/pull/22)).
 - Improve performance of validation of filters and raw fields ([\#18](https://github.com/ubccr/xdmod-data/pull/18)).
 
+-Fix multiple slash bug on the URL ([\#24](https://github.com/ubccr/xdmod-data/pull/24)).
+
 ## v1.0.0 (2023-07-21)
 - Initial release.

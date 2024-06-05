@@ -95,9 +95,9 @@ for method in METHOD_PARAMS:
                 (
                     method,
                     'start_date',
-                    {'duration':(INVALID_STR, VALID_DATE)}
+                    {'duration': (INVALID_STR, VALID_DATE)}
                 ),
-                (   
+                (
                     method,
                     'end_date',
                     {'duration': (VALID_DATE, INVALID_STR)}
