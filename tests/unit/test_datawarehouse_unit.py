@@ -38,8 +38,16 @@ def test___init___KeyError():
 
 def test___enter___RuntimeError_xdmod_host_malformed():
     with pytest.raises(
-        requests.exceptions.InvalidURL,
-        match=r'Invalid URL \'.*\': No host supplied'
+        (
+            requests.exceptions.InvalidURL,
+            requests.exceptions.MissingSchema
+        ),
+        match=(
+            r'(Invalid URL \'.*\': No host supplied|'
+            + r'Invalid URL \'https:\?Bearer=' + INVALID_STR + '\': '
+            + r'No schema supplied. Perhaps you meant http://https:\?Bearer='
+            + INVALID_STR + r'\?)'
+        )
     ):
         with DataWarehouse('https://'):
             pass
