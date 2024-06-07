@@ -33,17 +33,8 @@ It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 - Use streaming for raw data requests ([\#19](https://github.com/ubccr/xdmod-data/pull/19)).
 - Specify minimum version numbers for dependencies ([\#25](https://github.com/ubccr/xdmod-data/pull/25)). 
 
-<<<<<<< HEAD
 ## v1.0.0 (2023-07-21)
 
 Initial release.
 
 Compatible with Open XDMoD version 10.5.x.
-=======
-## v1.0.1 (2024-06-XX)
-- Initial release.
-<<<<<<< HEAD
->>>>>>> 4c475ab (prepare to release version 1.0.1)
-=======
-
->>>>>>> c1465da (Update changelog and instructions and fix link formatting)
