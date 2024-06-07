@@ -9,5 +9,5 @@
 - Use streaming for raw data requests ([\#19](https://github.com/ubccr/xdmod-data/pull/19)).
 - Specify minimum version numbers for dependencies ([\#25](https://github.com/ubccr/xdmod-data/pull/25)). 
 
-## v1.0.0 (2023-07-21)
+## v1.0.1 (2024-06-XX)
 - Initial release.
