@@ -20,11 +20,18 @@
     XDMOD_API_TOKEN=<token>
     ```
 1. Change directories to your local development copy of `xdmod-data`.
-1. Run the following command:
+1. Run the following command and make sure all the tests pass:
     ```
     (env) $ pytest -vvs -o log_cli=true tests/ 
     ```
-
+1. Downgrade to the minimum version of the dependencies. Replace the version numbers below with the values from `setup.cfg`.
+    ```
+    (env) $ python3 -m pip install --force-reinstall numpy==1.23.0 pandas==1.5.0 plotly==5.8.0 requests==2.19.0
+    ```
+1. Run the following command again and make sure all the tests pass (Deprecation warnings in `urllib3` are Ok).
+    ```
+    (env) $ pytest -vvs -o log_cli=true tests/
+    ```
 # Developing a new version
 1. Make sure the version number is updated in `xdmod_data/__version__.py`.
 1. Create a Pull Request for the new version.
