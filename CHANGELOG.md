@@ -42,4 +42,8 @@ Compatible with Open XDMoD version 10.5.x.
 =======
 ## v1.0.1 (2024-06-XX)
 - Initial release.
+<<<<<<< HEAD
 >>>>>>> 4c475ab (prepare to release version 1.0.1)
+=======
+
+>>>>>>> c1465da (Update changelog and instructions and fix link formatting)
