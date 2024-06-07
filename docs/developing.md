@@ -131,3 +131,53 @@
        main development branch.
 1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
    and add a milestone for the version under development.
+1. Make a new branch of `xdmod-data` and:
+    1. Make sure the version number is updated in `xdmod_data/__version__.py` to a pre-release of the next version, e.g., `1.0.1-01`.
+    1. Update `CHANGELOG.md` to add a section at the top called `Main development branch`.
+    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and add a milestone for the version.
+    1. Create a Pull Request for the new version.
+    1. Once the Pull Request is approved, merge it into `main`.
+
+# Preparing a new version for release
+1. Make sure the version number is updated in `xdmod_data/__version__.py`.
+1. Update the Open XDMoD compatibility matrix in the `README.md`
+1. Update CHANGELOG.md to change "Main development branch" to v1.0.1 (2024-06-XX)
+1. Create a Pull Request for the new version.
+1.Do not merge the Pull Request until following the instructions below for distributing the new version.
+
+# Distributing the new version to PyPI
+After the Pull Request is approved (but not merged), follow these steps in the `xdmod-data` root directory:
+1. Start up a virtual environment, e.g.:
+    ```
+    python3 -m venv ~/xdmod-data-build-env
+    source ~/xdmod-data-build-env/bin/activate
+    ```
+    Your command prompt should now start with `(xdmod-data-build-env)`.
+1. Make sure the required packages are installed:
+    ```
+    python3 -m pip install --upgrade pip build setuptools twine
+    ```
+1. Build the built distribution:
+    ```
+    python3 -m build --wheel
+    ```
+1. Validate `setup.cfg`, e.g., for version 1.0.0-beta1:
+    ```
+    version=1.0.0b1
+    twine check dist/xdmod_data-${version}-py3-none-any.whl
+    ```
+    Make sure you recieve `PASSED`.
+1. Upload the built distribution to TestPyPI:
+    ```
+    twine upload --repository testpypi dist/xdmod_data-${version}-py3-none-any.whl
+    ```
+    Enter your TestPyPI API token.
+1.Go to https://testpypi.org/project/xdmod-data and confirm that everything looks right.
+1. Upload the built distribution to PyPI:
+    ```
+    twine upload dist/xdmod_data-${version}-py3-none-any.whl
+    ```
+    Enter your PyPI username and password.
+1. Go to https://pypi.org/project/xdmod-data and confirm the new version is the latest release.
+1. In the Pull Request, update the date of the release in `CHANGELOG.md`.
+1. Merge the Pull Request.
