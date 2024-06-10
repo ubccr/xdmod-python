@@ -75,3 +75,10 @@ After the Pull Request is approved (but not merged yet), follow these steps in t
 1. Go to https://pypi.org/project/xdmod-data and confirm the new version is the latest release.
 1. In the Pull Request, update the date of the release in `CHANGELOG.md`.
 1. Merge the Pull Request.
+1. 
+1. Apply Git tag to the pull request:
+    ```
+    git tag <tagname>
+    ```
+    Replace `<tagname>` with the actual name of the tag you want
+ 
