@@ -50,14 +50,14 @@ def test___enter___RuntimeError_xdmod_host_malformed():
         )
     ):
         with DataWarehouse('https://'):
-            pass  # pragma: no cover
+            pass
 
 
 def test___enter___RuntimeError_xdmod_host_unresolved():
     invalid_host = 'https://' + INVALID_STR + '.xdmod.org'
     with pytest.raises(Exception):
         with DataWarehouse(invalid_host):
-            pass  # pragma: no cover
+            pass
 
 
 def test___enter___RuntimeError_xdmod_host_unsupported_protocol():
@@ -67,7 +67,7 @@ def test___enter___RuntimeError_xdmod_host_unsupported_protocol():
         match='No connection adapters were found for \'' + invalid_host
     ):
         with DataWarehouse(invalid_host):
-            pass  # pragma: no cover
+            pass
 
 
 def test___enter___RuntimeError_401():

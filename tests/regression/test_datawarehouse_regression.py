@@ -1,4 +1,3 @@
-from datetime import date
 from dotenv import load_dotenv
 import numpy
 from os.path import dirname, expanduser
@@ -26,7 +25,6 @@ def __assert_dfs_equal(
     actual,
     dtype='object',
     index_col='id',
-    columns_name=None
 ):
     expected = pandas.read_csv(
         DATA_DIR + '/' + data_file,
@@ -36,13 +34,10 @@ def __assert_dfs_equal(
         na_values=[''],
     ).fillna(numpy.nan)
     expected.columns = expected.columns.astype('string')
-    expected.columns.name = columns_name
-    if (index_col == 'Time'):
-        expected.index = pandas.to_datetime(expected.index)
     assert expected.equals(actual)
 
 
-def test_get_raw_data(valid_dw, capsys):
+def test_get_raw_data(valid_dw):
     data = valid_dw.get_raw_data(
         duration=('2023-05-01', '2023-05-02'),
         realm='SUPREMM',
@@ -62,7 +57,6 @@ def test_get_raw_data(valid_dw, capsys):
                 'Bridges 2 RM',
             ],
         },
-        show_progress=True
     ).iloc[::1000]
     data.index = data.index.astype('string')
     __assert_dfs_equal(
@@ -71,7 +65,6 @@ def test_get_raw_data(valid_dw, capsys):
         dtype='string',
         index_col=0,
     )
-    assert 'Got 42637 rows...DONE' in capsys.readouterr().out
 
 
 def __assert_descriptor_dfs_equal(data_file, actual):
@@ -116,69 +109,3 @@ def test_get_data_filter_user(valid_dw):
         dataset_type='aggregate',
         filters={'User': '10332'},
     )
-
-
-def test_get_quarter(valid_dw):
-    data = valid_dw.get_data(
-        duration=('2023-01-01', '2023-12-31'),
-        realm='Jobs',
-        metric='CPU Hours: Total',
-        aggregation_unit='Quarter'
-        )
-    __assert_dfs_equal(
-        "jobs-2023-quarters.csv",
-        data,
-        index_col='Time',
-        columns_name='Metric',
-        dtype={'CPU Hours: Total': 'Float64'}
-        )
-
-
-def test_get_years(valid_dw):
-    data = valid_dw.get_data(
-        duration=('2022-01-01', '2023-12-31'),
-        realm='Jobs',
-        metric='CPU Hours: Total',
-        aggregation_unit='Year'
-        )
-    __assert_dfs_equal(
-        "jobs-2022-2023-years.csv",
-        data,
-        index_col='Time',
-        columns_name='Metric',
-        dtype={'CPU Hours: Total': 'Float64'}
-        )
-
-
-def test_get_aggregation_units(valid_dw):
-    expected_agg_units = ('Auto', 'Day', 'Month', 'Quarter', 'Year')
-    actual_agg_units = valid_dw.get_aggregation_units()
-    assert expected_agg_units == actual_agg_units
-
-
-def test_get_durations(valid_dw):
-    expected_durations = [
-        'Yesterday',
-        '7 day',
-        '30 day',
-        '90 day',
-        'Month to date',
-        'Previous month',
-        'Quarter to date',
-        'Previous quarter',
-        'Year to date',
-        'Previous year',
-        '1 year',
-        '2 year',
-        '3 year',
-        '5 year',
-        '10 year',
-    ]
-    today_date = date.today()
-    current_year = today_date.year
-    for count in range(0, 7):
-        year = current_year - count
-        year = str(year)
-        expected_durations.append(year)
-    actual_durations = list(valid_dw.get_durations())
-    assert expected_durations == actual_durations

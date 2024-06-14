@@ -447,7 +447,6 @@ def test_case_insensitive(dw_methods, method, param, value1, value2):
     'dw_methods,method',
     [(VALID_XDMOD_URL + '/', method) for method in list(METHOD_PARAMS.keys())],
     indirect=['dw_methods'],
-    ids=[method for method in list(METHOD_PARAMS.keys())],
 )
 def test_trailing_slashes(dw_methods, method):
     __run_method(dw_methods, method)
