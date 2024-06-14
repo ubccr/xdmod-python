@@ -49,7 +49,11 @@ class _HttpRequester:
         # necessary — only the body of the 'if' branch will be needed.
         limit = self.__get_raw_data_limit()
         data = []
-        if limit == 'NA':
+        # Once ACCESS XDMoD is on version 11.0 then the `pragma: no cover`
+        # below will need to be moved to the `else` statement so that
+        # Coverage.py will know that branch is not
+        # expected to be covered by tests.
+        if limit == 'NA':  # pragma: no cover
             response_iter_lines = self.__request(
                 path='/rest/v1/warehouse/raw-data?' + url_params,
                 post_fields=None,
@@ -149,7 +153,11 @@ class _HttpRequester:
             raise RuntimeError(
                 'Error ' + str(response.status_code) + msg
             ) from None
-        if stream:
+        # Once ACCESS XDMoD is on version 11.0 then
+        # the `pragma: no cover` below
+        # will need to be removed so that Coverage.py
+        # will know that branch is expected to be covered by tests.
+        if stream:  # pragma: no cover
             return response.iter_lines()
         else:  # pragma: no cover
             return response.text
