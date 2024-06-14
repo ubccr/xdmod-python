@@ -49,11 +49,7 @@ class _HttpRequester:
         # necessary — only the body of the 'if' branch will be needed.
         limit = self.__get_raw_data_limit()
         data = []
-        # Once ACCESS XDMoD is on version 11.0 then the `pragma: no cover`
-        # below will need to be moved to the `else` statement so that
-        # Coverage.py will know that branch is not
-        # expected to be covered by tests.
-        if limit == 'NA':  # pragma: no cover
+        if limit == 'NA':
             response_iter_lines = self.__request(
                 path='/rest/v1/warehouse/raw-data?' + url_params,
                 post_fields=None,
@@ -119,7 +115,7 @@ class _HttpRequester:
     def __assert_connection_to_xdmod_host(self):
         try:
             self.__request()
-        except RuntimeError as e:  # pragma: no cover
+        except RuntimeError as e:
             raise RuntimeError(
                 'Could not connect to xdmod_host \'' + self.__xdmod_host
                 + '\': ' + str(e)
@@ -144,7 +140,7 @@ class _HttpRequester:
             try:
                 response_json = json.loads(response.text)
                 msg = ': ' + response_json['message']
-            except json.JSONDecodeError:  # pragma: no cover
+            except json.JSONDecodeError:
                 pass
             if response.status_code == 401:
                 msg = (
@@ -153,11 +149,7 @@ class _HttpRequester:
             raise RuntimeError(
                 'Error ' + str(response.status_code) + msg
             ) from None
-        # Once ACCESS XDMoD is on version 11.0 then
-        # the `pragma: no cover` below
-        # will need to be removed so that Coverage.py
-        # will know that branch is expected to be covered by tests.
-        if stream:  # pragma: no cover
+        if stream:
             return response.iter_lines()
         else:  # pragma: no cover
             return response.text
@@ -207,7 +199,7 @@ class _HttpRequester:
             except RuntimeError as e:
                 if '404' in str(e):
                     self.__raw_data_limit = 'NA'
-                else:  # pragma: no cover
+                else:
                     raise
         return self.__raw_data_limit
 

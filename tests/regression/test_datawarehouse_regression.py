@@ -1,4 +1,3 @@
-from datetime import date
 from dotenv import load_dotenv
 import numpy
 from os.path import dirname, expanduser
@@ -42,7 +41,7 @@ def __assert_dfs_equal(
     assert expected.equals(actual)
 
 
-def test_get_raw_data(valid_dw, capsys):
+def test_get_raw_data(valid_dw):
     data = valid_dw.get_raw_data(
         duration=('2023-05-01', '2023-05-02'),
         realm='SUPREMM',
