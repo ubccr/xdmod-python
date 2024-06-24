@@ -39,9 +39,7 @@ jobs:
     - name: Lint with flake8
       run: |
         # stop the build if there are linter errors (ignore complexity metrics)
-        flake8 . --count --max-line-length=127 --max-complexity=1000 --show-source --statistics --exclude __init__.py
-        # output complexity metrics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude __init__.py
+        flake8 . --max-complexity=10 --show-source --exclude __init__.py
     - name: Test with pytest
       run: |
         pytest tests/unit
