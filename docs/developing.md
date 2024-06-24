@@ -50,6 +50,7 @@
     ```
     flake8 --max-complexity=10 --show-source --exclude __init__.py /path/to/your/xdmod-data
     ```
+
 ## Releasing a new version
 1. Make a new branch of `xdmod-data` and:
 
