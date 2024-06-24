@@ -17,7 +17,7 @@ class _HttpRequester:
             self.__api_token = os.environ['XDMOD_API_TOKEN']
         except KeyError:
             raise KeyError(
-                '`XDMOD_API_TOKEN` environment variable has not been set.'
+                '`XDMOD_API_TOKEN` environment variable has not been set.',
             ) from None
         self.__headers = {
             'Authorization': 'Bearer ' + self.__api_token,
@@ -78,7 +78,7 @@ class _HttpRequester:
             while num_rows == limit:
                 response = self._request_json(
                     path='/rest/v1/warehouse/raw-data?' + url_params
-                    + '&offset=' + str(offset)
+                    + '&offset=' + str(offset),
                 )
                 partial_data = response['data']
                 data += partial_data
@@ -125,8 +125,8 @@ class _HttpRequester:
             self.__request()
         except RuntimeError as e:
             raise RuntimeError(
-                'Could not connect to xdmod_host \'' + self.__xdmod_host
-                + '\': ' + str(e)
+                "Could not connect to xdmod_host '" + self.__xdmod_host
+                + "': " + str(e),
             ) from None
 
     def __request(self, path='', post_fields=None, stream=False):
@@ -155,7 +155,7 @@ class _HttpRequester:
                     ': Make sure XDMOD_API_TOKEN is set to a valid API token.'
                 )
             raise RuntimeError(
-                'Error ' + str(response.status_code) + msg
+                'Error ' + str(response.status_code) + msg,
             ) from None
         if stream:
             return response.iter_lines()
@@ -176,7 +176,7 @@ class _HttpRequester:
         }
         for dimension in params['filters']:
             post_fields[dimension + '_filter'] = ','.join(
-                params['filters'][dimension]
+                params['filters'][dimension],
             )
         return post_fields
 
@@ -191,7 +191,7 @@ class _HttpRequester:
         if (params['filters']):
             for dimension in params['filters']:
                 results['filters[' + dimension + ']'] = ','.join(
-                    params['filters'][dimension]
+                    params['filters'][dimension],
                 )
         return urlencode(results)
 
@@ -201,7 +201,7 @@ class _HttpRequester:
         if self.__raw_data_limit is None:
             try:
                 response = self._request_json(
-                    '/rest/v1/warehouse/raw-data/limit'
+                    '/rest/v1/warehouse/raw-data/limit',
                 )
                 self.__raw_data_limit = int(response['data'])
             except RuntimeError as e:
