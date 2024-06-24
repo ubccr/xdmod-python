@@ -4,6 +4,7 @@
 
 - Prepare for v2.0.0 development ([\#42](https://github.com/ubccr/xdmod-data/pull/42)).
 - Implement 100% test coverage ([\#27](https://github.com/ubccr/xdmod-data/pull/27)).
+- Update Flake8 rules ([\#28](https://github.com/ubccr/xdmod-data/pull/28)).
 
 ## v1.0.2 (2024-10-31)
 
@@ -32,7 +33,7 @@ It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 - Improve performance of validation of filters and raw fields ([\#18](https://github.com/ubccr/xdmod-data/pull/18)).
 - Fix bug with trailing slashes in `xdmod_host` ([\#24](https://github.com/ubccr/xdmod-data/pull/24)).
 - Use streaming for raw data requests ([\#19](https://github.com/ubccr/xdmod-data/pull/19)).
-- Specify minimum version numbers for dependencies ([\#25](https://github.com/ubccr/xdmod-data/pull/25)). 
+- Specify minimum version numbers for dependencies ([\#25](https://github.com/ubccr/xdmod-data/pull/25)).
 
 ## v1.0.0 (2023-07-21)
 
