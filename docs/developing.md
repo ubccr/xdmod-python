@@ -11,9 +11,9 @@
     ```
     python3 -m pip install --force-reinstall -e /path/to/your/xdmod-data
     ```
-1. Install `python-dotenv` and `pytest`:
+1. Install `python-dotenv` and `pytest` and `coverage`:
     ```
-    python3 -m pip install --upgrade python-dotenv pytest
+    python3 -m pip install --upgrade python-dotenv pytest coverage
     ```
 1. Create an empty file in your home directory at `~/.xdmod-data-token` with permissions set to 600.
 1. With an [ACCESS XDMoD](https://xdmod.access-ci.org) account with "User" as the Top Role, create an API token if you do not already have one (sign in and click My Profile -> API Token).
