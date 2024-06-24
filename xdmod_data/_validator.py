@@ -10,7 +10,7 @@ def _assert_runtime_context(in_runtime_context):
         raise RuntimeError(
             'Method is being called outside of the runtime context.'
             + ' Make sure this method is only called within the body'
-            + ' of a `with` statement.'
+            + ' of a `with` statement.',
         )
 
 
@@ -94,7 +94,7 @@ def _get_durations():
     this_year = date.today().year
     six_years_ago = this_year - 6
     last_seven_years = tuple(
-        map(str, reversed(range(six_years_ago, this_year + 1)))
+        map(str, reversed(range(six_years_ago, this_year + 1))),
     )
     return (
         (
@@ -156,7 +156,7 @@ def __validate_duration(duration):
         except (TypeError, ValueError) as error:
             raise type(error)(
                 '`duration` must be a string or an object'
-                + ' with 2 items.'
+                + ' with 2 items.',
             ) from None
     return (start_date, end_date)
 
@@ -194,7 +194,7 @@ def __validate_filters(data_warehouse, descriptors, realm, filters):
     except TypeError:
         raise TypeError(
             '`filters` must be a mapping whose keys are strings and whose'
-            + ' values are strings or sequences of strings.'
+            + ' values are strings or sequences of strings.',
         ) from None
 
 
@@ -210,8 +210,8 @@ def __find_str_in_sequence(value, sequence, label):
         if transformed_valid_value == transformed_value:
             return valid_value
     raise KeyError(
-        'Invalid value for `' + label + '`: \'' + value + '\''
-        + '. Valid values are: \'' + '\', \''.join(sequence) + '\'.'
+        'Invalid value for `' + label + "`: '" + value + "'"
+        + ". Valid values are: '" + "', '".join(sequence) + "'.",
     ) from None
 
 
@@ -225,7 +225,7 @@ def __validate_raw_fields(data_warehouse, realm, fields):
         return results
     except TypeError:
         raise TypeError(
-            '`fields` must be a sequence of strings.'
+            '`fields` must be a sequence of strings.',
         ) from None
 
 
@@ -235,7 +235,7 @@ def __find_id_in_descriptor(descriptor, name, value):
         if id_ == value or descriptor[id_]['label'] == value:
             return id_
     raise KeyError(
-        name.capitalize() + ' \'' + value + '\' not found.'
+        name.capitalize() + " '" + value + "' not found.",
     )
 
 
@@ -321,7 +321,7 @@ def __find_value_in_df(label, df, value):
     elif value in df['label'].values:
         return df.index[df['label'] == value].tolist()[0]
     else:
-        raise KeyError(label + ' \'' + value + '\' not found.')
+        raise KeyError(label + " '" + value + "' not found.")
 
 
 def __lowercase_and_remove_spaces(value):
