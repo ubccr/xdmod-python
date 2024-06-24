@@ -26,7 +26,7 @@ def __assert_dfs_equal(
     actual,
     dtype='object',
     index_col='id',
-    columns_name=None
+    columns_name=None,
 ):
     expected = pandas.read_csv(
         DATA_DIR + '/' + data_file,
@@ -37,7 +37,7 @@ def __assert_dfs_equal(
     ).fillna(numpy.nan)
     expected.columns = expected.columns.astype('string')
     expected.columns.name = columns_name
-    if (index_col == 'Time'):
+    if index_col == 'Time':
         expected.index = pandas.to_datetime(expected.index)
     assert expected.equals(actual)
 
@@ -62,7 +62,7 @@ def test_get_raw_data(valid_dw, capsys):
                 'Bridges 2 RM',
             ],
         },
-        show_progress=True
+        show_progress=True,
     ).iloc[::1000]
     data.index = data.index.astype('string')
     __assert_dfs_equal(
@@ -123,15 +123,15 @@ def test_get_quarter(valid_dw):
         duration=('2023-01-01', '2023-12-31'),
         realm='Jobs',
         metric='CPU Hours: Total',
-        aggregation_unit='Quarter'
-        )
+        aggregation_unit='Quarter',
+    )
     __assert_dfs_equal(
         "jobs-2023-quarters.csv",
         data,
         index_col='Time',
         columns_name='Metric',
-        dtype={'CPU Hours: Total': 'Float64'}
-        )
+        dtype={'CPU Hours: Total': 'Float64'},
+    )
 
 
 def test_get_years(valid_dw):

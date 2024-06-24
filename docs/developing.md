@@ -11,7 +11,7 @@
     ```
     python3 -m pip install --force-reinstall -e /path/to/your/xdmod-data
     ```
-1. Install `python-dotenv` and `pytest` and `coverage`:
+1. Install `python-dotenv`, `pytest`, and `coverage`:
     ```
     python3 -m pip install --upgrade python-dotenv pytest coverage
     ```
@@ -26,7 +26,7 @@
     ```
     coverage run -m pytest -vvs -o log_cli=true tests/
     ```
-1. Run the following command and make sure code is 100% covered by tests:
+1. Run the following command and make sure the code is 100% covered by tests:
     ```
     coverage report -m
     ```

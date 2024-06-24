@@ -203,8 +203,8 @@ class _HttpRequester:
                 )
         return urlencode(results)
 
-    #  Once XDMoD 10.5 is no longer supported,
-    #  there will be no need for this method
+    # Once XDMoD 10.5 is no longer supported,
+    # there will be no need for this method.
     def __get_raw_data_limit(self):
         if self.__raw_data_limit is None:
             try:
