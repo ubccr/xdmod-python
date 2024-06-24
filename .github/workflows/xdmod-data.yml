@@ -37,7 +37,7 @@ jobs:
         python -m pip install -e .
     - name: Lint with flake8
       run: |
-        # stop the build if there are linter errors (ignore complexity metrics)
+        # stop the build if there are linter errors
         flake8 . --max-complexity=10 --show-source --exclude __init__.py
     - name: Test with pytest
       run: |
