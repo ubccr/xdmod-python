@@ -34,6 +34,7 @@
     ```
     pytest -vvs -o log_cli=true tests/
     ```
+
 ## Linting the code
 1. Start up a virtual environment, e.g.:
     ```                                            
