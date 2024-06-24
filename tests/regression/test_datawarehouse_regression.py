@@ -118,36 +118,28 @@ def test_get_data_filter_user(valid_dw):
     )
 
 
-def test_get_quarter(valid_dw):
+@pytest.mark.parametrize(
+    "duration,aggregation_unit,data_file",
+    [
+        (('2023-01-01', '2023-12-31'), 'Quarter', "jobs-2023-quarters.csv"),
+        (('2022-01-01', '2023-12-31'), 'Year', "jobs-2022-2023-years.csv"),
+    ],
+    ids=('quarter', 'year'),
+)
+def test_get_data(valid_dw, duration, aggregation_unit, data_file):
     data = valid_dw.get_data(
-        duration=('2023-01-01', '2023-12-31'),
+        duration=duration,
         realm='Jobs',
         metric='CPU Hours: Total',
-        aggregation_unit='Quarter',
+        aggregation_unit=aggregation_unit,
     )
     __assert_dfs_equal(
-        "jobs-2023-quarters.csv",
+        data_file,
         data,
         index_col='Time',
         columns_name='Metric',
         dtype={'CPU Hours: Total': 'Float64'},
     )
-
-
-def test_get_years(valid_dw):
-    data = valid_dw.get_data(
-        duration=('2022-01-01', '2023-12-31'),
-        realm='Jobs',
-        metric='CPU Hours: Total',
-        aggregation_unit='Year'
-        )
-    __assert_dfs_equal(
-        "jobs-2022-2023-years.csv",
-        data,
-        index_col='Time',
-        columns_name='Metric',
-        dtype={'CPU Hours: Total': 'Float64'}
-        )
 
 
 def test_get_aggregation_units(valid_dw):
