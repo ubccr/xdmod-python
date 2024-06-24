@@ -50,9 +50,9 @@
     source ~/xdmod-data-test-env/bin/activate
     ```
     Your command prompt should now start with `(xdmod-data-test-env)`.
-1. Install Flake8
+1. Install Flake8 and additional packages
     ```
-    python3 -m pip install flake8
+    python3 -m pip install flake8 flake8-quotes flake8-commas
     ```
 1. Run Flake8
     ```
