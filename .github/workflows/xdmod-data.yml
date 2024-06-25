@@ -39,6 +39,10 @@ jobs:
       run: |
         # stop the build if there are linter errors
         flake8 . --max-complexity=10 --show-source --exclude __init__.py
+    - name: Spin up containers for testing XDMoD webservers
+      uses: hoverkraft-tech/compose-action@v2.0.1
+      with: 
+        compose-file: .github/workflows/docker-compose.yaml
     - name: Test with pytest
       run: |
         pytest tests/unit
