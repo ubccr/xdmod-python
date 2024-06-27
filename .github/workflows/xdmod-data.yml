@@ -54,8 +54,13 @@ jobs:
           docker exec $version /root/bin/services start
           ports=$(yq ".services.$version.ports")
           port=$(echo $ports | cut -d ':' -f 1)
+          echo "PORTS: $ports"
+          echo "PORT: $port"
           token=$(curl -k -X POST -c xdmod.cookie -d "username=normaluser&password=normaluser" https://localhost:$port/rest/auth/login | jq -r '.results.token')
+          echo "TOKEN: $token"
           curl -k -X POST -b xdmod.cookie https://localhost:$port/rest/users/current/api/token?token=$token | jq -r '.data.token' > ~/.xdmod-data-token
+          echo "FILE: "
+          cat ~/.xdmod-data-token
           coverage run --branch --append -m pytest -vvs -o log_cli=true tests/
         done
         coverage report -m --fail-under=100
