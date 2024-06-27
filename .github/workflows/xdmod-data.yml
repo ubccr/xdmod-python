@@ -45,7 +45,7 @@ jobs:
         compose-file: .github/workflows/docker-compose.yaml
     - name: Install yq 
       run: |
-        sudo chmod wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
+        sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
     - name: Test against each supported XDMoD portal version
       run: |
         coverage erase
