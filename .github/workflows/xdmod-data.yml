@@ -53,7 +53,7 @@ jobs:
         for version in $portal_versions; do
           docker exec $version /root/bin/services start
           echo "versions $portal_versions"
-          ports=$(yq ".services.$version.ports[0]" .github/workflows/docker-compose.yaml)
+          ports=$(yq ".services.\"$version\".ports[0]" .github/workflows/docker-compose.yaml)
           port=$(echo $ports | cut -d ':' -f 1)
           echo "PORTS: $ports"
           echo "PORT: $port"
