@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import os 
+import os
 from os.path import expanduser
 import pandas
 from pathlib import Path
