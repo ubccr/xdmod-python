@@ -45,19 +45,17 @@ jobs:
         compose-file: .github/workflows/docker-compose.yaml
     - name: Install yq 
       run: |
-        sudo add-apt-repository ppa:rmescandon/yq
-        sudo apt update
-        sudo apt install yq -y
+        wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
     - name: Test against each supported XDMoD portal version
       run: |
+        coverage erase
         declare -a portal_versions=$(yq '.services | keys[]' .github/workflows/docker-compose.yaml)
         for version in portal_versions; do
           docker exec $version /root/bin/services start
-          port_version=$(yq ".services.$version.ports")
-          port=${port_version:0:4}
-          token=$(curl -X POST -c xdmod.cookie -d "username=normaluser&password=normaluser" https://localhost:$port/rest/auth/login -k | jq -r '.results.token')
-          curl -b xdmod.cookie https://localhost:port/rest/users/current/api/token?token=$token -k -X POST | jq -r '.data.token' > ~/.xdmod-data-token
-          coverage erase
+          ports=$(yq ".services.$version.ports")
+          port=$(echo $ports | cut -d ':' -f 1)
+          token=$(curl -k -X POST -c xdmod.cookie -d "username=normaluser&password=normaluser" https://localhost:$port/rest/auth/login | jq -r '.results.token')
+          curl -k -X POST -b xdmod.cookie https://localhost:port/rest/users/current/api/token?token=$token | jq -r '.data.token' > ~/.xdmod-data-token
           coverage run --branch --append -m pytest -vvs -o log_cli=true tests/
         done
         coverage report -m --fail-under=100
