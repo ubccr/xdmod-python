@@ -4,8 +4,7 @@ services:
         image: tools-ext-01.ccr.xdmod.org/xdmod-10.5.0-x86_64:rockylinux8.5-0.3
         tty: true
         ports: 
-          - "8081:443"
-           
+          - "8081:443"      
     xdmod11.0:
         container_name: xdmod11.0
         image: tools-ext-01.ccr.xdmod.org/xdmod-10.5.0-x86_64:rockylinux8.5-0.3

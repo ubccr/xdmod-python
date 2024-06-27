@@ -43,8 +43,21 @@ jobs:
       uses: hoverkraft-tech/compose-action@v2.0.1
       with: 
         compose-file: .github/workflows/docker-compose.yaml
-    - name: Test with pytest
+    - name: Install yq 
       run: |
-        pytest tests/unit
-    - name: Hello world!!!
-      run: echo "name"
+        sudo add-apt-repository ppa:rmescandon/yq
+        sudo apt update
+        sudo apt install yq -y
+    - name: Test against each supported XDMoD portal version
+      run: |
+        declare -a portal_versions=$(yq '.services | keys[]' .github/workflows/docker-compose.yaml)
+        for version in portal_versions; do
+          docker exec $version /root/bin/services start
+          port_version=$(yq ".services.$version.ports")
+          port=${port_version:0:4}
+          token=$(curl -X POST -c xdmod.cookie -d "username=normaluser&password=normaluser" https://localhost:$port/rest/auth/login -k | jq -r '.results.token')
+          curl -b xdmod.cookie https://localhost:port/rest/users/current/api/token?token=$token -k -X POST | jq -r '.data.token' > ~/.xdmod-data-token
+          coverage erase
+          coverage run --branch --append -m pytest -vvs -o log_cli=true tests/
+        done
+        coverage report -m --fail-under=100
