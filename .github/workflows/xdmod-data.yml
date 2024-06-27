@@ -52,7 +52,7 @@ jobs:
         declare -a portal_versions=$(yq '.services | keys[]' .github/workflows/docker-compose.yaml)
         for version in $portal_versions; do
           # Generate OpenSSL Key
-          docker exec xdmod10.5 openssl genrsa -rand /proc/cpuinfo:/proc/filesystems:/proc/interrupts:/proc/ioports:/proc/uptime 2048 > /etc/pki/tls/private/localhost.key
+          docker exec xdmod10.5 sh -c 'openssl genrsa -rand /proc/cpuinfo:/proc/filesystems:/proc/interrupts:/proc/ioports:/proc/uptime 2048 > /etc/pki/tls/private/localhost.key'
           # Generate Certificate 
           docker exec xdmod10.5 /usr/bin/openssl req -new -key /etc/pki/tls/private/localhost.key -x509 -sha256 -days 365 -set_serial $RANDOM -extensions v3_req -out /etc/pki/tls/certs/localhost.crt -subj "/C=XX/L=Default City/O=Default Company Ltd"
           # Copy Certificate from container
