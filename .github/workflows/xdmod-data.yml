@@ -52,7 +52,7 @@ jobs:
         declare -a portal_versions=$(yq '.services | keys[]' .github/workflows/docker-compose.yaml)
         for version in $portal_versions; do
           docker exec $version /root/bin/services start
-          ports=$(yq ".services.$version.ports")
+          ports=$(yq ".services.$version.ports" .github/workflows/docker-compose.yaml)
           port=$(echo $ports | cut -d ':' -f 1)
           echo "PORTS: $ports"
           echo "PORT: $port"
