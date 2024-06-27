@@ -64,8 +64,9 @@ jobs:
           ports=$(yq ".services.\"$version\".ports[0]" .github/workflows/docker-compose.yaml)
           port=$(echo $ports | cut -d ':' -f 1)
           export XDMOD_HOST="https://localhost:$port"
-          token=$(curl -k -X POST -c xdmod.cookie -d "username=normaluser&password=normaluser" $XDMOD_HOST/rest/auth/login | jq -r '.results.token') 
-          curl -k -X POST -b xdmod.cookie $XDMOD_HOST/rest/users/current/api/token?token=$token | jq -r '.data.token' >> ~/.xdmod-data-token
+          token=$(curl -X POST -c xdmod.cookie -d "username=normaluser&password=normaluser" $XDMOD_HOST/rest/auth/login | jq -r '.results.token')
+          echo -n 'XDMOD_API_TOKEN=' > ~/.xdmod-data-token
+          curl -X POST -b xdmod.cookie $XDMOD_HOST/rest/users/current/api/token?token=$token | jq -r '.data.token' >> ~/.xdmod-data-token
           cat ~/.xdmod-data-token
           coverage run --branch --append -m pytest -vvs -o log_cli=true tests/
         done
