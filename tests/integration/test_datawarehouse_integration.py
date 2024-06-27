@@ -1,11 +1,12 @@
 from dotenv import load_dotenv
+import os 
 from os.path import expanduser
 import pandas
 from pathlib import Path
 import pytest
 from xdmod_data.warehouse import DataWarehouse
 
-VALID_XDMOD_URL = 'https://xdmod.access-ci.org'
+VALID_XDMOD_URL = os.environ['XDMOD_HOST']
 TOKEN_PATH = '~/.xdmod-data-token'
 INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 METHOD_PARAMS = {

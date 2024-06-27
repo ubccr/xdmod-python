@@ -1,13 +1,14 @@
 from datetime import date
 from dotenv import load_dotenv
 import numpy
+import os
 from os.path import dirname, expanduser
 import pandas
 from pathlib import Path
 import pytest
 from xdmod_data.warehouse import DataWarehouse
 
-XDMOD_URL = 'https://xdmod.access-ci.org'
+XDMOD_URL = os.environ['XDMOD_HOST']
 TOKEN_PATH = '~/.xdmod-data-token'
 DATA_DIR = dirname(__file__) + '/data'
 
