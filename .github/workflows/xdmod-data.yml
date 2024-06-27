@@ -51,18 +51,21 @@ jobs:
         coverage erase
         declare -a portal_versions=$(yq '.services | keys[]' .github/workflows/docker-compose.yaml)
         for version in $portal_versions; do
+          # Generate OpenSSL Key
+          docker exec xdmod10.5 openssl genrsa -rand /proc/cpuinfo:/proc/filesystems:/proc/interrupts:/proc/ioports:/proc/uptime 2048 > /etc/pki/tls/private/localhost.key
+          # Generate Certificate 
+          docker exec xdmod10.5 /usr/bin/openssl req -new -key /etc/pki/tls/private/localhost.key -x509 -sha256 -days 365 -set_serial $RANDOM -extensions v3_req -out /etc/pki/tls/certs/localhost.crt -subj "/C=XX/L=Default City/O=Default Company Ltd"
+          # Copy Certificate from container
+          docker cp $version:/etc/pki/tls/certs/localhost.crt $version.crt 
+          # Prepare to use certificate for curl and python requests
+          export CURL_CA_BUNDLE="$version.crt"
+          # Start up web server in container
           docker exec $version /root/bin/services start
-          echo "versions $portal_versions"
           ports=$(yq ".services.\"$version\".ports[0]" .github/workflows/docker-compose.yaml)
           port=$(echo $ports | cut -d ':' -f 1)
-          echo "PORTS: $ports"
-          echo "PORT: $port"
           export XDMOD_HOST="https://localhost:$port"
-          token=$(curl -k -X POST -c xdmod.cookie -d "username=normaluser&password=normaluser" $XDMOD_HOST/rest/auth/login | jq -r '.results.token')
-          echo "TOKEN: $token"
-          echo -n "XDMOD_API_TOKEN=" > ~/.xdmod-data-token 
+          token=$(curl -k -X POST -c xdmod.cookie -d "username=normaluser&password=normaluser" $XDMOD_HOST/rest/auth/login | jq -r '.results.token') 
           curl -k -X POST -b xdmod.cookie $XDMOD_HOST/rest/users/current/api/token?token=$token | jq -r '.data.token' >> ~/.xdmod-data-token
-          echo "FILE: "
           cat ~/.xdmod-data-token
           coverage run --branch --append -m pytest -vvs -o log_cli=true tests/
         done
