@@ -54,7 +54,7 @@ jobs:
           # Generate OpenSSL Key
           docker exec $version sh -c 'openssl genrsa -rand /proc/cpuinfo:/proc/filesystems:/proc/interrupts:/proc/ioports:/proc/uptime 2048 > /etc/pki/tls/private/localhost.key'
           # Generate Certificate 
-          docker exec $version /usr/bin/openssl req -new -key /etc/pki/tls/private/localhost.key -x509 -sha256 -days 365 -set_serial $RANDOM -extensions v3_req -out /etc/pki/tls/certs/localhost.crt -subj "/C=XX/L=Default City/O=Default Company Ltd/CN=localhost"
+          docker exec $version /usr/bin/openssl req -new -key /etc/pki/tls/private/localhost.key -x509 -sha256 -days 365 -set_serial $RANDOM -extensions v3_req -out /etc/pki/tls/certs/localhost.crt -subj "/C=XX/L=Default City/O=Default Company Ltd/CN=localhost" -addext 'subjectAltName=DNS:localhost'
           # Copy Certificate from container
           docker cp $version:/etc/pki/tls/certs/localhost.crt $version.crt 
           # Prepare to use certificate for curl and python requests
