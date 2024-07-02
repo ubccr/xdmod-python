@@ -1,94 +1,27 @@
 id,label,description
-utilization,ACCESS CPU Utilization (%),"The percentage of the ACCESS obligation of a resource that has been utilized by ACCESS jobs.<br/><i> ACCESS CPU Utilization:</i> The ratio of the total CPU hours consumed by ACCESS jobs over a given time period divided by the total CPU hours that the system is contractually required to provide to ACCESS during that period. It does not include non-ACCESS jobs.<br/>It is worth noting that this value is a rough estimate in certain cases where the resource providers don't provide accurate records of their system specifications, over time."
-avg_ace,ACCESS Credit Equivalents Charged: Per Job (SU),"The average amount of ACCESS Credit Equivalents charged per compute job.<br/>
-
-The ACCESS Credit Equivalent is a measure of how much compute time was used on each resource.
-One ACCESS Credit Equivalent is defined as one CPU Hour on SDSC Expanse (an AMD EPYC 7742 based compute resource).
-The ACCESS Credit Equivalent allows comparison between usage of node-allocated, core-allocated and GPU-allocated 
-resources. It also allows a comparison between resources with different compute power per core.
-The <a href=""https://allocations.access-ci.org/exchange_calculator"" target=""_blank"" rel=""noopener noreferrer"">ACCESS allocations exchange calculator</a>
-lists conversion rates between an ACCESS Credit Equivalent and a service unit on a resource."
-total_ace,ACCESS Credit Equivalents Charged: Total (SU),"The total amount of ACCESS Credit Equivalents charged.<br/>
-
-The ACCESS Credit Equivalent is a measure of how much compute time was used on each resource.
-One ACCESS Credit Equivalent is defined as one CPU Hour on SDSC Expanse (an AMD EPYC 7742 based compute resource).
-The ACCESS Credit Equivalent allows comparison between usage of node-allocated, core-allocated and GPU-allocated 
-resources. It also allows a comparison between resources with different compute power per core.
-The <a href=""https://allocations.access-ci.org/exchange_calculator"" target=""_blank"" rel=""noopener noreferrer"">ACCESS allocations exchange calculator</a>
-lists conversion rates between an ACCESS Credit Equivalent and a service unit on a resource."
-rate_of_usage,Allocation Usage Rate (XD SU/Hour),The rate of ACCESS allocation usage in XD SUs per hour.
-rate_of_usage_ace,Allocation Usage Rate ACEs (SU/Hour),The rate of ACCESS allocation usage in ACCESS Credit Equivalents per hour.
-avg_cpu_hours,CPU Hours: Per Job,"The average CPU hours (number of CPU cores x wall time hours) per ACCESS job.<br/>For each job, the CPU usage is aggregated. For example, if a job used 1000 CPUs for one minute, it would be aggregated as 1000 CPU minutes or 16.67 CPU hours."
-total_cpu_hours,CPU Hours: Total,"The total CPU hours (number of CPU cores x wall time hours) used by ACCESS jobs.<br/>For each job, the CPU usage is aggregated. For example, if a job used 1000 CPUs for one minute, it would be aggregated as 1000 CPU minutes or 16.67 CPU hours."
-max_processors,Job Size: Max (Core Count),The maximum size ACCESS job in number of cores.<br/><i>Job Size: </i>The total number of processor cores used by a (parallel) job.
-min_processors,Job Size: Min (Core Count),The minimum size ACCESS job in number of cores.<br/><i>Job Size: </i>The total number of processor cores used by a (parallel) job.
-normalized_avg_processors,Job Size: Normalized (% of Total Cores),The percentage average size ACCESS job over total machine cores.<br><i>Normalized Job Size: </i>The percentage total number of processor cores used by a (parallel) job over the total number of cores on the machine.
-avg_processors,Job Size: Per Job (Core Count),The average job size per ACCESS job.<br><i>Job Size: </i>The number of processor cores used by a (parallel) job.
-avg_job_size_weighted_by_ace,Job Size: Weighted By ACEs (Core Count),The average job size weighted by charge in ACCESS Credit Equivalents (ACEs). Defined as <br><i>Average Job Size Weighted By ACEs: </i> sum(i = 0 to n){job i core count*job i charge in ACEs}/sum(i =  0 to n){job i charge in ACEs}
-avg_job_size_weighted_by_cpu_hours,Job Size: Weighted By CPU Hours (Core Count),The average ACCESS job size weighted by CPU Hours. Defined as <br><i>Average Job Size Weighted By CPU Hours: </i> sum(i = 0 to n){ job i core count * job i cpu hours}/sum(i =  0 to n){job i cpu hours}
-avg_job_size_weighted_by_xd_su,Job Size: Weighted By XD SUs (Core Count),The average ACCESS job size weighted by charge in XD SUs. Defined as <br><i>Average Job Size Weighted By XD SUs: </i> sum(i = 0 to n){job i core count*job i charge in xd sus}/sum(i =  0 to n){job i charge in xd sus}
-avg_nu,NUs Charged: Per Job,"The average amount of NUs charged per ACCESS job.<br/>
-<i>NU - Normalized Units: </i>Roaming allocations are awarded in XSEDE Service Units (SUs). 1 XSEDE SU is defined as one CPU-hour on a Phase-1 DTF cluster. 
-For usage on a resource that is charged to a Roaming allocation, a normalization factor is applied. The normalization factor is based on
-the method historically used to calculate 'Normalized Units' (Cray X-MP-equivalent SUs), which derives from a resource's performance on the HPL
-benchmark.<br/>
-
-Specifically, 1 Phase-1 DTF SU = 21.576 NUs, and the XD SU conversion factor for a resource is calculated by taking its NU conversion factor
-and dividing it by 21.576. The standard formula for calculating a resource's NU conversion factor is: (Rmax * 1000 / 191) / P
-where Rmax is the resource's Rmax result on the HPL benchmark in Gflops and P is the number of processors used in the benchmark.
-In the absence of an HPL benchmark run, a conversion factor can be agreed upon, based on that of an architecturally similar platform
-and scaled according to processor performance differences.<br/>
-
-Conversion to Roaming SUs is handled by the XSEDE central accounting system, and RPs are only required to report usage in local SUs for all allocations.<br/>
-
-Defining an SU charge for specialized compute resources (such as visualization hardware) or non-compute resources (such as storage) is possible, but there is no XSEDE-wide policy for doing so."
-total_nu,NUs Charged: Total,"The total amount of NUs charged by ACCESS jobs.<br/>
-<i>NU - Normalized Units: </i>Roaming allocations are awarded in XSEDE Service Units (SUs). 1 XSEDE SU is defined as one CPU-hour on a Phase-1 DTF cluster.
-For usage on a resource that is charged to a Roaming allocation, a normalization factor is applied. The normalization factor is based on 
-the method historically used to calculate 'Normalized Units' (Cray X-MP-equivalent SUs), which derives from a resource's performance on the HPL 
-benchmark.<br/>
-
-Specifically, 1 Phase-1 DTF SU = 21.576 NUs, and the XD SU conversion factor for a resource is calculated by taking its NU conversion factor 
-and dividing it by 21.576. The standard formula for calculating a resource's NU conversion factor is: (Rmax * 1000 / 191) / P 
-where Rmax is the resource's Rmax result on the HPL benchmark in Gflops and P is the number of processors used in the benchmark. 
-In the absence of an HPL benchmark run, a conversion factor can be agreed upon, based on that of an architecturally similar platform 
-and scaled according to processor performance differences.<br/>
-
-Conversion to Roaming SUs is handled by the XSEDE central accounting system, and RPs are only required to report usage in local SUs for all allocations.<br/>
-
-Defining an SU charge for specialized compute resources (such as visualization hardware) or non-compute resources (such as storage) is possible, but there is no XSEDE-wide policy for doing so."
-avg_node_hours,Node Hours: Per Job,The average node hours (number of nodes x wall time hours) per ACCESS job.
-total_node_hours,Node Hours: Total,The total node hours (number of nodes x wall time hours) used by ACCESS jobs.
-active_allocation_count,Number of Allocations: Active,The total number of funded projects that used ACCESS resources.
-active_institution_count,Number of Institutions: Active,The total number of institutions that used ACCESS resources.
-job_count,Number of Jobs Ended,The total number of ACCESS jobs that ended within the selected duration.
-running_job_count,Number of Jobs Running,The total number of ACCESS jobs that are running.
-started_job_count,Number of Jobs Started,The total number of ACCESS jobs that started executing within the selected duration.
-submitted_job_count,Number of Jobs Submitted,The total number of ACCESS jobs that submitted/queued within the selected duration.<i>
-gateway_job_count,Number of Jobs via Gateway,"The total number of ACCESS  jobs submitted through gateways (e.g., via a community user account) that ended within the selected duration.<br/><i>Job: </i>A scheduled process for a computer resource in a batch processing environment."
-active_pi_count,Number of PIs: Active,The total number of PIs that used ACCESS resources.
-active_resource_count,Number of Resources: Active,The total number of active ACCESS resources.
-active_person_count,Number of Users: Active,The total number of users that used ACCESS resources.
-expansion_factor,User Expansion Factor,"Gauging ACCESS job-turnaround time, it measures the ratio of wait time and the total time from submission to end of execution.<br/><i>User Expansion Factor = ((wait duration + wall duration) / wall duration). </i>"
-avg_waitduration_hours,Wait Hours: Per Job,"The average time, in hours, a ACCESS job waits before execution on the designated resource.<br/><i>Wait Time: </i>Wait time is defined as the linear time between submission of a job by a user until it begins to execute."
-total_waitduration_hours,Wait Hours: Total,"The total time, in hours, ACCESS jobs waited before execution on their designated resource.<br/><i>Wait Time: </i>Wait time is defined as the linear time between submission of a job by a user until it begins to execute."
+avg_cpu_hours,CPU Hours: Per Job,"The average CPU hours (number of CPU cores x wall time hours) per Screwdriver job.<br/>For each job, the CPU usage is aggregated. For example, if a job used 1000 CPUs for one minute, it would be aggregated as 1000 CPU minutes or 16.67 CPU hours."
+total_cpu_hours,CPU Hours: Total,"The total CPU hours (number of CPU cores x wall time hours) used by Screwdriver jobs.<br/>For each job, the CPU usage is aggregated. For example, if a job used 1000 CPUs for one minute, it would be aggregated as 1000 CPU minutes or 16.67 CPU hours."
+avg_gpus,GPU Count: Per Job,The average job size per Screwdriver job.<br><i>Job Size: </i>The number of GPUs used by a (parallel) job.
+avg_gpu_hours,GPU Hours: Per Job,"The average GPU hours (number of GPU cores x wall time hours) per Screwdriver job.<br/>For each job, the GPU usage is aggregated. For example, if a job used 1000 GPUs for one minute, it would be aggregated as 1000 GPU minutes or 16.67 GPU hours."
+total_gpu_hours,GPU Hours: Total,"The total GPU hours (number of GPUs x wall time hours) used by Screwdriver jobs.<br/>For each job, the GPU usage is aggregated. For example, if a job used 1000 GPUs for one minute, it would be aggregated as 1000 GPU minutes or 16.67 GPU hours."
+max_processors,Job Size: Max (Core Count),The maximum size Screwdriver job in number of cores.<br/><i>Job Size: </i>The total number of processor cores used by a (parallel) job.
+min_processors,Job Size: Min (Core Count),The minimum size Screwdriver job in number of cores.<br/><i>Job Size: </i>The total number of processor cores used by a (parallel) job.
+normalized_avg_processors,Job Size: Normalized (% of Total Cores),The percentage average size Screwdriver job over total machine cores.<br><i>Normalized Job Size: </i>The percentage total number of processor cores used by a (parallel) job over the total number of cores on the machine.
+avg_processors,Job Size: Per Job (Core Count),The average job size per Screwdriver job.<br><i>Job Size: </i>The number of processor cores used by a (parallel) job.
+avg_job_size_weighted_by_cpu_hours,Job Size: Weighted By CPU Hours (Core Count),The average Screwdriver job size weighted by CPU Hours. Defined as <br><i>Average Job Size Weighted By CPU Hours: </i> sum(i = 0 to n){ job i core count * job i cpu hours}/sum(i =  0 to n){job i cpu hours}
+avg_job_size_weighted_by_gpu_hours,Job Size: Weighted By GPU Hours (GPU Count),The average Screwdriver job size weighted by GPU Hours. Defined as <br><i>Average Job Size Weighted By GPU Hours: </i> sum(i = 0 to n){ job i core count * job i gpu hours}/sum(i =  0 to n){job i gpu hours}
+avg_node_hours,Node Hours: Per Job,The average node hours (number of nodes x wall time hours) per Screwdriver job.
+total_node_hours,Node Hours: Total,The total node hours (number of nodes x wall time hours) used by Screwdriver jobs.
+job_count,Number of Jobs Ended,The total number of Screwdriver jobs that ended within the selected duration.
+running_job_count,Number of Jobs Running,The total number of Screwdriver jobs that are running.
+started_job_count,Number of Jobs Started,The total number of Screwdriver jobs that started executing within the selected duration.
+submitted_job_count,Number of Jobs Submitted,The total number of Screwdriver jobs that submitted/queued within the selected duration.<i>
+active_pi_count,Number of PIs: Active,The total number of PIs that used Screwdriver resources.
+active_resource_count,Number of Resources: Active,The total number of active Screwdriver resources.
+active_person_count,Number of Users: Active,The total number of users that used Screwdriver resources.
+utilization,Screwdriver Utilization (%),The percentage of core time that a resource has been running jobs.<br/><i> Screwdriver Utilization:</i> The ratio of the total CPU hours consumed by jobs over a given time period divided by the maximum CPU hours that the system could deliver (based on the number of cores present on the resources). This value does not take into account downtimes or outages. It is just calculated based on the number of cores in the resource specifications.
+expansion_factor,User Expansion Factor,The average job size per Screwdriver job.<br><i>Job Size: </i>The number of processor cores used by a (parallel) job.
+avg_waitduration_hours,Wait Hours: Per Job,"The average time, in hours, a Screwdriver job waits before execution on the designated resource.<br/><i>Wait Time: </i>Wait time is defined as the linear time between submission of a job by a user until it begins to execute."
+total_waitduration_hours,Wait Hours: Total,"The total time, in hours, Screwdriver jobs waited before execution on their designated resource.<br/><i>Wait Time: </i>Wait time is defined as the linear time between submission of a job by a user until it begins to execute."
 avg_wallduration_hours,Wall Hours: Per Job,"The average time, in hours, a job takes to execute.<br/>In timeseries view mode, the statistic shows the average wall time per job per time period. In aggregate view mode the statistic only includes the job wall hours between the defined time range. The wall hours outside the time range are not included in the calculation.<br /> <i>Wall Time:</i> Wall time is defined as the linear time between start and end time of execution for a particular job."
-total_wallduration_hours,Wall Hours: Total,"The total time, in hours, ACCESS jobs took to execute.<br/><i>Wall Time:</i> Wall time is defined as the linear time between start and end time of execution for a particular job."
-avg_su,XD SUs Charged: Per Job,"The average amount of XD SUs charged per ACCESS job.<br/>
-<i>XD SU: </i>1 XSEDE SU is defined as one CPU-hour on a Phase-1 DTF cluster.<br/>
-<i>SU - Service Units: </i>Computational resources on the XSEDE are allocated and charged in service units (SUs). SUs are defined locally on each system, with conversion factors among systems based on HPL benchmark results.<br/>
-
-Current TeraGrid supercomputers have complex multi-core and memory hierarchies. Each resource has a specific configuration that determines the number (N) of cores that can be dedicated to a job without slowing the code (and other user and system codes). Each resource defines for its system the minimum number of SUs charged for a job running in the default batch queue, calculated as wallclock runtime multiplied by N. Minimum charges may apply.<br/>
-
-Note: The actual charge will depend on the specific requirements of the job (e.g., the mapping of the cores across the machine, or the priority you wish to obtain).<br/>
-
-Note 2: The SUs shown here have been normalized against the XSEDE Roaming service. Therefore they are comparable across resources."
-total_su,XD SUs Charged: Total,"The total amount of XD SUs charged by ACCESS jobs.<br/>
-<i>XD SU: </i>1 XSEDE SU is defined as one CPU-hour on a Phase-1 DTF cluster.<br/>
-<i>SU - Service Units: </i>Computational resources on the XSEDE are allocated and charged in service units (SUs). SUs are defined locally on each system, with conversion factors among systems based on HPL benchmark results.<br/>
-
-Current TeraGrid supercomputers have complex multi-core and memory hierarchies. Each resource has a specific configuration that determines the number (N) of cores that can be dedicated to a job without slowing the code (and other user and system codes). Each resource defines for its system the minimum number of SUs charged for a job running in the default batch queue, calculated as wallclock runtime multiplied by N. Minimum charges may apply.<br/>
-
-Note: The actual charge will depend on the specific requirements of the job (e.g., the mapping of the cores across the machine, or the priority you wish to obtain).<br/>
-
-Note 2: The SUs shown here have been normalized against the XSEDE Roaming service. Therefore they are comparable across resources."
+total_wallduration_hours,Wall Hours: Total,"The total time, in hours, Screwdriver jobs took to execute.<br/><i>Wall Time:</i> Wall time is defined as the linear time between start and end time of execution for a particular job."

@@ -4,7 +4,7 @@ import requests
 from xdmod_data.warehouse import DataWarehouse
 
 
-VALID_XDMOD_URL = 'https://xdmod.access-ci.org'
+VALID_XDMOD_URL = os.environ['XDMOD_HOST']
 INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 
 

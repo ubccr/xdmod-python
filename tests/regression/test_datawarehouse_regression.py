@@ -29,50 +29,50 @@ def __assert_dfs_equal(
     index_col='id',
     columns_name=None,
 ):
-    expected = pandas.read_csv(
-        DATA_DIR + '/' + data_file,
-        dtype=dtype,
-        index_col=index_col,
-        keep_default_na=False,
-        na_values=[''],
-    ).fillna(numpy.nan)
-    expected.columns = expected.columns.astype('string')
-    expected.columns.name = columns_name
-    if index_col == 'Time':
-        expected.index = pandas.to_datetime(expected.index)
-    assert expected.equals(actual)
+    if "GENERATE_DATA_FILES" in os.environ:
+        actual.to_csv(DATA_DIR + '/' + data_file)
+    else:
+        expected = pandas.read_csv(
+            DATA_DIR + '/' + data_file,
+            dtype=dtype,
+            index_col=index_col,
+            keep_default_na=False,
+            na_values=[''],
+        ).fillna(numpy.nan)
+        expected.columns = expected.columns.astype('string')
+        expected.columns.name = columns_name
+        if index_col == 'Time':
+            expected.index = pandas.to_datetime(expected.index)
+        assert expected.equals(actual)
 
 
 def test_get_raw_data(valid_dw, capsys):
     data = valid_dw.get_raw_data(
-        duration=('2023-05-01', '2023-05-02'),
-        realm='SUPREMM',
+        duration=('2016-01-01', '2016-12-31'),
+        realm='Jobs',
         fields=(
-            'CPU User',
-            'Nodes',
-            'Wall Time',
-            'Wait Time',
-            'Requested Wall Time',
-            'Total memory used',
-            'Mount point "home" data written',
-            'Mount point "scratch" data written',
+            'Local Job Id',
+            'Quality of Service',
+            'GPUs',
+            'Start Time',
+            'Department',
         ),
         filters={
             'Resource': [
-                'STAMPEDE2 TACC',
-                'Bridges 2 RM',
+                'mortorq',
+                'frearson',
             ],
         },
         show_progress=True,
     ).iloc[::1000]
     data.index = data.index.astype('string')
     __assert_dfs_equal(
-        'machine-learning-notebook-example-every-1000.csv',
+        'raw-data-every-1000.csv',
         data,
         dtype='string',
         index_col=0,
     )
-    assert 'Got 42240 rows...DONE' in capsys.readouterr().out
+    assert 'Got 33345 rows...DONE' in capsys.readouterr().out
 
 
 def __assert_descriptor_dfs_equal(data_file, actual):
@@ -80,6 +80,7 @@ def __assert_descriptor_dfs_equal(data_file, actual):
 
 
 def test_describe_realms(valid_dw):
+
     __assert_descriptor_dfs_equal(
         'realms.csv',
         valid_dw.describe_realms(),
@@ -102,8 +103,8 @@ def test_describe_dimensions(valid_dw):
 
 def test_get_filter_values(valid_dw):
     __assert_descriptor_dfs_equal(
-        'jobs-fieldofscience-filter-values.csv',
-        valid_dw.get_filter_values('Jobs', 'Field of Science'),
+        'jobs-pi-group-filter-values.csv',
+        valid_dw.get_filter_values('Jobs', 'PI Group'),
     )
 
 
@@ -120,7 +121,7 @@ def test_get_data_filter_user(valid_dw):
 
 
 @pytest.mark.parametrize(
-    'duration,aggregation_unit,data_file',
+    'aggregation_unit,data_file',
     [
         (('2023-01-01', '2023-12-31'), 'Month', 'jobs-2023-months.csv'),
         (('2023-01-01', '2023-12-31'), 'Quarter', 'jobs-2023-quarters.csv'),
@@ -128,9 +129,9 @@ def test_get_data_filter_user(valid_dw):
     ],
     ids=('month', 'quarter', 'year'),
 )
-def test_get_data(valid_dw, duration, aggregation_unit, data_file):
+def test_get_data(valid_dw, aggregation_unit, data_file):
     data = valid_dw.get_data(
-        duration=duration,
+        duration= ('2016-01-01', '2017-12-31'),
         realm='Jobs',
         metric='CPU Hours: Total',
         aggregation_unit=aggregation_unit,

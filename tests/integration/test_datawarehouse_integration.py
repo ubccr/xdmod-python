@@ -40,7 +40,7 @@ VALID_VALUES = {
   'realm': 'Jobs',
   'metric': 'CPU Hours: Total',
   'dimension': VALID_DIMENSION,
-  'filters': {VALID_DIMENSION: 'Expanse'},
+  'filters': {VALID_DIMENSION: 'frearson'},
   'dataset_type': 'timeseries',
   'aggregation_unit': 'Auto',
   'parameter': 'duration',

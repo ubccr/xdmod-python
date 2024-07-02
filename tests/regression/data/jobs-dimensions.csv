@@ -1,26 +1,17 @@
 id,label,description
-none,None,Summarizes jobs reported to the ACCESS allocations service (excludes non-ACCESS usage of the resource).
-allocation,Allocation,A funded project that is allowed to run jobs on resources.
-fieldofscience,Field of Science,The field of science indicated on the allocation request pertaining to the running jobs.
-gateway,Gateway,A science gateway is a portal set up to aid submitting jobs to resources.
-grant_type,Grant Type,A categorization of the projects/allocations.
+none,None,Summarizes Jobs data reported to the Screwdriver database.
+nsfdirectorate,Decanal Unit,Decanal Unit
+parentscience,Department,Department
+gpucount,GPU Count,A categorization of jobs into discrete groups based on the number of GPUs used by each job.
 jobsize,Job Size,A categorization of jobs into discrete groups based on the number of cores used by each job.
 jobwaittime,Job Wait Time,A categorization of jobs into discrete groups based on the total linear time each job waited.
 jobwalltime,Job Wall Time,A categorization of jobs into discrete groups based on the total linear time each job took to execute.
-nsfdirectorate,NSF Directorate,The NSF directorate of the field of science indiciated on the allocation request pertaining to the running jobs.
 nodecount,Node Count,A categorization of jobs into discrete groups based on node count.
 pi,PI,The principal investigator of a project.
-pi_institution,PI Institution,Organizations that have PIs with allocations.
-pi_institution_country,PI Institution Country,The country of the institution of the PI of the project associated with compute jobs.
-pi_institution_state,PI Institution State,The location of the institution of the PI of the project associated with the compute jobs.
-parentscience,Parent Science,The parent of the field of science indiciated on the allocation request pertaining to the running jobs.
+fieldofscience,PI Group,PI Group
+qos,QOS,The quality of service of the job
 queue,Queue,Queue pertains to the low level job queues on each resource.
 resource,Resource,A resource is a remote computer that can run jobs.
 resource_type,Resource Type,A categorization of resources into by their general capabilities.
-provider,Service Provider,A service provider is an institution that hosts resources.
 username,System Username,The specific system username of the users who ran jobs.
-person,User,"A person who is on a PIs allocation, hence able to run jobs on resources."
-institution,User Institution,Organizations that have users with allocations.
-institution_country,User Institution Country,The name of the country of the institution of the person who ran the compute job.
-institution_state,User Institution State,The location of the institution of the person who ran the compute job.
-nsfstatus,User NSF Status,Categorization of the users who ran jobs.
+person,User,"A person who is on a PIs allocation, hence able run jobs on resources."
