@@ -33,14 +33,14 @@ METHOD_PARAMS = {
     'describe_raw_realms': (),
     'describe_raw_fields': ('realm',),
 }
-VALID_DATE = '2020-01-01'
+VALID_DATE = '2016-12-25'
 VALID_DIMENSION = 'Resource'
 VALID_VALUES = {
   'duration': 'Yesterday',
   'realm': 'Jobs',
   'metric': 'CPU Hours: Total',
   'dimension': VALID_DIMENSION,
-  'filters': {VALID_DIMENSION: 'frearson'},
+  'filters': {VALID_DIMENSION: 'phillips'},
   'dataset_type': 'timeseries',
   'aggregation_unit': 'Auto',
   'parameter': 'duration',
@@ -268,22 +268,22 @@ get_data_return_value_test_params = {
         (
             {},
             'Metric',
-            31,
+            0,
         ),
         (
-            {'filters': {'Service Provider': 'StonyBrook'}},
+            {'filters': {'Resource': 'robertson'}},
             'Metric',
             0,
         ),
         (
             {'dimension': 'Resource'},
             'Resource',
-            31,
+            0,
         ),
         (
             {
                 'dimension': 'Resource',
-                'filters': {'Service Provider': 'StonyBrook'},
+                'filters': {'Resource': 'robertson'},
             },
             'Resource',
             0,
@@ -342,19 +342,19 @@ get_data_aggregate_return_value_test_params = {
             1,
         ),
         (
-            {'filters': {'Service Provider': 'StonyBrook'}},
+            {'filters': {'Resource': 'robertson'}},
             None,
             1,
         ),
         (
             {'dimension': 'Resource'},
             'Resource',
-            8,
+            0,
         ),
         (
             {
                 'dimension': 'Resource',
-                'filters': {'Service Provider': 'StonyBrook'},
+                'filters': {'Resource': 'robertson'},
             },
             'Resource',
             0,
