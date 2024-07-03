@@ -78,3 +78,7 @@ def test___enter___RuntimeError_401():
     ):
         with DataWarehouse(VALID_XDMOD_URL) as dw:
             dw.describe_realms()
+
+def test_exit_without_enter():
+    dw = DataWarehouse(VALID_XDMOD_URL)
+    dw.__exit__(None, None, None)

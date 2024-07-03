@@ -112,7 +112,7 @@ def test_get_data_filter_user(valid_dw):
     # Make sure the filter validation works for a user whose list position is
     # greater than 10000 — this will raise an exception if it doesn't work.
     valid_dw.get_data(
-        duration=('2023-01-01', '2023-01-01'),
+        duration=('2016-01-01', '2017-12-31'),
         realm='Jobs',
         metric='CPU Hours: Total',
         dataset_type='aggregate',
