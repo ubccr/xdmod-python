@@ -29,7 +29,7 @@ def __assert_dfs_equal(
     index_col='id',
     columns_name=None,
 ):
-    if "GENERATE_DATA_FILES" in os.environ:
+    if 'GENERATE_DATA_FILES' in os.environ:
         actual.to_csv(DATA_DIR + '/' + data_file)
     else:
         expected = pandas.read_csv(
@@ -131,7 +131,7 @@ def test_get_data_filter_user(valid_dw):
 )
 def test_get_data(valid_dw, aggregation_unit, data_file):
     data = valid_dw.get_data(
-        duration= ('2016-01-01', '2017-12-31'),
+        duration=('2016-01-01', '2017-12-31'),
         realm='Jobs',
         metric='CPU Hours: Total',
         aggregation_unit=aggregation_unit,
