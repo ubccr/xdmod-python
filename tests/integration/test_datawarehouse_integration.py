@@ -252,7 +252,7 @@ def __test_DataFrame_return_value(
 
 
 get_data_return_value_test_params = {
-    'duration': ('2020-01-01', '2020-01-31'),
+    'duration': ('2016-12-22', '2017-01-31'),
     'realm': 'Jobs',
     'metric': 'Number of Users: Active',
     'dimension': 'None',
@@ -268,17 +268,17 @@ get_data_return_value_test_params = {
         (
             {},
             'Metric',
-            0,
+            11,
         ),
         (
             {'filters': {'Resource': 'robertson'}},
             'Metric',
-            0,
+            6,
         ),
         (
             {'dimension': 'Resource'},
             'Resource',
-            0,
+            11,
         ),
         (
             {
@@ -286,7 +286,7 @@ get_data_return_value_test_params = {
                 'filters': {'Resource': 'robertson'},
             },
             'Resource',
-            0,
+            6,
         ),
     ],
     ids=(
@@ -349,7 +349,7 @@ get_data_aggregate_return_value_test_params = {
         (
             {'dimension': 'Resource'},
             'Resource',
-            0,
+            5,
         ),
         (
             {
@@ -357,7 +357,7 @@ get_data_aggregate_return_value_test_params = {
                 'filters': {'Resource': 'robertson'},
             },
             'Resource',
-            0,
+            1,
         ),
     ],
     ids=(

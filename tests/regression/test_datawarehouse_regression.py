@@ -30,7 +30,7 @@ def __assert_dfs_equal(
     columns_name=None,
 ):
     if 'GENERATE_DATA_FILES' in os.environ:
-        actual.to_csv(DATA_DIR + '/' + data_file)
+        actual.to_csv(DATA_DIR + '/' + data_file)  # pragma: no cover
     else:
         expected = pandas.read_csv(
             DATA_DIR + '/' + data_file,
