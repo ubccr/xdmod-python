@@ -18,7 +18,7 @@ def _process_get_data_response(dw, params, response):
     csv_data = csv.reader(response.splitlines())
     if params['dataset_type'] == 'timeseries':
         return __parse_timeseries_csv_data(dw, params, csv_data)
-    else: 
+    else:
         return __parse_aggregate_csv_data(params, csv_data)
 
 

@@ -58,34 +58,33 @@ def __assert_dfs_equal(
             {
                 'fields':
                 (
-                'Local Job Id',
-                'Quality of Service',
-                'GPUs',
-                'Start Time',
-                'Department',
+                    'Local Job Id',
+                    'Quality of Service',
+                    'GPUs',
+                    'Start Time',
+                    'Department',
                 ),
                 'filters':
                 {
-                'Resource':
-                [
-                    'mortorq',
-                    'frearson',
-                ],
+                    'Resource':
+                    [
+                        'mortorq',
+                        'frearson',
+                    ],
                 },
             },
             '33345',
             'raw-data-every-1000-pt3.csv',
         ),
-    ]
+    ],
 )
-
-def test_get_raw_data(valid_dw, capsys,additional_params,number,csv_title):
+def test_get_raw_data(valid_dw, capsys, additional_params, number, csv_title):
     defult_params = {
-        'duration':('2016-01-01', '2016-12-31'),
-        'realm':'Jobs',
-        'show_progress':True,
+        'duration': ('2016-01-01', '2016-12-31'),
+        'realm': 'Jobs',
+        'show_progress': True,
     }
-    params={**defult_params,**additional_params}
+    params = {**defult_params, **additional_params}
     data = valid_dw.get_raw_data(**params).iloc[::1000]
     data.index = data.index.astype('string')
     __assert_dfs_equal(
@@ -94,7 +93,7 @@ def test_get_raw_data(valid_dw, capsys,additional_params,number,csv_title):
         dtype='string',
         index_col=0,
     )
-    assert 'Got '+ number +' rows...DONE' in capsys.readouterr().out
+    assert 'Got ' + number + ' rows...DONE' in capsys.readouterr().out
 
 
 def __assert_descriptor_dfs_equal(data_file, actual):
