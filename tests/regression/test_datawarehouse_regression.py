@@ -46,33 +46,55 @@ def __assert_dfs_equal(
         assert expected.equals(actual)
 
 
-def test_get_raw_data(valid_dw, capsys):
-    data = valid_dw.get_raw_data(
-        duration=('2016-01-01', '2016-12-31'),
-        realm='Jobs',
-        fields=(
-            'Local Job Id',
-            'Quality of Service',
-            'GPUs',
-            'Start Time',
-            'Department',
+@pytest.mark.parametrize(
+    'additional_params, number, csv_title',
+    [
+        (
+            {},
+            '54747',
+            'raw-data-every-1000-pt2.csv',
         ),
-        filters={
-            'Resource': [
-                'mortorq',
-                'frearson',
-            ],
-        },
-        show_progress=True,
-    ).iloc[::1000]
+        (
+            {
+                'fields':
+                (
+                'Local Job Id',
+                'Quality of Service',
+                'GPUs',
+                'Start Time',
+                'Department',
+                ),
+                'filters':
+                {
+                'Resource':
+                [
+                    'mortorq',
+                    'frearson',
+                ],
+                },
+            },
+            '33345',
+            'raw-data-every-1000-pt3.csv',
+        ),
+    ]
+)
+
+def test_get_raw_data(valid_dw, capsys,additional_params,number,csv_title):
+    defult_params = {
+        'duration':('2016-01-01', '2016-12-31'),
+        'realm':'Jobs',
+        'show_progress':True,
+    }
+    params={**defult_params,**additional_params}
+    data = valid_dw.get_raw_data(**params).iloc[::1000]
     data.index = data.index.astype('string')
     __assert_dfs_equal(
-        'raw-data-every-1000.csv',
+        csv_title,
         data,
         dtype='string',
         index_col=0,
     )
-    assert 'Got 33345 rows...DONE' in capsys.readouterr().out
+    assert 'Got '+ number +' rows...DONE' in capsys.readouterr().out
 
 
 def __assert_descriptor_dfs_equal(data_file, actual):
