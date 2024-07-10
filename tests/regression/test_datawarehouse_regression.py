@@ -41,6 +41,8 @@ def __assert_dfs_equal(
         ).fillna(numpy.nan)
         expected.columns = expected.columns.astype('string')
         expected.columns.name = columns_name
+        print('expected: ', expected)
+        print('actual: ', actual)
         if index_col == 'Time':
             expected.index = pandas.to_datetime(expected.index)
         assert expected.equals(actual)
