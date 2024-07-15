@@ -254,7 +254,7 @@ def __get_dates_from_duration(duration):
     last_month = today + timedelta(days=-30)
     last_quarter = today + timedelta(days=-90)
     this_month_start = date(today.year, today.month, 1)
-    if today.month == 1:  # pragma: no cover
+    if today.month == 1:
         last_full_month_start_year = today.year - 1
         last_full_month_start_month = 12
     else:  # pragma: no cover
@@ -271,9 +271,9 @@ def __get_dates_from_duration(duration):
         ((today.month - 1) // 3) * 3 + 1,
         1,
     )
-    if today.month < 4:  # pragma: no cover
+    if today.month < 4:
         last_quarter_start_year = today.year - 1
-    else:  # pragma: no cover
+    else:
         last_quarter_start_year = today.year
     last_quarter_start = date(
         last_quarter_start_year,
@@ -340,7 +340,7 @@ def __date_add_years(old_date, year_delta):
         try:
             new_date = date(new_date_year, old_date.month, new_date_day)
             keep_going = False
-        except ValueError:  # pragma: no cover
+        except ValueError:
             new_date_day -= 1
             days_above += 1
     return new_date + timedelta(days=days_above)

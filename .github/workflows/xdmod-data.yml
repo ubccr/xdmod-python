@@ -49,8 +49,6 @@ jobs:
     - name: Test against each supported XDMoD portal version
       run: |
         # Create a file with 10,000 users so that we can test filters that have more than 10,000 values
-        date
-
         for i in {1..10000}; do
           # sets the unix at the end of quarter 2
           unix=$((1498866840+$i*2))
@@ -67,10 +65,23 @@ jobs:
           docker exec $version /usr/bin/openssl req -new -key /etc/pki/tls/private/localhost.key -x509 -sha256 -days 365 -set_serial $RANDOM -extensions v3_req -out /etc/pki/tls/certs/localhost.crt -subj "/C=XX/L=Default City/O=Default Company Ltd/CN=localhost" -addext 'subjectAltName=DNS:localhost'
           # Copy Certificate from container
           docker cp $version:/etc/pki/tls/certs/localhost.crt $version.crt 
+          if [ "$version" = "xdmod-main-dev" ]; then
+            # Install the latest development version of xdmod, 
+            # these steps come from xdmod CircleCI configuration file
+            docker exec xdmod-main-dev bash -c "dnf module -y reset php && dnf module -y enable php:7.4"
+            docker exec xdmod-main-dev bash -c "dnf install -y php libzip-devel php-pear php-devel"
+            docker exec xdmod-main-dev bash -c "yes '' | pecl install mongodb || true"
+            docker exec xdmod-main-dev bash -c "git clone --depth=1 https://github.com/ubccr/xdmod.git /root/xdmod"
+            docker exec -w /root/xdmod xdmod-main-dev bash -c "composer install"
+            docker exec -w /root/xdmod xdmod-main-dev bash -c "~/bin/buildrpm xdmod"
+            docker exec -w /root/xdmod xdmod-main-dev bash -c "XDMOD_TEST_MODE=upgrade ./tests/ci/bootstrap.sh"
+            docker exec -w /root/xdmod xdmod-main-dev bash -c "./tests/ci/validate.sh"
+          else
+            # Start up web server in container
+            docker exec $version /root/bin/services start
+          fi
           # Prepare to use certificate for curl and python requests
           export CURL_CA_BUNDLE="$version.crt"
-          # Start up web server in container
-          docker exec $version /root/bin/services start
           ports=$(yq ".services.\"$version\".ports[0]" .github/workflows/docker-compose.yaml)
           port=$(echo $ports | cut -d ':' -f 1)
           export XDMOD_HOST="https://localhost:$port"

@@ -19,7 +19,7 @@ class _Descriptors:
             '/controllers/metric_explorer.php',
             {'operation': 'get_dw_descripter'},
         )
-        if response['totalCount'] != 1:  # pragma: no cover
+        if response['totalCount'] != 1:
             raise RuntimeError(
                 'Descriptor received with unexpected structure.',
             )
