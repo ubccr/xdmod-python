@@ -59,6 +59,7 @@ jobs:
         coverage erase
         declare -a portal_versions=$(yq '.services | keys[]' .github/workflows/docker-compose.yaml)
         for version in $portal_versions; do
+          echo $version
           # Generate OpenSSL Key
           docker exec $version sh -c 'openssl genrsa -rand /proc/cpuinfo:/proc/filesystems:/proc/interrupts:/proc/ioports:/proc/uptime 2048 > /etc/pki/tls/private/localhost.key'
           # Generate Certificate 
