@@ -4,7 +4,7 @@ import requests
 from xdmod_data.warehouse import DataWarehouse
 
 
-VALID_XDMOD_URL = os.environ['XDMOD_HOST']
+VALID_XDMOD_HOST = os.environ['XDMOD_HOST']
 INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 
 
@@ -32,7 +32,7 @@ def test___init___KeyError():
         KeyError,
         match='`XDMOD_API_TOKEN` environment variable has not been set.',
     ):
-        DataWarehouse(VALID_XDMOD_URL)
+        DataWarehouse(VALID_XDMOD_HOST)
     os.environ['XDMOD_API_TOKEN'] = token
 
 
@@ -76,10 +76,10 @@ def test___enter___RuntimeError_401():
         match='Error 401: Make sure XDMOD_API_TOKEN is set'
         + ' to a valid API token.',
     ):
-        with DataWarehouse(VALID_XDMOD_URL) as dw:
+        with DataWarehouse(VALID_XDMOD_HOST) as dw:
             dw.describe_realms()
 
 
 def test_exit_without_enter():
-    dw = DataWarehouse(VALID_XDMOD_URL)
+    dw = DataWarehouse(VALID_XDMOD_HOST)
     dw.__exit__(None, None, None)

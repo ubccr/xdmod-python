@@ -8,9 +8,10 @@ from pathlib import Path
 import pytest
 from xdmod_data.warehouse import DataWarehouse
 
-XDMOD_URL = os.environ['XDMOD_HOST']
+XDMOD_HOST = os.environ['XDMOD_HOST']
+XDMOD_VERSION = os.environ['XDMOD_VERSION']
 TOKEN_PATH = '~/.xdmod-data-token'
-DATA_DIR = dirname(__file__) + '/data'
+DATA_DIR = dirname(__file__) + '/data/' + XDMOD_VERSION
 
 
 load_dotenv(Path(expanduser(TOKEN_PATH)), override=True)
@@ -18,7 +19,7 @@ load_dotenv(Path(expanduser(TOKEN_PATH)), override=True)
 
 @pytest.fixture(scope='module')
 def valid_dw():
-    with DataWarehouse(XDMOD_URL) as dw:
+    with DataWarehouse(XDMOD_HOST) as dw:
         yield dw
 
 
@@ -29,8 +30,12 @@ def __assert_dfs_equal(
     index_col='id',
     columns_name=None,
 ):
-    if 'GENERATE_DATA_FILES' in os.environ:
-        actual.to_csv(DATA_DIR + '/' + data_file)  # pragma: no cover
+    if 'GENERATE_DATA_FILES' in os.environ:  # pragma: no cover
+        try:
+            os.mkdir(DATA_DIR)
+        except FileExistsError:
+            pass 
+        actual.to_csv(DATA_DIR + '/' + data_file)
     else:
         expected = pandas.read_csv(
             DATA_DIR + '/' + data_file,
@@ -52,7 +57,7 @@ def __assert_dfs_equal(
         (
             {},
             '54747',
-            'raw-data-every-1000-pt2.csv',
+            'raw-data-every-1000-no-fields-no-filters.csv',
         ),
         (
             {
@@ -74,7 +79,7 @@ def __assert_dfs_equal(
                 },
             },
             '33345',
-            'raw-data-every-1000-pt3.csv',
+            'raw-data-every-1000-with-fields-and-filters.csv',
         ),
     ],
 )

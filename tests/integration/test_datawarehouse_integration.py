@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from xdmod_data.warehouse import DataWarehouse
 
-VALID_XDMOD_URL = os.environ['XDMOD_HOST']
+VALID_XDMOD_HOST = os.environ['XDMOD_HOST']
 TOKEN_PATH = '~/.xdmod-data-token'
 INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 METHOD_PARAMS = {
@@ -118,7 +118,7 @@ load_dotenv(Path(expanduser(TOKEN_PATH)), override=True)
 
 @pytest.fixture(scope='module')
 def dw_methods(request):
-    xdmod_host = VALID_XDMOD_URL
+    xdmod_host = VALID_XDMOD_HOST
     if hasattr(request, 'param'):
         xdmod_host = request.param
     with DataWarehouse(xdmod_host) as dw:
@@ -127,7 +127,7 @@ def dw_methods(request):
 
 @pytest.fixture(scope='module')
 def dw_methods_outside_runtime_context():
-    dw = DataWarehouse(VALID_XDMOD_URL)
+    dw = DataWarehouse(VALID_XDMOD_HOST)
     return __get_dw_methods(dw)
 
 
@@ -447,7 +447,7 @@ def test_case_insensitive(dw_methods, method, param, value1, value2):
 
 @pytest.mark.parametrize(
     'dw_methods,method',
-    [(VALID_XDMOD_URL + '/', method) for method in list(METHOD_PARAMS.keys())],
+    [(VALID_XDMOD_HOST + '/', method) for method in list(METHOD_PARAMS.keys())],
     indirect=['dw_methods'],
     ids=[method for method in list(METHOD_PARAMS.keys())],
 )

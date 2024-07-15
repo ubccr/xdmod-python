@@ -59,7 +59,7 @@ jobs:
         coverage erase
         declare -a portal_versions=$(yq '.services | keys[]' .github/workflows/docker-compose.yaml)
         for version in $portal_versions; do
-          echo $version
+          echo "starting up $version container"
           # Generate OpenSSL Key
           docker exec $version sh -c 'openssl genrsa -rand /proc/cpuinfo:/proc/filesystems:/proc/interrupts:/proc/ioports:/proc/uptime 2048 > /etc/pki/tls/private/localhost.key'
           # Generate Certificate 
@@ -94,6 +94,7 @@ jobs:
           date=$(date --utc +%Y-%m-%d)
           docker exec $version xdmod-ingestor --ingest
           docker exec $version xdmod-ingestor --aggregate=job --last-modified-start-date $date
+          export XDMOD_VERSION="$version"
           coverage run --branch --append -m pytest -vvs -o log_cli=true tests/
         done
         coverage report -m --fail-under=100
