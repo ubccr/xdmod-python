@@ -447,7 +447,12 @@ def test_case_insensitive(dw_methods, method, param, value1, value2):
 
 @pytest.mark.parametrize(
     'dw_methods,method',
-    [(VALID_XDMOD_HOST + '/', method) for method in list(METHOD_PARAMS.keys())],
+    [
+        (
+            VALID_XDMOD_HOST + '/',
+            method,
+        ) for method in list(METHOD_PARAMS.keys())
+    ],
     indirect=['dw_methods'],
     ids=[method for method in list(METHOD_PARAMS.keys())],
 )

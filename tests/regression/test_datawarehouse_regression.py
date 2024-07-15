@@ -34,7 +34,7 @@ def __assert_dfs_equal(
         try:
             os.mkdir(DATA_DIR)
         except FileExistsError:
-            pass 
+            pass
         actual.to_csv(DATA_DIR + '/' + data_file)
     else:
         expected = pandas.read_csv(
