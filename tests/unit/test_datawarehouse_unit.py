@@ -66,7 +66,7 @@ def test___enter___RuntimeError_xdmod_host_unsupported_protocol():
         requests.exceptions.InvalidSchema,
         match="No connection adapters were found for '" + invalid_host,
     ):
-        with DataWarehouse(invalid_host): # pragma no cover
+        with DataWarehouse(invalid_host):  # pragma no cover
             pass
 
 

@@ -72,7 +72,7 @@ def __parse_timeseries_date_string(date_string):
     # Match YYYY Q#
     elif re.match(r'^[0-9]{4} Q[0-9]$', date_string):
         (date_string, format_) = __parse_quarter_date_string(date_string)
-    else:  #pragma: no cover
+    else:  # pragma: no cover
         raise Exception(
             'Unsupported date specification ' + date_string + '.',
         )
