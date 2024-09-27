@@ -1,14 +1,16 @@
 # xdmod-data
-As part of the Data Analytics Framework for [XDMoD](https://open.xdmod.org), this Python package provides API access to the data warehouse of instances of Open XDMoD.
+As part of the Data Analytics Framework for [XDMoD](https://open.xdmod.org), this Python package provides API access to the data warehouse of instances of Open XDMoD version ≥10.5.
 
 The package can be installed from PyPI via `pip install xdmod-data`.
 
-It has dependencies on [NumPy](https://pypi.org/project/numpy/), [Pandas](https://pypi.org/project/pandas/), [Plotly](https://pypi.org/project/plotly/), and [Requests](https://pypi.org/project/requests/).
+Existing installations can be upgraded via `pip install --upgrade xdmod-data`.
+
+The package has dependencies on [NumPy](https://pypi.org/project/numpy/), [Pandas](https://pypi.org/project/pandas/), [Plotly](https://pypi.org/project/plotly/), and [Requests](https://pypi.org/project/requests/).
 
 Example usage is documented through Jupyter notebooks in the [xdmod-notebooks](https://github.com/ubccr/xdmod-notebooks) repository.
 
 ## Compatibility with Open XDMoD
-Specific versions of this `xdmod-data` API are compatible with specific versions of Open XDMoD as indicated in the table below.
+Specific versions of this package are compatible with specific versions of Open XDMoD as indicated in the table below.
 
 | `xdmod-data` version | Open XDMoD versions |
 | -------------------- | ------------------- |
