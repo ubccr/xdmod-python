@@ -83,7 +83,7 @@
 1. Go to [create a new release on GitHub](https://github.com/ubccr/xdmod-data/releases/new) and:
     1. Click `Choose a tag`.
     1. Type in a tag similar to `v1.0.0` and choose `Create new tag`.
-    1. Make the release title the same as the tag name.
+    1. Make the release title the same as the tag name (e.g., `v1.0.0`).
     1. Where it says `Describe this release`, paste in the contents of the release's section in `CHANGELOG.md`.
     1. Where it says `Attach binaries`, attach the built distribution that was uploaded to PyPI.
     1. Click `Publish release`.
