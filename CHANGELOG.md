@@ -1,7 +1,9 @@
 # xdmod-data Changelog
 
-## v1.0.1 (2024-06-XX)
+## v1.0.1 (2024-09-27)
+
 This release has bug fixes, performance improvements, and updates for compatibility, tests, and documentation.
+
 - Add borders to README images ([\#12](https://github.com/ubccr/xdmod-data/pull/12)).
 - Create `PULL_REQUEST_TEMPLATE.md` ([\#13](https://github.com/ubccr/xdmod-data/pull/13)).
 - Add types of changes to pull request template ([\#15](https://github.com/ubccr/xdmod-data/pull/15)).
@@ -16,4 +18,5 @@ This release has bug fixes, performance improvements, and updates for compatibil
 - Specify minimum version numbers for dependencies ([\#25](https://github.com/ubccr/xdmod-data/pull/25)). 
 
 ## v1.0.0 (2023-07-21)
-- Initial release.
+
+Initial release.
