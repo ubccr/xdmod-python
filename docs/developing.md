@@ -87,11 +87,13 @@
     1. Where it says `Describe this release`, paste in the contents of the release's section in `CHANGELOG.md`.
     1. Where it says `Attach binaries`, attach the built distribution that was uploaded to PyPI.
     1. Click `Publish release`.
+    1. Go to https://github.com/ubccr/xdmod-data/milestones and close the milestone for the version.
 
 ## After release
 
 1. Make a new branch of `xdmod-data` and:
     1. Make sure the version number is updated in `xdmod_data/__version__.py` to a pre-release of the next version, e.g., `1.0.1-01`.
     1. Update `CHANGELOG.md` to add a section at the top called `Main development branch`.
+    1. Go to https://github.com/ubccr/xdmod-data/milestones and add a milestone for the version.
     1. Create a Pull Request for the new version.
     1. Once the Pull Request is approved, merge it into `main`.
