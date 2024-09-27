@@ -1,11 +1,21 @@
 # xdmod-data
-As part of the [XDMoD](https://open.xdmod.org) Data Analytics Framework, this Python package provides API access to the data warehouse of an instance of XDMoD version ≥10.5.
+As part of the Data Analytics Framework for [XDMoD](https://open.xdmod.org), this Python package provides API access to the data warehouse of instances of Open XDMoD version ≥10.5.
 
 The package can be installed from PyPI via `pip install xdmod-data`.
 
-It has dependencies on [NumPy](https://pypi.org/project/numpy/), [Pandas](https://pypi.org/project/pandas/), [Plotly](https://pypi.org/project/plotly/), and [Requests](https://pypi.org/project/requests/).
+Existing installations can be upgraded via `pip install --upgrade xdmod-data`.
+
+The package has dependencies on [NumPy](https://pypi.org/project/numpy/), [Pandas](https://pypi.org/project/pandas/), [Plotly](https://pypi.org/project/plotly/), and [Requests](https://pypi.org/project/requests/).
 
 Example usage is documented through Jupyter notebooks in the [xdmod-notebooks](https://github.com/ubccr/xdmod-notebooks) repository.
+
+## Compatibility with Open XDMoD
+Specific versions of this package are compatible with specific versions of Open XDMoD as indicated in the table below.
+
+| `xdmod-data` version | Open XDMoD versions |
+| -------------------- | ------------------- |
+| 1.0.1                | 11.0.x, 10.5.x      |
+| 1.0.0                | 10.5.x              |
 
 ## API Token Access
 Use of the Data Analytics Framework requires an API token. To obtain an API token, follow the steps below to obtain an API token from the XDMoD portal.
@@ -39,7 +49,7 @@ Use of the Data Analytics Framework requires an API token. To obtain an API toke
     **Note:** If you lose your token, simply delete it and generate a new one.
 
 ## Feedback / Feature Requests
-We welcome your feedback and feature requests for the XDMoD Data Analytics Framework via email: ccr-xdmod-help@buffalo.edu.
+We welcome your feedback and feature requests for the Data Analytics Framework for XDMoD via email: ccr-xdmod-help@buffalo.edu.
 
 ## Support
 For support, please see [this page](https://open.xdmod.org/support.html). If you email for support, please include the following:
