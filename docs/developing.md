@@ -68,6 +68,10 @@
         ```
         Enter your TestPyPI API token.
     1. Go to https://test.pypi.org/project/xdmod-data and confirm that everything looks right.
+    1. Go to https://test.pypi.org/manage/project/xdmod-data/releases/ and:
+        1. In the `Options` menu next to the release, click `Delete`.
+        1. Type the version number in the box.
+        1. Click `Delete release`.
     1. Upload the built distribution to PyPI:
         ```
         twine upload dist/xdmod_data-${version}-py3-none-any.whl
