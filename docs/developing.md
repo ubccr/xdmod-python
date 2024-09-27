@@ -67,7 +67,7 @@
         twine upload --repository testpypi dist/xdmod_data-${version}-py3-none-any.whl
         ```
         Enter your TestPyPI API token.
-    1. Go to https://testpypi.org/project/xdmod-data and confirm that everything looks right.
+    1. Go to https://test.pypi.org/project/xdmod-data and confirm that everything looks right.
     1. Upload the built distribution to PyPI:
         ```
         twine upload dist/xdmod_data-${version}-py3-none-any.whl
