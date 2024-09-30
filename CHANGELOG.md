@@ -2,9 +2,13 @@
 
 ## Main development branch
 
+- Document Open XDMoD compatibility in changelog ([\#31](https://github.com/ubccr/xdmod-data/pull/31)).
+
 ## v1.0.1 (2024-09-27)
 
 This release has bug fixes, performance improvements, and updates for compatibility, tests, and documentation.
+
+It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 
 - Add borders to README images ([\#12](https://github.com/ubccr/xdmod-data/pull/12)).
 - Create `PULL_REQUEST_TEMPLATE.md` ([\#13](https://github.com/ubccr/xdmod-data/pull/13)).
@@ -22,3 +26,5 @@ This release has bug fixes, performance improvements, and updates for compatibil
 ## v1.0.0 (2023-07-21)
 
 Initial release.
+
+Compatible with Open XDMoD version 10.5.x.
