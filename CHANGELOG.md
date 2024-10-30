@@ -3,6 +3,7 @@
 ## Main development branch
 
 - Document Open XDMoD compatibility in changelog ([\#31](https://github.com/ubccr/xdmod-data/pull/31)).
+- Add ability to request dimension metadata ([\#35](https://github.com/ubccr/xdmod-data/pull/35)).
 
 ## v1.0.1 (2024-09-27)
 
