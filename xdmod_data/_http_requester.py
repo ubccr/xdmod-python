@@ -49,11 +49,7 @@ class _HttpRequester:
         # necessary — only the body of the 'if' branch will be needed.
         limit = self.__get_raw_data_limit()
         data = []
-        # Once ACCESS XDMoD is on version 11.0 then the `pragma: no cover`
-        # below will need to be moved to the `else` statement so that
-        # Coverage.py will know that branch is not
-        # expected to be covered by tests.
-        if limit == 'NA':  # pragma: no cover
+        if limit == 'NA':
             response_iter_lines = self.__request(
                 path='/rest/v1/warehouse/raw-data?' + url_params,
                 post_fields=None,
@@ -73,7 +69,7 @@ class _HttpRequester:
                 i += 1
             if params['show_progress']:
                 self.__print_progress_msg(i, 'DONE\n')
-        else:
+        else:  # pragma: no cover
             num_rows = limit
             offset = 0
             while num_rows == limit:
@@ -153,13 +149,9 @@ class _HttpRequester:
             raise RuntimeError(
                 'Error ' + str(response.status_code) + msg
             ) from None
-        # Once ACCESS XDMoD is on version 11.0 then
-        # the `pragma: no cover` below
-        # will need to be removed so that Coverage.py
-        # will know that branch is expected to be covered by tests.
-        if stream:  # pragma: no cover
+        if stream:
             return response.iter_lines()
-        else:
+        else:  # pragma: no cover
             return response.text
 
     def __get_data_post_fields(self, params):
@@ -204,11 +196,7 @@ class _HttpRequester:
                     '/rest/v1/warehouse/raw-data/limit'
                 )
                 self.__raw_data_limit = int(response['data'])
-                # Once ACCESS XDMoD is on version 11.0 then
-                # the `pragma: no cover` below
-                # will need to be removed so that Coverage.py
-                # will know that branch is expected to be covered by tests.
-            except RuntimeError as e:  # pragma: no cover
+            except RuntimeError as e:
                 if '404' in str(e):
                     self.__raw_data_limit = 'NA'
                 else:  # pragma: no cover
