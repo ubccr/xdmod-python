@@ -3,6 +3,7 @@
 ## Main development branch
 
 - Document Open XDMoD compatibility in changelog ([\#31](https://github.com/ubccr/xdmod-data/pull/31)).
+- Implement 100% test coverage ([\#27](https://github.com/ubccr/xdmod-data/pull/27)).
 
 ## v1.0.1 (2024-09-27)
 

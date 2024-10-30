@@ -72,7 +72,7 @@ class _HttpRequester:
                 i += 1
             if params['show_progress']:
                 print(progress_msg + 'DONE')
-        else:
+        else:  # pragma: no cover
             num_rows = limit
             offset = 0
             while num_rows == limit:
@@ -123,7 +123,7 @@ class _HttpRequester:
     def __assert_connection_to_xdmod_host(self):
         try:
             self.__request()
-        except RuntimeError as e:
+        except RuntimeError as e:  # pragma: no cover
             raise RuntimeError(
                 'Could not connect to xdmod_host \'' + self.__xdmod_host
                 + '\': ' + str(e)
@@ -148,7 +148,7 @@ class _HttpRequester:
             try:
                 response_json = json.loads(response.text)
                 msg = ': ' + response_json['message']
-            except json.JSONDecodeError:
+            except json.JSONDecodeError:  # pragma: no cover
                 pass
             if response.status_code == 401:
                 msg = (
@@ -159,7 +159,7 @@ class _HttpRequester:
             ) from None
         if stream:
             return response.iter_lines()
-        else:
+        else:  # pragma: no cover
             return response.text
 
     def __get_data_post_fields(self, params):
@@ -195,8 +195,8 @@ class _HttpRequester:
                 )
         return urlencode(results)
 
-    # Once XDMoD 10.5 is no longer supported, there will be no need for this
-    # method.
+    # Once XDMoD 10.5 is no longer supported,
+    # there will be no need for this method.
     def __get_raw_data_limit(self):
         if self.__raw_data_limit is None:
             try:
@@ -207,6 +207,6 @@ class _HttpRequester:
             except RuntimeError as e:
                 if '404' in str(e):
                     self.__raw_data_limit = 'NA'
-                else:
+                else:  # pragma: no cover
                     raise
         return self.__raw_data_limit

@@ -55,10 +55,7 @@ def __parse_timeseries_dimension_values(labels):
     dimension_values = []
     for label in labels:
         match = label_re.match(label)
-        if match:
-            dimension_values.append(html.unescape(match.group(1)))
-        else:
-            dimension_values.append(html.unescape(label))
+        dimension_values.append(html.unescape(match.group(1)))
     return dimension_values
 
 
@@ -75,7 +72,7 @@ def __parse_timeseries_date_string(date_string):
     # Match YYYY Q#
     elif re.match(r'^[0-9]{4} Q[0-9]$', date_string):
         (date_string, format_) = __parse_quarter_date_string(date_string)
-    else:
+    else:  # pragma: no cover
         raise Exception(
             'Unsupported date specification ' + date_string + '.'
         )
@@ -134,7 +131,7 @@ def __parse_quarter_date_string(date_string):
         month = '07'
     elif quarter == 'Q4':
         month = '10'
-    else:
+    else:  # pragma: no cover
         raise Exception(
             'Unsupported date quarter specification '
             + date_string + '.'
