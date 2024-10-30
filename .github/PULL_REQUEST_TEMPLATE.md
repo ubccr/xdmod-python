@@ -27,7 +27,7 @@
 <!--- Go over all the following points and make sure they have all been completed -->
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
 - [ ] `CHANGELOG.md` has been updated
-- [ ] `xdmod_data/__version__.py` has been updated to the next pre-release version
+- [ ] `xdmod_data/__version__.py` has been updated to the next development version
 - [ ] The milestone is set correctly on the pull request
 - [ ] The appropriate labels have been added to the pull request
 - [ ] Running the automated tests (see `docs/developing.md`) produces no errors
