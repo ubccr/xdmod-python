@@ -1,4 +1,5 @@
 id,label,description
+utilization,ACCESS CPU Utilization (%),"The percentage of the ACCESS obligation of a resource that has been utilized by ACCESS jobs.<br/><i> ACCESS CPU Utilization:</i> The ratio of the total CPU hours consumed by ACCESS jobs over a given time period divided by the total CPU hours that the system is contractually required to provide to ACCESS during that period. It does not include non-ACCESS jobs.<br/>It is worth noting that this value is a rough estimate in certain cases where the resource providers don't provide accurate records of their system specifications, over time."
 avg_ace,ACCESS Credit Equivalents Charged: Per Job (SU),"The average amount of ACCESS Credit Equivalents charged per compute job.<br/>
 
 The ACCESS Credit Equivalent is a measure of how much compute time was used on each resource.
@@ -15,7 +16,6 @@ The ACCESS Credit Equivalent allows comparison between usage of node-allocated, 
 resources. It also allows a comparison between resources with different compute power per core.
 The <a href=""https://allocations.access-ci.org/exchange_calculator"" target=""_blank"" rel=""noopener noreferrer"">ACCESS allocations exchange calculator</a>
 lists conversion rates between an ACCESS Credit Equivalent and a service unit on a resource."
-utilization,ACCESS Utilization (%),"The percentage of the ACCESS obligation of a resource that has been utilized by ACCESS jobs.<br/><i> ACCESS Utilization:</i> The ratio of the total CPU hours consumed by ACCESS jobs over a given time period divided by the total CPU hours that the system is contractually required to provide to ACCESS during that period. It does not include non-ACCESS jobs.<br/>It is worth noting that this value is a rough estimate in certain cases where the resource providers don't provide accurate records of their system specifications, over time."
 rate_of_usage,Allocation Usage Rate (XD SU/Hour),The rate of ACCESS allocation usage in XD SUs per hour.
 rate_of_usage_ace,Allocation Usage Rate ACEs (SU/Hour),The rate of ACCESS allocation usage in ACCESS Credit Equivalents per hour.
 avg_cpu_hours,CPU Hours: Per Job,"The average CPU hours (number of CPU cores x wall time hours) per ACCESS job.<br/>For each job, the CPU usage is aggregated. For example, if a job used 1000 CPUs for one minute, it would be aggregated as 1000 CPU minutes or 16.67 CPU hours."
@@ -82,7 +82,7 @@ Current TeraGrid supercomputers have complex multi-core and memory hierarchies. 
 
 Note: The actual charge will depend on the specific requirements of the job (e.g., the mapping of the cores across the machine, or the priority you wish to obtain).<br/>
 
-Note 2: The SUs show here have been normalized against the XSEDE Roaming service. Therefore they are comparable across resources."
+Note 2: The SUs shown here have been normalized against the XSEDE Roaming service. Therefore they are comparable across resources."
 total_su,XD SUs Charged: Total,"The total amount of XD SUs charged by ACCESS jobs.<br/>
 <i>XD SU: </i>1 XSEDE SU is defined as one CPU-hour on a Phase-1 DTF cluster.<br/>
 <i>SU - Service Units: </i>Computational resources on the XSEDE are allocated and charged in service units (SUs). SUs are defined locally on each system, with conversion factors among systems based on HPL benchmark results.<br/>
@@ -91,4 +91,4 @@ Current TeraGrid supercomputers have complex multi-core and memory hierarchies. 
 
 Note: The actual charge will depend on the specific requirements of the job (e.g., the mapping of the cores across the machine, or the priority you wish to obtain).<br/>
 
-Note 2: The SUs show here have been normalized against the XSEDE Roaming service. Therefore they are comparable across resources."
+Note 2: The SUs shown here have been normalized against the XSEDE Roaming service. Therefore they are comparable across resources."
