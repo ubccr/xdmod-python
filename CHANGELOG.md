@@ -3,6 +3,7 @@
 ## Main development branch
 
 - Document Open XDMoD compatibility in changelog ([\#31](https://github.com/ubccr/xdmod-data/pull/31)).
+- Rename `duration` to `date_range` ([\#33](https://github.com/ubccr/xdmod-data/pull/33)).
 
 ## v1.0.1 (2024-09-27)
 
