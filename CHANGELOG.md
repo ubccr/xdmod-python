@@ -3,6 +3,7 @@
 ## Main development branch
 
 - Document Open XDMoD compatibility in changelog ([\#31](https://github.com/ubccr/xdmod-data/pull/31)).
+- Change `get_data()` to always return a long form data frame ([\#32](https://github.com/ubccr/xdmod-data/pull/32)).
 
 ## v1.0.1 (2024-09-27)
 
