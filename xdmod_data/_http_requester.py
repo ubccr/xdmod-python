@@ -208,4 +208,4 @@ class _HttpRequester:
             'Got ' + str(num_rows) + ' row' + ('' if num_rows == 1 else 's')
             + '...'
         )
-        print(progress_msg, end='\r')
+        print(progress_msg, end=end)
