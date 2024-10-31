@@ -1,5 +1,7 @@
 # xdmod-data Changelog
 
+## v1.x.y (development branch)
+
 ## v1.0.2 (2024-10-31)
 
 This release fixes an `IOPub` error that can occur when calling

@@ -117,10 +117,11 @@
        `This documentation is for ...`, replace the version number in bold,
        e.g.:
         ```
-        This documentation is for **v1.x.y (main development branch)**.
+        This documentation is for **v1.x.y (development branch)**.
         ```
-    1. Update `CHANGELOG.md` to add a section at the top called `v1.x.y (main
-       development branch)`, replacing `1` with the major version under
-       development.
-    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
-       and add a milestone for the version under development.
+    1. Update `CHANGELOG.md` to add a section at the top called
+       `v1.x.y (development branch)`, replacing `1` with the major version under
+       development (add `main` before `development branch` if it is also the
+       main development branch.
+1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
+   and add a milestone for the version under development.
