@@ -1,9 +1,15 @@
 # xdmod-data Changelog
 
+## v1.x.y (development branch)
+
+- Prepare for v1.0.3 development ([\#43](https://github.com/ubccr/xdmod-data/pull/43)).
+
 ## v1.0.2 (2024-10-31)
 
 This release fixes an `IOPub` error that can occur when calling
 `get_raw_data()` with `show_progress=True`.
+
+It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 
 - Document Open XDMoD compatibility in changelog ([\#31](https://github.com/ubccr/xdmod-data/pull/31)).
 - Fix IOPub error when showing progress with `get_raw_data()` ([\#40](https://github.com/ubccr/xdmod-data/pull/40)).
