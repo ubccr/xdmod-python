@@ -7,7 +7,6 @@ This documentation is for **v1.x.y (development branch)**. For documentation of 
 - [v1.0.1](https://github.com/ubccr/xdmod-data/tree/v1.0.1?tab=readme-ov-file#xdmod-data)
 - [v1.0.0](https://github.com/ubccr/xdmod-data/tree/v1.0.0?tab=readme-ov-file#xdmod-data)
 - [v2.x.y (main development branch)](https://github.com/ubccr/xdmod-data/tree/main?tab=readme-ov-file#xdmod-data)
-- [v1.x.y (development branch)](https://github.com/ubccr/xdmod-data/tree/v1.x.y?tab=readme-ov-file#xdmod-data)
 
 The package can be installed from PyPI via `pip install xdmod-data`.
 
