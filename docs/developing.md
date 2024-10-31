@@ -38,8 +38,20 @@
 ## Releasing a new version
 1. Make a new branch of `xdmod-data` and:
     1. Make sure the version number is updated in `xdmod_data/__version__.py`.
-    1. Update the Open XDMoD compatibility matrix in the `README.md`.
-    1. Update `CHANGELOG.md` to change "Main development branch" to, e.g., `v1.0.1 (2024-06-XX)`.
+    1. In `README.md`:
+        1. Under the main heading,
+            1. In the sentence that begins, `This documentation is for ...`,
+               replace `the **main development branch**` with the version
+               number in bold in the sentence that begins `This documentation
+               is for ...`, e.g.:
+                ```
+                This documentation is for **v1.0.2** of the package.
+                ```
+        1. Update the Open XDMoD compatibility matrix.
+    1. Update `CHANGELOG.md` to:
+        1. Change the `development branch` to, e.g., `v1.0.1 (2024-06-XX)`.
+        1. Add a summary of the changes in the version.
+    1. In `setup.cfg`, update the `long_description` to change the version number in the URL to the new version.
     1. Create a Pull Request for the new version.
 1. After the Pull Request is approved (but not merged yet), follow these steps in a cloned copy of the branch:
     1. Start up a virtual environment, e.g.:
@@ -96,3 +108,7 @@
     1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and add a milestone for the version.
     1. Create a Pull Request for the new version.
     1. Once the Pull Request is approved, merge it into `main`.
+
+            1. Add an item to the top of the bulleted list for the new version,
+               making sure to replace the version number in the link text and
+               in the URL.
