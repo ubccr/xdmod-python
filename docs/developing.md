@@ -100,6 +100,9 @@
     1. Where it says `Attach binaries`, attach the built distribution that was uploaded to PyPI.
     1. Click `Publish release`.
     1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and close the milestone for the version.
+1. If this is a minor or patch release to a version that is not the most recent major version,
+    1. For each major version above this release's major version,
+        1. Add the entry for this version to the `CHANGELOG.md`.
 
 ## After release
 1. Make a new branch of `xdmod-data` and:
