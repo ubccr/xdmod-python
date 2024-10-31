@@ -108,13 +108,18 @@
             1. Update the Open XDMoD compatibility matrix.
 
 ## After release
-1. Make a new branch of `xdmod-data` and:
-    1. Make sure the version number is updated in `xdmod_data/__version__.py` to a pre-release of the next version, e.g., `1.0.1-01`.
-    1. Update `CHANGELOG.md` to add a section at the top called `Main development branch`.
-    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and add a milestone for the version.
-    1. Create a Pull Request for the new version.
-    1. Once the Pull Request is approved, merge it into `main`.
 
-            1. Add an item to the top of the bulleted list for the new version,
-               making sure to replace the version number in the link text and
-               in the URL.
+1. In a Pull Request to the `main` branch of `xdmod-data`:
+    1. Make sure the version number is updated in `xdmod_data/__version__.py`
+       to a development pre-release of the next version, e.g., `1.0.1.dev1`.
+    1. In `README.md`, under the main heading, in the sentence that begins,
+       `This documentation is for ...`, replace the version number in bold,
+       e.g.:
+        ```
+        This documentation is for **v1.x.y (main development branch)**.
+        ```
+    1. Update `CHANGELOG.md` to add a section at the top called `v1.x.y (main
+       development branch)`, replacing `1` with the major version under
+       development.
+    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
+       and add a milestone for the version under development.
