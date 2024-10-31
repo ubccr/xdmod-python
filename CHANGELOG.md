@@ -2,6 +2,8 @@
 
 ## v1.x.y (development branch)
 
+- Add v1.0.2 to changelog ([\#43](https://github.com/ubccr/xdmod-data/pull/43)).
+
 ## v1.0.2 (2024-10-31)
 
 This release fixes an `IOPub` error that can occur when calling
