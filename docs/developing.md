@@ -48,7 +48,8 @@
         1. Update the Open XDMoD compatibility matrix.
     1. Update `CHANGELOG.md` to:
         1. Change the `development branch` to, e.g., `v1.0.1 (2024-06-XX)`.
-        1. Add a summary of the changes in the version.
+        1. Add a summary of the changes in the version, including the
+           compatibilty with Open XDMoD versions.
     1. In `setup.cfg`, update the `long_description` to change the version number in the URL to the new version.
     1. Create a Pull Request for the new version.
 1. After the Pull Request is approved (but not merged yet), follow these steps in a cloned copy of the branch:
