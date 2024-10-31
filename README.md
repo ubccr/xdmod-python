@@ -21,7 +21,7 @@ Specific versions of this package are compatible with specific versions of Open 
 
 | `xdmod-data` version | Open XDMoD versions |
 | -------------------- | ------------------- |
-| 1.0.1                | 11.0.x, 10.5.x      |
+| 1.0.2, 1.0.1         | 11.0.x, 10.5.x      |
 | 1.0.0                | 10.5.x              |
 
 ## API Token Access

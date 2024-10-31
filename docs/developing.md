@@ -101,16 +101,19 @@
 1. If this is a minor or patch release to a version that is not the most recent major version,
     1. For each major version above this release's major version,
         1. Add the entry for this version to the `CHANGELOG.md`.
-        1. In the `README.md`, add an item to the top of the bulleted list for
-           the new version, making sure to replace the version number in the
-           link text and in the URL.
+        1. In the `README.md`:
+            1. Add an item to the top of the bulleted list for
+               the new version, making sure to replace the version number in
+               the link text and in the URL.
+            1. Update the Open XDMoD compatibility matrix.
 
 ## After release
 1. In a Pull Request to the `main` branch of `xdmod-data`:
     1. Make sure the version number is updated in `xdmod_data/__version__.py`
        to a development pre-release of the next version, e.g., `1.0.1.dev1`.
-    1. In `README.md`, under the main heading, in the sentence that begins, `This
-       documentation is for ...`, replace the version number in bold, e.g.:
+    1. In `README.md`, under the main heading, in the sentence that begins,
+       `This documentation is for ...`, replace the version number in bold,
+       e.g.:
         ```
         This documentation is for **v1.x.y (main development branch)**.
         ```
