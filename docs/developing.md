@@ -100,12 +100,14 @@
        release's section in `CHANGELOG.md`. Note that single newlines are
        interpreted as line breaks, so you may need to reformat the description
        to break the lines where you want them to break.
+    1. Where it says `Describe this release`, paste in the contents of the release's section in `CHANGELOG.md`.
     1. Where it says `Attach binaries`, attach the built distribution (the `.whl` file) that was uploaded to PyPI.
     1. Click `Publish release`.
     1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and close the milestone for the version.
 
 ## After release
-1. If this is a minor or patch release to a version that is not the most recent major version,
+1. If this is a minor or patch release to a version that is not the most recent
+   major version,
     1. For each major version above this release's major version, in a Pull
        Request,
         1. Add the entry for this version to the `CHANGELOG.md`.
@@ -121,10 +123,11 @@
        `This documentation is for ...`, replace the version number in bold,
        e.g.:
         ```
-        This documentation is for **v1.x.y (main development branch)**.
+        This documentation is for **v1.x.y (development branch)**.
         ```
-    1. Update `CHANGELOG.md` to add a section at the top called `v1.x.y (main
-       development branch)`, replacing `1` with the major version under
-       development.
-    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
-       and add a milestone for the version under development.
+    1. Update `CHANGELOG.md` to add a section at the top called
+       `v1.x.y (development branch)`, replacing `1` with the major version under
+       development (add `main` before `development branch` if it is also the
+       main development branch.
+1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
+   and add a milestone for the version under development.
