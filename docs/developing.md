@@ -106,7 +106,6 @@
     1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and close the milestone for the version.
 
 ## After release
-
 1. If this is a minor or patch release to a version that is not the most recent
    major version,
     1. For each major version above this release's major version, in a Pull
