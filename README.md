@@ -3,7 +3,7 @@ As part of the Data Analytics Framework for [XDMoD](https://open.xdmod.org), thi
 
 This documentation is for **v2.x.y (main development branch)**. For documentation of other versions:
 
-- [v1.0.2](https://github.com/ubccr/xdmod-data/tree/v1.0.2?tab=readme-ov-file#xdmod-data-v102)
+- [v1.0.2](https://github.com/ubccr/xdmod-data/tree/v1.0.2?tab=readme-ov-file#xdmod-data)
 - [v1.0.1](https://github.com/ubccr/xdmod-data/tree/v1.0.1?tab=readme-ov-file#xdmod-data)
 - [v1.0.0](https://github.com/ubccr/xdmod-data/tree/v1.0.0?tab=readme-ov-file#xdmod-data)
 - [v1.x.y (development branch)](https://github.com/ubccr/xdmod-data/tree/v1.x.y?tab=readme-ov-file#xdmod-data)

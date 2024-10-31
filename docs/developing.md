@@ -39,7 +39,6 @@
 1. Make a new branch of `xdmod-data` and:
     1. Make sure the version number is updated in `xdmod_data/__version__.py`.
         1. In `README.md`:
-        1. Update the version number in the main heading.
         1. Under the main heading,
             1. In the sentence that begins, `This documentation is for ...`,
                replace the version number in bold, e.g.:
@@ -110,15 +109,11 @@
 1. In a Pull Request to the `main` branch of `xdmod-data`:
     1. Make sure the version number is updated in `xdmod_data/__version__.py`
        to a development pre-release of the next version, e.g., `1.0.1.dev1`.
-    1. Update `README.md` to:
-        1. Update the version number in the main heading, e.g., `v1.x.y (main
-           development branch)`, replacing `1` with the major version under
-           development.
-        1. Under the main heading, in the sentence that begins, `This
-           documentation is for ...`, replace the version number in bold, e.g.:
-           ```
-           This documentation is for **v1.x.y (main development branch)**.
-           ```
+    1. In `README.md`, under the main heading, in the sentence that begins, `This
+       documentation is for ...`, replace the version number in bold, e.g.:
+        ```
+        This documentation is for **v1.x.y (main development branch)**.
+        ```
     1. Update `CHANGELOG.md` to add a section at the top called `v1.x.y (main
        development branch)`, replacing `1` with the major version under
        development.
