@@ -46,7 +46,7 @@
                number in bold in the sentence that begins `This documentation
                is for ...`, e.g.:
                 ```
-                This documentation is for **v1.0.2** of the package.
+                This documentation is for **v1.0.2**.
                 ```
         1. Update the Open XDMoD compatibility matrix.
     1. Update `CHANGELOG.md` to:
