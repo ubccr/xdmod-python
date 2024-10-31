@@ -42,9 +42,7 @@
         1. Update the version number in the main heading.
         1. Under the main heading,
             1. In the sentence that begins, `This documentation is for ...`,
-               replace `the **main development branch**` with the version
-               number in bold in the sentence that begins `This documentation
-               is for ...`, e.g.:
+               replace the version number in bold, e.g.:
                 ```
                 This documentation is for **v1.0.2**.
                 ```
