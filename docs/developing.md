@@ -101,6 +101,11 @@
 1. If this is a minor or patch release to a version that is not the most recent major version,
     1. For each major version above this release's major version,
         1. Add the entry for this version to the `CHANGELOG.md`.
+        1. In the `README.md`:
+            1. Add an item to the top of the bulleted list for
+               the new version, making sure to replace the version number in
+               the link text and in the URL.
+            1. Update the Open XDMoD compatibility matrix.
 
 ## After release
 1. Make a new branch of `xdmod-data` and:
