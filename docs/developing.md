@@ -39,6 +39,7 @@
 1. Make a new branch of `xdmod-data` and:
     1. Make sure the version number is updated in `xdmod_data/__version__.py`.
     1. In `README.md`:
+        1. Update the version number in the main heading.
         1. Under the main heading,
             1. In the sentence that begins, `This documentation is for ...`,
                replace `the **main development branch**` with the version
