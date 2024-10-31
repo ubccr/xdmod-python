@@ -1,2 +1,2 @@
 __title__ = 'xdmod-data'
-__version__ = '2.0.0-01'
+__version__ = '1.0.2.dev1'

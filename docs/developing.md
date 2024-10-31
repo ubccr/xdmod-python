@@ -90,7 +90,6 @@
     1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and close the milestone for the version.
 
 ## After release
-
 1. Make a new branch of `xdmod-data` and:
     1. Make sure the version number is updated in `xdmod_data/__version__.py` to a pre-release of the next version, e.g., `1.0.1-01`.
     1. Update `CHANGELOG.md` to add a section at the top called `Main development branch`.

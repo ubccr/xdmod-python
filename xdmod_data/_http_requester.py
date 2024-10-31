@@ -63,15 +63,12 @@ class _HttpRequester:
                     response = {'fields': line_json}
                 else:
                     data.append(line_json)
-                    if params['show_progress']:
-                        progress_msg = (
-                            'Got ' + str(i) + ' row' + ('' if i == 1 else 's')
-                            + '...'
-                        )
-                        print(progress_msg, end='\r')
+                    # Only print every 10,000 rows to avoid I/O rate errors.
+                    if params['show_progress'] and i % 10000 == 0:
+                        self.__print_progress_msg(i, '\r')
                 i += 1
             if params['show_progress']:
-                print(progress_msg + 'DONE')
+                self.__print_progress_msg(i, 'DONE\n')
         else:
             num_rows = limit
             offset = 0
@@ -83,16 +80,11 @@ class _HttpRequester:
                 partial_data = response['data']
                 data += partial_data
                 if params['show_progress']:
-                    progress_msg = (
-                        'Got ' + str(len(data)) + ' row'
-                        + ('' if len(data) == 1 else 's')
-                        + '...'
-                    )
-                    print(progress_msg, end='\r')
+                    self.__print_progress_msg(len(data), '\r')
                 num_rows = len(partial_data)
                 offset += limit
             if params['show_progress']:
-                print(progress_msg + 'DONE')
+                self.__print_progress_msg(len(data), 'DONE\n')
         return (data, response['fields'])
 
     def _request_filter_values(self, realm_id, dimension_id):
@@ -210,3 +202,10 @@ class _HttpRequester:
                 else:
                     raise
         return self.__raw_data_limit
+
+    def __print_progress_msg(self, num_rows, end='\n'):
+        progress_msg = (
+            'Got ' + str(num_rows) + ' row' + ('' if num_rows == 1 else 's')
+            + '...'
+        )
+        print(progress_msg, end=end)

@@ -1,8 +1,9 @@
 # xdmod-data Changelog
 
-## Main development branch
+## v1.x.y development branch
 
 - Document Open XDMoD compatibility in changelog ([\#31](https://github.com/ubccr/xdmod-data/pull/31)).
+- Fix IOPub error when showing progress with `get_raw_data()` ([\#37](https://github.com/ubccr/xdmod-data/pull/37)).
 
 ## v1.0.1 (2024-09-27)
 
