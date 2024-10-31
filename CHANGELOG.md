@@ -14,9 +14,6 @@ It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 - Document Open XDMoD compatibility in changelog ([\#31](https://github.com/ubccr/xdmod-data/pull/31)).
 - Fix IOPub error when showing progress with `get_raw_data()` ([\#39](https://github.com/ubccr/xdmod-data/pull/39)).
 
-- Document Open XDMoD compatibility in changelog ([\#31](https://github.com/ubccr/xdmod-data/pull/31)).
-- Fix IOPub error when showing progress with `get_raw_data()` ([\#38](https://github.com/ubccr/xdmod-data/pull/38)).
-
 ## v1.0.1 (2024-09-27)
 
 This release has bug fixes, performance improvements, and updates for compatibility, tests, and documentation.
