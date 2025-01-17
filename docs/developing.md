@@ -133,7 +133,7 @@
     1. Create a branch off `main` for the previous major version called, e.g.,
        `v1.x.y`.
     1. In that branch, make a PR that updates
-       `.github/workflows/python-package.yml` to add the branch to the arrays
+       `.github/workflows/xdmod-data.yml` to add the branch to the arrays
        under the `on` section.
 1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
    and add a milestone for the version under development.
