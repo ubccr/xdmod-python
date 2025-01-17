@@ -2,8 +2,7 @@
 
 ## v1.x.y (development branch)
 
-- Prepare for v1.0.3 development ([\#43](https://github.com/ubccr/xdmod-data/pull/43)).
-- Prepare for v1.1.0 development ([\#](https://github.com/ubccr/xdmod-data/pull/)).
+- Prepare for v1.1.0 development ([\#44](https://github.com/ubccr/xdmod-data/pull/44)).
 
 ## v1.0.2 (2024-10-31)
 
