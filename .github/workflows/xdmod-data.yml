@@ -12,7 +12,7 @@ on:
     - "main"
     - "v1.x.y"
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
