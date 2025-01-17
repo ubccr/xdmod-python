@@ -130,7 +130,7 @@
        development (add `main` before `development branch` if it is also the
        main development branch.
 1. If this is a new major version,
-    1. Create a branch off main for the previous major version called, e.g.,
+    1. Create a branch off `main` for the previous major version called, e.g.,
        `v1.x.y`.
     1. In that branch, make a PR that updates
        `.github/workflows/python-package.yml` to add the branch to the arrays
