@@ -5,9 +5,15 @@ name: Python package
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [
+      "main",
+      "v1.x.y"
+    ]
   pull_request:
-    branches: [ "main" ]
+    branches: [
+      "main",
+      "v1.x.y"
+    ]
 
 jobs:
   build:
