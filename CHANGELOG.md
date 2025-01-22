@@ -5,6 +5,7 @@
 - Prepare for v2.0.0 development ([\#42](https://github.com/ubccr/xdmod-data/pull/42)).
 - Implement 100% test coverage ([\#27](https://github.com/ubccr/xdmod-data/pull/27)).
 - Update Flake8 rules ([\#28](https://github.com/ubccr/xdmod-data/pull/28)).
+- Add stub CircleCI config ([\#48](https://github.com/ubccr/xdmod-data/pull/48)).
 
 ## v1.0.2 (2024-10-31)
 
