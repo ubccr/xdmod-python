@@ -28,7 +28,7 @@ METHOD_PARAMS = {
     'describe_realms': (),
     'describe_metrics': ('realm',),
     'describe_dimensions': ('realm',),
-    'get_filter_values': ('realm', 'dimension',),
+    'get_filter_values': ('realm', 'dimension'),
     'describe_raw_realms': (),
     'describe_raw_fields': ('realm',),
 }
@@ -53,7 +53,8 @@ KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     'dimension': (INVALID_STR, r'Dimension .* not found'),
     'filter_key': ({INVALID_STR: INVALID_STR}, r'Dimension .* not found'),
     'filter_value': (
-        {VALID_DIMENSION: INVALID_STR}, r'Filter value .* not found'
+        {VALID_DIMENSION: INVALID_STR},
+        r'Filter value .* not found',
     ),
     'dataset_type': (INVALID_STR, 'Invalid value for `dataset_type`'),
     'aggregation_unit': (INVALID_STR, 'Invalid value for `aggregation_unit`'),
@@ -281,7 +282,7 @@ get_data_return_value_test_params = {
         (
             {
                 'dimension': 'Resource',
-                'filters': {'Service Provider': 'StonyBrook'}
+                'filters': {'Service Provider': 'StonyBrook'},
             },
             'Resource',
             0,
@@ -352,7 +353,7 @@ get_data_aggregate_return_value_test_params = {
         (
             {
                 'dimension': 'Resource',
-                'filters': {'Service Provider': 'StonyBrook'}
+                'filters': {'Service Provider': 'StonyBrook'},
             },
             'Resource',
             0,

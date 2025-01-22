@@ -121,10 +121,11 @@ def test_get_data_filter_user(valid_dw):
 @pytest.mark.parametrize(
     'duration,aggregation_unit,data_file',
     [
+        (('2023-01-01', '2023-12-31'), 'Month', 'jobs-2023-months.csv'),
         (('2023-01-01', '2023-12-31'), 'Quarter', 'jobs-2023-quarters.csv'),
         (('2022-01-01', '2023-12-31'), 'Year', 'jobs-2022-2023-years.csv'),
     ],
-    ids=('quarter', 'year'),
+    ids=('month', 'quarter', 'year'),
 )
 def test_get_data(valid_dw, duration, aggregation_unit, data_file):
     data = valid_dw.get_data(

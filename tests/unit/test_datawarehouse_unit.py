@@ -40,14 +40,14 @@ def test___enter___RuntimeError_xdmod_host_malformed():
     with pytest.raises(
         (
             requests.exceptions.InvalidURL,
-            requests.exceptions.MissingSchema
+            requests.exceptions.MissingSchema,
         ),
         match=(
             r'(Invalid URL \'.*\': No host supplied|'
-            + r'Invalid URL \'https:\?Bearer=' + INVALID_STR + '\': '
+            + r'Invalid URL \'https:\?Bearer=' + INVALID_STR + "': "
             + r'No schema supplied. Perhaps you meant http://https:\?Bearer='
             + INVALID_STR + r'\?)'
-        )
+        ),
     ):
         with DataWarehouse('https://'):
             pass  # pragma: no cover
@@ -64,7 +64,7 @@ def test___enter___RuntimeError_xdmod_host_unsupported_protocol():
     invalid_host = INVALID_STR + '://' + INVALID_STR
     with pytest.raises(
         requests.exceptions.InvalidSchema,
-        match='No connection adapters were found for \'' + invalid_host
+        match="No connection adapters were found for '" + invalid_host,
     ):
         with DataWarehouse(invalid_host):
             pass  # pragma: no cover
@@ -74,7 +74,7 @@ def test___enter___RuntimeError_401():
     with pytest.raises(
         RuntimeError,
         match='Error 401: Make sure XDMOD_API_TOKEN is set'
-        + ' to a valid API token.'
+        + ' to a valid API token.',
     ):
         with DataWarehouse(VALID_XDMOD_URL) as dw:
             dw.describe_realms()
