@@ -1,0 +1,27 @@
+version: 2.1
+jobs:
+  build:
+    parameters:
+      python-version:
+        type: string
+    docker:
+      - image: cimg/python:#{python-version}
+    steps:
+      - checkout
+      - run:
+          name: Lint with Flake8
+          command: |
+            flake8 . --max-complexity=10 --show-source --exclude __init__.py
+workflows:
+  full-build:
+    jobs:
+      - build:
+          matrix:
+            parameters:
+              python-version:
+                - "3.13"
+                - "3.12"
+                - "3.11"
+                - "3.10"
+                - "3.9"
+                - "3.8"
