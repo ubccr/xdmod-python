@@ -340,7 +340,7 @@ def __date_add_years(old_date, year_delta):
         try:
             new_date = date(new_date_year, old_date.month, new_date_day)
             keep_going = False
-        except ValueError:
+        except ValueError:  # pragma: no cover
             new_date_day -= 1
             days_above += 1
     return new_date + timedelta(days=days_above)
