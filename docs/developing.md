@@ -11,9 +11,9 @@
     ```
     python3 -m pip install --force-reinstall -e /path/to/your/xdmod-data
     ```
-1. Install `python-dotenv` and `pytest`:
+1. Install `python-dotenv`, `pytest`, and `coverage`:
     ```
-    python3 -m pip install --upgrade python-dotenv pytest
+    python3 -m pip install --upgrade python-dotenv pytest coverage
     ```
 1. Create an empty file in your home directory at `~/.xdmod-data-token` with permissions set to 600.
 1. With an [ACCESS XDMoD](https://xdmod.access-ci.org) account with "User" as the Top Role, create an API token if you do not already have one (sign in and click My Profile -> API Token).
@@ -24,7 +24,11 @@
 1. Change directories to your local development copy of `xdmod-data`.
 1. Run the following command and make sure all the tests pass:
     ```
-    pytest -vvs -o log_cli=true tests/
+    coverage run -m pytest -vvs -o log_cli=true tests/
+    ```
+1. Run the following command and make sure the code is 100% covered by tests:
+    ```
+    coverage report -m
     ```
 1. Downgrade to the minimum version of the dependencies. Replace the version numbers below with the values from `setup.cfg`.
     ```
@@ -32,7 +36,11 @@
     ```
 1. Run the following command again and make sure all the tests pass (Deprecation warnings in `urllib3` are OK).
     ```
-    pytest -vvs -o log_cli=true tests/
+    coverage run -m pytest -vvs -o log_cli=true tests/
+    ```
+1. Run the following command and make sure the code is 100% covered by tests:
+    ```
+    coverage report -m
     ```
 
 ## Releasing a new version
@@ -137,3 +145,9 @@
        under the `on` section.
 1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
    and add a milestone for the version under development.
+1. Make a new branch of `xdmod-data` and:
+    1. Make sure the version number is updated in `xdmod_data/__version__.py` to a pre-release of the next version, e.g., `1.0.1-01`.
+    1. Update `CHANGELOG.md` to add a section at the top called `Main development branch`.
+    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and add a milestone for the version.
+    1. Create a Pull Request for the new version.
+    1. Once the Pull Request is approved, merge it into `main`.

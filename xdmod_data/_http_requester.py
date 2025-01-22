@@ -69,7 +69,7 @@ class _HttpRequester:
                 i += 1
             if params['show_progress']:
                 self.__print_progress_msg(i, 'DONE\n')
-        else:
+        else:  # pragma: no cover
             num_rows = limit
             offset = 0
             while num_rows == limit:
@@ -115,7 +115,7 @@ class _HttpRequester:
     def __assert_connection_to_xdmod_host(self):
         try:
             self.__request()
-        except RuntimeError as e:
+        except RuntimeError as e:  # pragma: no cover
             raise RuntimeError(
                 'Could not connect to xdmod_host \'' + self.__xdmod_host
                 + '\': ' + str(e)
@@ -140,7 +140,7 @@ class _HttpRequester:
             try:
                 response_json = json.loads(response.text)
                 msg = ': ' + response_json['message']
-            except json.JSONDecodeError:
+            except json.JSONDecodeError:  # pragma: no cover
                 pass
             if response.status_code == 401:
                 msg = (
@@ -151,7 +151,7 @@ class _HttpRequester:
             ) from None
         if stream:
             return response.iter_lines()
-        else:
+        else:  # pragma: no cover
             return response.text
 
     def __get_data_post_fields(self, params):
@@ -187,19 +187,19 @@ class _HttpRequester:
                 )
         return urlencode(results)
 
-    # Once XDMoD 10.5 is no longer supported, there will be no need for this
-    # method.
+    # Once XDMoD 10.5 is no longer supported,
+    # there will be no need for this method.
     def __get_raw_data_limit(self):
         if self.__raw_data_limit is None:
             try:
                 response = self._request_json(
                     '/rest/v1/warehouse/raw-data/limit'
                 )
-                self.__raw_data_limit = int(response['data'])
+                self.__raw_data_limit = int(response['data'])  # pragma: no cover
             except RuntimeError as e:
                 if '404' in str(e):
                     self.__raw_data_limit = 'NA'
-                else:
+                else:  # pragma: no cover
                     raise
         return self.__raw_data_limit
 
