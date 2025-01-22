@@ -257,7 +257,7 @@ def __get_dates_from_duration(duration):
     if today.month == 1:  # pragma: no cover
         last_full_month_start_year = today.year - 1
         last_full_month_start_month = 12
-    else:
+    else:  # pragma: no cover
         last_full_month_start_year = today.year
         last_full_month_start_month = today.month - 1
     last_full_month_start = date(
