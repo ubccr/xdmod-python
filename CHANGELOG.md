@@ -3,7 +3,7 @@
 ## v1.x.y (development branch)
 
 - Prepare for v1.1.0 development ([\#44](https://github.com/ubccr/xdmod-data/pull/44)).
-- Implement 100% test coverage ([\#](https://github.com/ubccr/xdmod-data/pull/)).
+- Implement 100% test coverage ([\#45](https://github.com/ubccr/xdmod-data/pull/45)).
 
 ## v1.0.2 (2024-10-31)
 
