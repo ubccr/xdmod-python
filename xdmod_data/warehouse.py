@@ -441,3 +441,40 @@ class DataWarehouse:
             ('id', 'label', 'description'),
             'id',
         )
+
+    def __compliance(self, timeframe):
+        response = self.__http_requester._request_json(
+            '/controllers/compliance.php',
+            {'timeframe_mode': timeframe},
+        )
+        return response
+
+    def resources(self):
+        """Get a data series describing the resources that are configured in
+           XDMoD and the type of each resource (High-performance computing, Disk storage,
+           etc).
+
+           Returns
+           -------
+           pandas.core.series.Series
+
+           Raises
+           ------
+           RuntimeError
+               If this method is called outside the runtime context or if
+               there is an error requesting data from the warehouse.
+        """
+        _validator._assert_runtime_context(self.__in_runtime_context)
+        names = []
+        types = []
+        resource_ids = []
+        cdata = self.__compliance('to_date')
+        for resource in cdata['metaData']['fields']:
+            if resource['name'] == 'requirement':
+                continue
+            names.append(
+                resource['header'][:-7].split('>')[1].replace('-', ' ')
+            )
+            types.append(resource['status'].split('|')[0].strip())
+            resource_ids.append(resource['resource_id'])
+        return pd.Series(data=types, index=names)
