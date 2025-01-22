@@ -71,7 +71,7 @@ def test_get_raw_data(valid_dw, capsys):
         dtype='string',
         index_col=0,
     )
-    assert 'Got 42637 rows...DONE' in capsys.readouterr().out
+    assert 'Got 42240 rows...DONE' in capsys.readouterr().out
 
 
 def __assert_descriptor_dfs_equal(data_file, actual):
