@@ -74,7 +74,7 @@ def __parse_timeseries_date_string(date_string):
         (date_string, format_) = __parse_quarter_date_string(date_string)
     else:  # pragma: no cover
         raise Exception(
-            'Unsupported date specification ' + date_string + '.'
+            'Unsupported date specification ' + date_string + '.',
         )
     return datetime.strptime(date_string, format_)
 
@@ -134,7 +134,7 @@ def __parse_quarter_date_string(date_string):
     else:  # pragma: no cover
         raise Exception(
             'Unsupported date quarter specification '
-            + date_string + '.'
+            + date_string + '.',
         )
     date_string = year + '-' + month + '-01'
     format_ = '%Y-%m-%d'
