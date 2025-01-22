@@ -195,8 +195,9 @@ class _HttpRequester:
                 response = self._request_json(
                     '/rest/v1/warehouse/raw-data/limit',
                 )
-                # pragma: no cover
-                self.__raw_data_limit = int(response['data'])
+                self.__raw_data_limit = int(
+                    response['data'],
+                )  # pragma: no cover
             except RuntimeError as e:
                 if '404' in str(e):
                     self.__raw_data_limit = 'NA'
