@@ -15,7 +15,7 @@
 <!--- Include details of your testing environment, and the tests you ran to -->
 <!--- see how your change affects other areas of the code, etc. -->
 
-## Types of changes
+## Type of change:
 <!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
 - [ ] Refactoring / documentation update (non-breaking change which does not change functionality)
 - [ ] Bug fix (non-breaking change which fixes an issue)
