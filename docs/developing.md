@@ -43,6 +43,22 @@
     coverage report -m
     ```
 
+## Linting the code
+1. Start up a virtual environment, e.g.:
+    ```
+    python3 -m venv ~/xdmod-data-test-env
+    source ~/xdmod-data-test-env/bin/activate
+    ```
+    Your command prompt should now start with `(xdmod-data-test-env)`.
+1. Install Flake8 and additional packages
+    ```
+    python3 -m pip install flake8 flake8-quotes flake8-commas
+    ```
+1. Run Flake8
+    ```
+    flake8 --max-complexity=10 --show-source --exclude __init__.py /path/to/your/xdmod-data
+    ```
+
 ## Releasing a new version
 1. Make a new branch of `xdmod-data` and:
     1. Make sure the version number is updated in `xdmod_data/__version__.py`.

@@ -21,13 +21,13 @@ class _Descriptors:
         )
         if response['totalCount'] != 1:  # pragma: no cover
             raise RuntimeError(
-                'Descriptor received with unexpected structure.'
+                'Descriptor received with unexpected structure.',
             )
         return self.__deserialize_aggregate(response['data'][0]['realms'])
 
     def __request_raw(self):
         response = self.__http_requester._request_json(
-            '/rest/v1/warehouse/export/realms'
+            '/rest/v1/warehouse/export/realms',
         )
         return self.__deserialize_raw(response['data'])
 
