@@ -36,7 +36,11 @@
     ```
 1. Run the following command again and make sure all the tests pass (Deprecation warnings in `urllib3` are OK).
     ```
-    pytest -vvs -o log_cli=true tests/
+    coverage run -m pytest -vvs -o log_cli=true tests/
+    ```
+1. Run the following command and make sure the code is 100% covered by tests:
+    ```
+    coverage report -m
     ```
 
 ## Releasing a new version
