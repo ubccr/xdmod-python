@@ -1,0 +1,17 @@
+id,label,description
+none,None,Summarizes Jobs data reported to the Screwdriver database.
+nsfdirectorate,Decanal Unit,Decanal Unit
+parentscience,Department,Department
+gpucount,GPU Count,A categorization of jobs into discrete groups based on the number of GPUs used by each job.
+jobsize,Job Size,A categorization of jobs into discrete groups based on the number of cores used by each job.
+jobwaittime,Job Wait Time,A categorization of jobs into discrete groups based on the total linear time each job waited.
+jobwalltime,Job Wall Time,A categorization of jobs into discrete groups based on the total linear time each job took to execute.
+nodecount,Node Count,A categorization of jobs into discrete groups based on node count.
+pi,PI,The principal investigator of a project.
+fieldofscience,PI Group,PI Group
+qos,QOS,The quality of service of the job
+queue,Queue,Queue pertains to the low level job queues on each resource.
+resource,Resource,A resource is a remote computer that can run jobs.
+resource_type,Resource Type,A categorization of resources into by their general capabilities.
+username,System Username,The specific system username of the users who ran jobs.
+person,User,"A person who is on a PIs allocation, hence able run jobs on resources."
