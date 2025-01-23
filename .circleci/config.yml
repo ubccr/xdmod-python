@@ -32,8 +32,8 @@ jobs:
       - run:
           name: Test against each XDMoD web server version
           command: |
-            yq --version
-            yq '.services | keys' .circleci/docker-compose.yml
+            declare -a portal_versions=$(yq '.services | keys' .circleci/docker-compose.yml)
+            echo $portal_versions
       - run:
           name: Make sure 100% code coverage
           command: python3 -m coverage report -m --fail-under=100
