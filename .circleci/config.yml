@@ -33,7 +33,7 @@ jobs:
           name: Test against each XDMoD web server version
           command: |
             cat .circleci/docker-compose.yml
-            yq '.services | keys[]' .circleci/docker-compose.yml
+            yq '.services' .circleci/docker-compose.yml
       - run:
           name: Make sure 100% code coverage
           command: python3 -m coverage report -m --fail-under=100
@@ -43,10 +43,7 @@ workflows:
       - build:
           matrix:
             parameters:
+              # Test the minimum supported and latest Python versions:
               python-version:
-                - "3.13"
-                - "3.12"
-                - "3.11"
-                - "3.10"
-                - "3.9"
                 - "3.8"
+                - "3.13"
