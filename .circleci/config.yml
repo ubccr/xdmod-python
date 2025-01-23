@@ -11,6 +11,20 @@ jobs:
       - image: cimg/python:<< parameters.python-version >>
     steps:
       - checkout
+
+      - run:
+          name: Install yq
+          command: |
+            sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+            sudo chmod +x /usr/bin/yq
+      - run:
+          name: Test against each XDMoD web server version
+          command: |
+            yq '.services | keys.[]' .circleci/docker-compose.yml
+            echo 'before'
+            declare -a portal_versions=$(yq '.services | keys.[]' .circleci/docker-compose.yml)
+            echo 'after'
+
       - run:
           name: Install dependencies
           command: |
