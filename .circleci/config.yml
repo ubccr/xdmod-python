@@ -25,15 +25,6 @@ jobs:
           name: Spin up containers for testing against different XDMoD web server versions
           command: docker compose -f .circleci/docker-compose.yml up -d
       - run:
-          name: Create a file with 10,000 users
-          command: |
-            # This allows us to test filters that have more than 10,000 values
-            for i in {1..10000}; do
-              # Pick a timestamp such that the jobs span multiple quarters
-              unix_timestamp=$((1498866840 + $i * 2))
-              echo "$i|2269212|frearson|black|banana-cream|caste|caste|45580|user$i|379330|$(date --utc +'%Y-%m-%dT%H:%M:%S' -d @$unix_timestamp)|$(date --utc +'%Y-%m-%dT%H:%M:%S' -d @$(($unix_timestamp + 1)))|$(date --utc +'%Y-%m-%dT%H:%M:%S' -d @$(($unix_timestamp + 2)))|$(date --utc +'%Y-%m-%dT%H:%M:%S' -d @$(($unix_timestamp + 3)))|2-23:24:40|0:0|COMPLETED|1|16|16|62.50Gn|cpu=16,mem=62.50G,node=1|billing=16,cpu=16,mem=62.50G,node=1|3-00:00:00|cpn-m25-02-01|310f6011b278ebb15df2d199e0119de78d261d8c478a203abc97dc3dda7702ae" >> 10000users.log
-            done
-      - run:
           name: Install yq
           command: |
             sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
@@ -41,7 +32,7 @@ jobs:
       - run:
           name: Test against each XDMoD web server version
           command: |
-            declare -a portal_versions=$(yq '.services | keys[]' .circleci/docker-compose.yml)
+            yq '.services | keys[]' .circleci/docker-compose.yml
       - run:
           name: Make sure 100% code coverage
           command: python3 -m coverage report -m --fail-under=100
