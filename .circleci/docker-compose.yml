@@ -1,7 +1,7 @@
 services:
-  xdmod10.5:
-    container_name: xdmod10.5
-    image: ${XDMOD_10_5_IMAGE}
+  xdmod-main-dev:
+    container_name: xdmod-main-dev
+    image: ${XDMOD_11_0_IMAGE}
     tty: true
     ports:
       - 8081:443
@@ -11,9 +11,9 @@ services:
     tty: true
     ports:
       - 8082:443
-  xdmod-main-dev:
-    container_name: xdmod-main-dev
-    image: ${XDMOD_11_0_IMAGE}
+  xdmod10.5:
+    container_name: xdmod10.5
+    image: ${XDMOD_10_5_IMAGE}
     tty: true
     ports:
       - 8083:443
