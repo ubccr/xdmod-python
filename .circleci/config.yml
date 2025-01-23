@@ -17,7 +17,7 @@ jobs:
       - run:
           name: Lint with Flake8
           command: |
-            flake8 . --max-complexity=10 --show-source --exclude __init__.py
+            python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py
 workflows:
   full-build:
     jobs:
