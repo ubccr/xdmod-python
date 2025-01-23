@@ -5,3 +5,15 @@ services:
     tty: true
     ports:
       - 8081:443
+  xdmod11.0:
+    container_name: xdmod11.0
+    image: tools-ext-01.ccr.xdmod.org/xdmod:x86_64-rockylinux8.9.20231119-v11.0.0-1.0-03
+    tty: true
+    ports:
+      - 8082:443
+  xdmod-main-dev:
+    container_name: xdmod-main-dev
+    image: tools-ext-01.ccr.xdmod.org/xdmod:x86_64-rockylinux8.9.20231119-v11.0.0-1.0-03
+    tty: true
+    ports:
+      - 8083:443
