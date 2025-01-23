@@ -20,6 +20,8 @@ jobs:
       - run:
           name: Test against each XDMoD web server version
           command: |
+            which yq
+            yq --version
             yq '.services | keys.[]' .circleci/docker-compose.yml
             echo 'before'
             declare -a portal_versions=$(yq '.services | keys.[]' .circleci/docker-compose.yml)
