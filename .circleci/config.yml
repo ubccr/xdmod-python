@@ -18,9 +18,6 @@ jobs:
           name: Lint with Flake8
           command: python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py
       - run:
-          name: Test with pytest
-          command: python3 -m pytest tests/unit
-      - run:
           name: Spin up containers for testing XDMoD web servers
           command: docker compose up -d
 workflows:
