@@ -5,13 +5,21 @@ jobs:
       python-version:
         type: string
     docker:
-      - image: cimg/python:#{python-version}
+      - image: cimg/python:<< parameters.python-version >>
     steps:
       - checkout
       - run:
-          name: Lint with Flake8
+          name: Install dependencies
           command: |
-            flake8 . --max-complexity=10 --show-source --exclude __init__.py
+            python -m pip install --upgrade pip
+            python -m pip install flake8 flake8-commas flake8-quotes pytest
+            python -m pip install -e .
+      - run:
+          name: Lint with Flake8
+          command: python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py
+      - run:
+          name: Test with pytest
+          command: python3 -m pytest tests/unit
 workflows:
   full-build:
     jobs:
