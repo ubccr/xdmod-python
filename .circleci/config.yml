@@ -25,23 +25,29 @@ jobs:
           name: Spin up containers for testing against different XDMoD web server versions
           command: docker compose -f .circleci/docker-compose.yml up -d
       - run:
-          name: Install yq
-          command: |
-            sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
-            sudo chmod +x /usr/bin/yq
-      - run:
           name: Test against each XDMoD web server version
           command: |
             declare -a portal_versions=$(yq '.services | keys | .[]' .circleci/docker-compose.yml)
             for version in $portal_versions; do
-              # Copy certificate from container
+              if [ "$version" = 'xdmod-main-dev' ]; then
+                # Install and run the latest development version of the XDMoD web server.
+                docker exec $version bash -c 'git clone --depth=1 https://github.com/ubccr/xdmod.git /root/xdmod'
+                docker exec -w /root/xdmod $version bash -c 'composer install'
+                docker exec -w /root/xdmod $version bash -c '/root/bin/buildrpm xdmod'
+                docker exec -w /root/xdmod $version bash -c 'XDMOD_TEST_MODE=upgrade ./tests/ci/bootstrap.sh'
+                docker exec -w /root/xdmod $version bash -c './tests/ci/validate.sh'
+              else
+                # Run the XDMoD web server.
+                docker exec $version /root/bin/services start
+              fi
+              # Copy certificate from container.
               docker cp $version:/etc/pki/tls/certs/localhost.crt $version.crt
               export CURL_CA_BUNDLE="$version.crt"
-              # Determine XDMoD host
+              # Set XDMoD host.
               ports=$(yq ".services.\"$version\".ports[0]" .circleci/docker-compose.yml)
               port=$(echo $ports | cut -d ':' -f 1)
               export XDMOD_HOST="https://localhost:$port"
-              # Get XDMoD API token
+              # Set XDMoD API token.
               token=$(curl \
                 -X POST \
                 -c xdmod.cookie \
@@ -56,14 +62,16 @@ jobs:
                 $XDMOD_HOST/rest/users/current/api/token?token=$token \
                 | jq -r '.data.token' \
                 >> ~/.xdmod-data-token
-              # Copy the 10,000 users file into the container and shred it
+              # Copy the 10,000 users file into the container and shred it.
+              # We use this file so we can test filters with more than 10,000
+              # values and date ranges that span multiple quarters.
               docker cp 10000users.log $version:10000users.log
               docker exec $version xdmod-shredder -r frearson -f slurm -i 10000users.log
-              # Ingest and aggregate
+              # Ingest and aggregate.
               date=$(date --utc +%Y-%m-%d)
               docker exec $version xdmod-ingestor --ingest
               docker exec $version xdmod-ingestor --aggregate=job --last-modified-start-date $date
-              # Run tests
+              # Run tests.
               export XDMOD_VERSION="$version"
               python -m coverage run --branch --append -m pytest -vvs -o log_cli=true tests/
             done

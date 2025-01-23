@@ -5,23 +5,15 @@ services:
     tty: true
     ports:
       - 8081:443
-    command: /root/bin/services start
   xdmod11.0:
     container_name: xdmod11.0
     image: ${XDMOD_11_0_IMAGE}
     tty: true
     ports:
       - 8082:443
-    command: /root/bin/services start
   xdmod-main-dev:
     container_name: xdmod-main-dev
     image: ${XDMOD_11_0_IMAGE}
     tty: true
     ports:
       - 8083:443
-    command: |
-      git clone --depth=1 https://github.com/ubccr/xdmod.git /root/xdmod
-      composer install
-      /root/bin/buildrpm xdmod
-      XDMOD_TEST_MODE=upgrade ./tests/ci/bootstrap.sh
-      ./tests/ci/validate.sh
