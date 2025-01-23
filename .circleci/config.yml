@@ -19,7 +19,7 @@ jobs:
           command: python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py
       - run:
           name: Test with pytest
-          command: pytest tests/unit
+          command: python3 -m pytest tests/unit
 workflows:
   full-build:
     jobs:
