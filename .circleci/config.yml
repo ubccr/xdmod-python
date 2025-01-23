@@ -5,7 +5,7 @@ jobs:
       python-version:
         type: string
     docker:
-      - image: cimg/python:#{python-version}
+      - image: cimg/python:<< parameters.python-version >>
     steps:
       - checkout
       - run:
