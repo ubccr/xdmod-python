@@ -17,6 +17,7 @@ jobs:
       - run:
           name: Lint with Flake8
           command: python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py
+      - setup_remote_docker
       - run:
           name: Spin up containers for testing XDMoD web servers
           command: docker compose -f .circleci/docker-compose.yml up -d
