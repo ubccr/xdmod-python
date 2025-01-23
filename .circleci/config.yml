@@ -1,0 +1,35 @@
+version: 2.1
+jobs:
+  build:
+    parameters:
+      python-version:
+        type: string
+    docker:
+      - image: cimg/python:<< parameters.python-version >>
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            python -m pip install flake8 flake8-commas flake8-quotes pytest
+            python -m pip install -e .
+      - run:
+          name: Lint with Flake8
+          command: python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py
+      - run:
+          name: Test with pytest
+          command: python3 -m pytest tests/unit
+workflows:
+  full-build:
+    jobs:
+      - build:
+          matrix:
+            parameters:
+              python-version:
+                - "3.13"
+                - "3.12"
+                - "3.11"
+                - "3.10"
+                - "3.9"
+                - "3.8"
