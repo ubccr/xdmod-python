@@ -19,7 +19,7 @@ jobs:
           command: python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py
       - run:
           name: Spin up containers for testing XDMoD web servers
-          command: docker compose up -d -f .circleci/docker-compose.yml
+          command: docker compose -f .circleci/docker-compose.yml up -d
 workflows:
   full-build:
     jobs:
