@@ -40,15 +40,13 @@ jobs:
                 # Run the XDMoD web server.
                 docker exec $version /root/bin/services start
               fi
-              # Copy certificate from container.
-              docker cp $version:/etc/pki/tls/certs/localhost.crt $version.crt
-              export CURL_CA_BUNDLE="$version.crt"
               # Set XDMoD host.
               ports=$(yq ".services.\"$version\".ports[0]" .circleci/docker-compose.yml)
               port=$(echo $ports | cut -d ':' -f 1)
               export XDMOD_HOST="https://localhost:$port"
               # Set XDMoD API token.
               token=$(curl \
+                -k \
                 -X POST \
                 -c xdmod.cookie \
                 -d 'username=normaluser&password=normaluser' \
@@ -57,6 +55,7 @@ jobs:
               )
               echo -n 'XDMOD_API_TOKEN=' > ~/.xdmod-data-token
               curl \
+                -k \
                 -X POST \
                 -b xdmod.cookie \
                 $XDMOD_HOST/rest/users/current/api/token?token=$token \
