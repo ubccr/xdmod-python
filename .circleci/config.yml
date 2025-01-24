@@ -25,7 +25,7 @@ jobs:
               docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade flake8 flake8-commas flake8-quotes'
               docker exec -w /home/circleci/project $python_container bash -c 'python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py'
               docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install -e .'
-              docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade pytest coverage'
+              docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade python-dotenv pytest coverage'
             done
             # Set up XDMoD web server containers.
             for xdmod_container in $xdmod_containers; do
