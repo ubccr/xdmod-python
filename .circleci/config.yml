@@ -16,8 +16,8 @@ jobs:
           command: |
             set -x
             docker compose -f .circleci/docker-compose.yml up -d
-            declare -a python_containers=$(yq '.services | keys | .[] | select(test('python-*'))' .circleci/docker-compose.yml)
-            declare -a xdmod_containers=$(yq '.services | keys | .[] | select(test('xdmod*'))' .circleci/docker-compose.yml)
+            declare -a python_containers=$(yq '.services | keys | .[] | select(. == "python-*")' .circleci/docker-compose.yml)
+            declare -a xdmod_containers=$(yq '.services | keys | .[] | select(. == "xdmod*")' .circleci/docker-compose.yml)
             # Install dependencies in the Python containers and lint with Flake8.
             for container in $python_containers; do
               docker cp . $container:/root/project
