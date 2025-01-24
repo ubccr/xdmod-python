@@ -13,11 +13,11 @@ services:
     container_name: xdmod-main-dev
     image: ${XDMOD_11_0_IMAGE}
     tty: true
-  xdmod11.0:
-    container_name: xdmod11.0
+  xdmod-11-0:
+    container_name: xdmod-11-0
     image: ${XDMOD_11_0_IMAGE}
     tty: true
-  xdmod10.5:
-    container_name: xdmod10.5
+  xdmod-10-5:
+    container_name: xdmod-10-5
     image: ${XDMOD_10_5_IMAGE}
     tty: true
