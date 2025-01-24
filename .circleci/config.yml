@@ -68,7 +68,7 @@ jobs:
                 docker cp $xdmod_container.crt $python_container:.
                 # Get XDMoD API token.
                 token=$(docker exec \
-                  -e CURL_CA_BUNDLE="$xdmod_container.crt"
+                  -e CURL_CA_BUNDLE="$xdmod_container.crt" \
                   $python_container \
                   bash -c "curl \
                     -sS \
