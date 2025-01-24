@@ -7,6 +7,7 @@
 - Update Flake8 rules ([\#46](https://github.com/ubccr/xdmod-data/pull/46)).
 - Change to using CircleCI instead of GitHub Actions for continuous integration ([\#50](https://github.com/ubccr/xdmod-data/pull/50)).
 - Set up Docker Compose for CI testing ([\#53](https://github.com/ubccr/xdmod-data/pull/53)).
+- Add ability to authenticate with a JWT loaded from a file ([\#54](https://github.com/ubccr/xdmod-data/pull/54)).
 
 ## v1.0.2 (2024-10-31)
 
