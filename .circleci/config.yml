@@ -82,13 +82,13 @@ jobs:
                 docker exec \
                   -e CURL_CA_BUNDLE="$xdmod_container.crt" \
                   $python_container \
-                  bash -c 'curl \
+                  bash -c "curl \
                     -sS \
                     -X POST \
                     -b xdmod.cookie \
                     https://$xdmod_container/rest/users/current/api/token?token=$token \
-                    | jq -r ".data.token" \
-                    >> ~/.xdmod-data-token'
+                    | jq -r '.data.token' \
+                    >> ~/.xdmod-data-token"
                 # Run tests.
                 docker exec \
                   -e CURL_CA_BUNDLE="$xdmod_container.crt" \
