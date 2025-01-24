@@ -46,7 +46,7 @@ jobs:
               # Copy the 10,000 users file into the container and shred it.
               # We use this file so we can test filters with more than 10,000
               # values and date ranges that span multiple quarters.
-              docker cp tests/ci/artifacts/10000users.log $xdmod_container:
+              docker cp tests/ci/artifacts/10000users.log $xdmod_container:.
               docker exec $xdmod_container xdmod-shredder -r frearson -f slurm -i 10000users.log
               # Ingest and aggregate.
               date=$(date --utc +%Y-%m-%d)
@@ -58,7 +58,7 @@ jobs:
               for xdmod_container in $xdmod_containers; do
                 # Copy certificate for doing cURL requests.
                 docker cp $xdmod_container:/etc/pki/tls/certs/$xdmod_container.crt .
-                docker cp $xdmod_container.crt $python_container:
+                docker cp $xdmod_container.crt $python_container:.
                 # Set XDMoD host.
                 export XDMOD_HOST="https://$xdmod_container"
                 # Set XDMoD API token.
