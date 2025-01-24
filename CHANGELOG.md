@@ -9,6 +9,7 @@
   ([\#50](https://github.com/ubccr/xdmod-data/pull/50),
   [\#53](https://github.com/ubccr/xdmod-data/pull/53),
   [\#56](https://github.com/ubccr/xdmod-data/pull/56)).
+- Add ability to authenticate with a JWT loaded from a file ([\#54](https://github.com/ubccr/xdmod-data/pull/54)).
 
 ## v1.0.2 (2024-10-31)
 
@@ -22,7 +23,8 @@ It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 
 ## v1.0.1 (2024-09-27)
 
-This release has bug fixes, performance improvements, and updates for compatibility, tests, and documentation.
+This release has bug fixes, performance improvements, and updates for
+compatibility, tests, and documentation.
 
 It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 
