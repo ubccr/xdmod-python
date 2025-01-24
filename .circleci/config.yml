@@ -65,10 +65,10 @@ jobs:
               for xdmod_container in $xdmod_containers; do
                 # Copy certificate for doing requests.
                 docker cp $xdmod_container:/etc/pki/tls/certs/$xdmod_container.crt .
-                docker cp $xdmod_container.crt $python_container:.
+                docker cp $xdmod_container.crt $python_container:/home/circleci/project
                 # Get XDMoD API token.
                 token=$(docker exec \
-                  -e CURL_CA_BUNDLE="$xdmod_container.crt" \
+                  -e CURL_CA_BUNDLE="/home/circleci/project/$xdmod_container.crt" \
                   $python_container \
                   bash -c "curl \
                     -sS \
@@ -80,7 +80,7 @@ jobs:
                 )
                 docker exec $python_container bash -c 'echo -n "XDMOD_API_TOKEN=" > ~/.xdmod-data-token'
                 docker exec \
-                  -e CURL_CA_BUNDLE="$xdmod_container.crt" \
+                  -e CURL_CA_BUNDLE="/home/circleci/project/$xdmod_container.crt" \
                   $python_container \
                   bash -c "curl \
                     -sS \
@@ -91,7 +91,7 @@ jobs:
                     >> ~/.xdmod-data-token"
                 # Run tests.
                 docker exec \
-                  -e CURL_CA_BUNDLE="$xdmod_container.crt" \
+                  -e CURL_CA_BUNDLE="/home/circleci/project/$xdmod_container.crt" \
                   -e XDMOD_HOST="https://$xdmod_container" \
                   -e XDMOD_VERSION="$xdmod_container" \
                   $python_container \
