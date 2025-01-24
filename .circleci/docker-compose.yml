@@ -1,19 +1,23 @@
 services:
+  # Test the minimum and maximum supported Python versions:
+  python-${MIN_PYTHON_VERSION}:
+    container_name: python-${MIN_PYTHON_VERSION}
+    image: cimg/python:${MIN_PYTHON_VERSION}
+    tty: true
+  python-${MAX_PYTHON_VERSION}:
+    container_name: python-${MAX_PYTHON_VERSION}
+    image: cimg/python:${MAX_PYTHON_VERSION}
+    tty: true
+  # Test the supported and development versions of the XDMoD web server:
   xdmod-main-dev:
     container_name: xdmod-main-dev
     image: ${XDMOD_11_0_IMAGE}
     tty: true
-    ports:
-      - 8081:443
   xdmod11.0:
     container_name: xdmod11.0
     image: ${XDMOD_11_0_IMAGE}
     tty: true
-    ports:
-      - 8082:443
   xdmod10.5:
     container_name: xdmod10.5
     image: ${XDMOD_10_5_IMAGE}
     tty: true
-    ports:
-      - 8083:443

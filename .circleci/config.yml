@@ -1,89 +1,80 @@
 version: 2.1
 jobs:
   build:
-    parameters:
-      python-version:
-        type: string
     environment:
       XDMOD_10_5_IMAGE: tools-ext-01.ccr.xdmod.org/xdmod-10.5.0-x86_64:rockylinux8.5-0.3
       XDMOD_11_0_IMAGE: tools-ext-01.ccr.xdmod.org/xdmod:x86_64-rockylinux8.9.20231119-v11.0.0-1.0-03
     docker:
-      - image: cimg/python:<< parameters.python-version >>
+      - image: cimg/base
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            python -m pip install --upgrade pip
-            python -m pip install flake8 flake8-commas flake8-quotes pytest coverage
-            python -m pip install -e .
-      - run:
-          name: Lint with Flake8
-          command: python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py
       - setup_remote_docker
       - run:
-          name: Spin up containers for testing against different XDMoD web server versions
-          command: docker compose -f .circleci/docker-compose.yml up -d
-      - run:
-          name: Test against each XDMoD web server version
+          name: Spin up containers and test different Python versions against different XDMoD web server versions
           command: |
-            declare -a portal_versions=$(yq '.services | keys | .[]' .circleci/docker-compose.yml)
-            for version in $portal_versions; do
-              if [ "$version" = 'xdmod-main-dev' ]; then
+            set -x
+            docker compose -f .circleci/docker-compose.yml up -d
+            declare -a python_containers=$(yq '.services | keys | .[] | select(test('python-*'))' .circleci/docker-compose.yml)
+            declare -a xdmod_containers=$(yq '.services | keys | .[] | select(test('xdmod*'))' .circleci/docker-compose.yml)
+            # Install dependencies in the Python containers and lint with Flake8.
+            for container in $python_containers; do
+              docker cp . $container:/root/project
+              docker exec -w /root/project $container bash -c 'python -m pip install --upgrade pip'
+              docker exec -w /root/project $container bash -c 'python -m pip install flake8 flake8-commas flake8-quotes pytest coverage'
+              docker exec -w /root/project $container bash -c 'python -m pip install -e .'
+              docker exec -w /root/project $container bash -c 'python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py'
+            fi
+            # Set up XDMoD web server containers.
+            for container in $xdmod_containers; do
+              # Generate OpenSSL key and certificate.
+              docker exec $container bash -c "openssl genrsa -rand /proc/cpuinfo:/proc/filesystems:/proc/interrupts:/proc/ioports:/proc/uptime 2048 > /etc/pki/tls/private/$container.key"
+              docker exec $container bash -c "/usr/bin/openssl req -new -key /etc/pki/tls/private/$container.key -x509 -sha256 -days 365 -set_serial $RANDOM -extensions v3_req -out /etc/pki/tls/certs/$container.crt -subj '/C=XX/L=Default City/O=Default Company Ltd/CN=$container' -addext 'subjectAltName=DNS:$container'"
+              if [ "$container" = 'xdmod-main-dev' ]; then
                 # Install and run the latest development version of the XDMoD web server.
-                docker exec $version bash -c 'git clone --depth=1 https://github.com/ubccr/xdmod.git /root/xdmod'
-                docker exec -w /root/xdmod $version bash -c 'composer install'
-                docker exec -w /root/xdmod $version bash -c '/root/bin/buildrpm xdmod'
-                docker exec -w /root/xdmod $version bash -c 'XDMOD_TEST_MODE=upgrade ./tests/ci/bootstrap.sh'
-                docker exec -w /root/xdmod $version bash -c './tests/ci/validate.sh'
-              else
+                docker exec $container bash -c 'git clone --depth=1 https://github.com/ubccr/xdmod.git /root/xdmod'
+                docker exec -w /root/xdmod $container bash -c 'composer install'
+                docker exec -w /root/xdmod $container bash -c '/root/bin/buildrpm xdmod'
+                docker exec -w /root/xdmod $container bash -c 'XDMOD_TEST_MODE=upgrade ./tests/ci/bootstrap.sh'
+                docker exec -w /root/xdmod $container bash -c './tests/ci/validate.sh'
+              elif [[ "$container" =~ xdmod* ]]; then
                 # Run the XDMoD web server.
-                docker exec $version /root/bin/services start
+                docker exec $container bash -c '/root/bin/services start'
               fi
-              # Set XDMoD host.
-              ports=$(yq ".services.\"$version\".ports[0]" .circleci/docker-compose.yml)
-              port=$(echo $ports | cut -d ':' -f 1)
-              export XDMOD_HOST="https://localhost:$port"
-              # Set XDMoD API token.
-              token=$(curl \
-                -k \
-                -X POST \
-                -c xdmod.cookie \
-                -d 'username=normaluser&password=normaluser' \
-                $XDMOD_HOST/rest/auth/login \
-                | jq -r '.results.token' \
-              )
-              echo -n 'XDMOD_API_TOKEN=' > ~/.xdmod-data-token
-              curl \
-                -k \
-                -X POST \
-                -b xdmod.cookie \
-                $XDMOD_HOST/rest/users/current/api/token?token=$token \
-                | jq -r '.data.token' \
-                >> ~/.xdmod-data-token
-              # Copy the 10,000 users file into the container and shred it.
-              # We use this file so we can test filters with more than 10,000
-              # values and date ranges that span multiple quarters.
-              docker cp 10000users.log $version:10000users.log
-              docker exec $version xdmod-shredder -r frearson -f slurm -i 10000users.log
-              # Ingest and aggregate.
-              date=$(date --utc +%Y-%m-%d)
-              docker exec $version xdmod-ingestor --ingest
-              docker exec $version xdmod-ingestor --aggregate=job --last-modified-start-date $date
-              # Run tests.
-              export XDMOD_VERSION="$version"
-              python -m coverage run --branch --append -m pytest -vvs -o log_cli=true tests/
             done
-      - run:
-          name: Make sure 100% code coverage
-          command: python3 -m coverage report -m --fail-under=100
-workflows:
-  full-build:
-    jobs:
-      - build:
-          matrix:
-            parameters:
-              # Test the minimum supported and latest Python versions:
-              python-version:
-                - "3.8"
-                - "3.13"
+#           # Copy certificate from container.
+#            # Set XDMoD host.
+#            ports=$(yq ".services.\"$container\".ports[0]" .circleci/docker-compose.yml)
+#            port=$(echo $ports | cut -d ':' -f 1)
+#            export XDMOD_HOST="https://localhost:$port"
+#            # Set XDMoD API token.
+#            token=$(curl \
+#              -k \
+#              -X POST \
+#              -c xdmod.cookie \
+#              -d 'username=normaluser&password=normaluser' \
+#              $XDMOD_HOST/rest/auth/login \
+#              | jq -r '.results.token' \
+#            )
+#            echo -n 'XDMOD_API_TOKEN=' > ~/.xdmod-data-token
+#            curl \
+#              -k \
+#              -X POST \
+#              -b xdmod.cookie \
+#              $XDMOD_HOST/rest/users/current/api/token?token=$token \
+#              | jq -r '.data.token' \
+#              >> ~/.xdmod-data-token
+#            # Copy the 10,000 users file into the container and shred it.
+#            # We use this file so we can test filters with more than 10,000
+#            # values and date ranges that span multiple quarters.
+#            docker cp 10000users.log $container:10000users.log
+#            docker exec $container xdmod-shredder -r frearson -f slurm -i 10000users.log
+#            # Ingest and aggregate.
+#            date=$(date --utc +%Y-%m-%d)
+#            docker exec $container xdmod-ingestor --ingest
+#            docker exec $container xdmod-ingestor --aggregate=job --last-modified-start-date $date
+#            # Run tests.
+#            export XDMOD_VERSION="$container"
+#            python -m coverage run --branch --append -m pytest -vvs -o log_cli=true tests/
+#      - run:
+#          name: Make sure 100% code coverage
+#          command: python3 -m coverage report -m --fail-under=100
