@@ -1,11 +1,11 @@
 from dotenv import load_dotenv
-from os.path import expanduser
+import os
 import pandas
 from pathlib import Path
 import pytest
 from xdmod_data.warehouse import DataWarehouse
 
-VALID_XDMOD_URL = 'https://xdmod.access-ci.org'
+VALID_XDMOD_HOST = os.environ['XDMOD_HOST']
 TOKEN_PATH = '~/.xdmod-data-token'
 INVALID_STR = 'asdlkfjsdlkfisdjkfjd'
 METHOD_PARAMS = {
@@ -32,14 +32,14 @@ METHOD_PARAMS = {
     'describe_raw_realms': (),
     'describe_raw_fields': ('realm',),
 }
-VALID_DATE = '2020-01-01'
+VALID_DATE = '2016-12-25'
 VALID_DIMENSION = 'Resource'
 VALID_VALUES = {
   'duration': 'Yesterday',
   'realm': 'Jobs',
   'metric': 'CPU Hours: Total',
   'dimension': VALID_DIMENSION,
-  'filters': {VALID_DIMENSION: 'Expanse'},
+  'filters': {VALID_DIMENSION: 'phillips'},
   'dataset_type': 'timeseries',
   'aggregation_unit': 'Auto',
   'parameter': 'duration',
@@ -112,12 +112,12 @@ for method in METHOD_PARAMS:
             key_error_test_params += [(method, {'filters': value}, match)]
 
 
-load_dotenv(Path(expanduser(TOKEN_PATH)), override=True)
+load_dotenv(Path(os.path.expanduser(TOKEN_PATH)), override=True)
 
 
 @pytest.fixture(scope='module')
 def dw_methods(request):
-    xdmod_host = VALID_XDMOD_URL
+    xdmod_host = VALID_XDMOD_HOST
     if hasattr(request, 'param'):
         xdmod_host = request.param
     with DataWarehouse(xdmod_host) as dw:
@@ -126,7 +126,7 @@ def dw_methods(request):
 
 @pytest.fixture(scope='module')
 def dw_methods_outside_runtime_context():
-    dw = DataWarehouse(VALID_XDMOD_URL)
+    dw = DataWarehouse(VALID_XDMOD_HOST)
     return __get_dw_methods(dw)
 
 
@@ -251,7 +251,7 @@ def __test_DataFrame_return_value(
 
 
 get_data_return_value_test_params = {
-    'duration': ('2020-01-01', '2020-01-31'),
+    'duration': ('2016-12-22', '2017-01-31'),
     'realm': 'Jobs',
     'metric': 'Number of Users: Active',
     'dimension': 'None',
@@ -267,25 +267,25 @@ get_data_return_value_test_params = {
         (
             {},
             'Metric',
-            31,
+            11,
         ),
         (
-            {'filters': {'Service Provider': 'StonyBrook'}},
+            {'filters': {'Resource': 'robertson'}},
             'Metric',
-            0,
+            6,
         ),
         (
             {'dimension': 'Resource'},
             'Resource',
-            31,
+            11,
         ),
         (
             {
                 'dimension': 'Resource',
-                'filters': {'Service Provider': 'StonyBrook'},
+                'filters': {'Resource': 'robertson'},
             },
             'Resource',
-            0,
+            6,
         ),
     ],
     ids=(
@@ -341,22 +341,22 @@ get_data_aggregate_return_value_test_params = {
             1,
         ),
         (
-            {'filters': {'Service Provider': 'StonyBrook'}},
+            {'filters': {'Resource': 'robertson'}},
             None,
             1,
         ),
         (
             {'dimension': 'Resource'},
             'Resource',
-            8,
+            5,
         ),
         (
             {
                 'dimension': 'Resource',
-                'filters': {'Service Provider': 'StonyBrook'},
+                'filters': {'Resource': 'robertson'},
             },
             'Resource',
-            0,
+            1,
         ),
     ],
     ids=(
@@ -446,7 +446,12 @@ def test_case_insensitive(dw_methods, method, param, value1, value2):
 
 @pytest.mark.parametrize(
     'dw_methods,method',
-    [(VALID_XDMOD_URL + '/', method) for method in list(METHOD_PARAMS.keys())],
+    [
+        (
+            VALID_XDMOD_HOST + '/',
+            method,
+        ) for method in list(METHOD_PARAMS.keys())
+    ],
     indirect=['dw_methods'],
     ids=[method for method in list(METHOD_PARAMS.keys())],
 )

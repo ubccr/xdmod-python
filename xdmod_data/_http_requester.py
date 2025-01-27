@@ -69,7 +69,7 @@ class _HttpRequester:
                 i += 1
             if params['show_progress']:
                 self.__print_progress_msg(i, 'DONE\n')
-        else:  # pragma: no cover
+        else:
             num_rows = limit
             offset = 0
             while num_rows == limit:
@@ -151,7 +151,7 @@ class _HttpRequester:
             ) from None
         if stream:
             return response.iter_lines()
-        else:  # pragma: no cover
+        else:
             return response.text
 
     def __get_data_post_fields(self, params):
@@ -195,9 +195,7 @@ class _HttpRequester:
                 response = self._request_json(
                     '/rest/v1/warehouse/raw-data/limit',
                 )
-                self.__raw_data_limit = int(
-                    response['data'],
-                )  # pragma: no cover
+                self.__raw_data_limit = int(response['data'])
             except RuntimeError as e:
                 if '404' in str(e):
                     self.__raw_data_limit = 'NA'
