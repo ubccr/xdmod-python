@@ -1,4 +1,4 @@
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 import json
 import os
 from pathlib import Path
@@ -133,9 +133,8 @@ class _HttpRequester:
             token = self.__api_token
         else:
             try:
-                load_dotenv(Path(os.path.expanduser('~/.xdmod-jwt.env')))
-                token = os.environ['XDMOD_JWT']
-                # TODO: add test for file not existing.
+                values = dotenv_values(Path(os.path.expanduser('~/.xdmod-jwt.env')))
+                token = values['XDMOD_JWT']
             except KeyError:
                 raise KeyError(token_error_msg) from None
         headers = {

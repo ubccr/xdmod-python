@@ -340,11 +340,6 @@ class DataWarehouse:
            Returns
            -------
            tuple of str
-
-           Raises
-           ------
-           KeyError
-               If an authentication token could not be loaded or if `realm` is
         """
         return _validator._get_durations()
 
