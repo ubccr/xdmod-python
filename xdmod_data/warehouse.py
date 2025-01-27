@@ -15,6 +15,12 @@ class DataWarehouse:
        >>> with DataWarehouse('https://xdmod.access-ci.org') as dw:
        ...     dw.get_data()
 
+       If running in a JupyterHub connected to XDMoD, authentication should
+       happen automatically. Otherwise, make sure the `XDMOD_API_TOKEN`
+       environment variable is set before the `DataWarehouse` is
+       constructed; it should be set to a valid API token obtained from
+       the XDMoD web portal.
+
        Parameters
        ----------
        xdmod_host : str
@@ -22,8 +28,6 @@ class DataWarehouse:
 
        Raises
        ------
-       KeyError
-           If the `XDMOD_API_TOKEN` environment variable has not been set.
        RuntimeError
            If a connection cannot be made to the XDMoD server specified by
            `xdmod_host`.
@@ -112,8 +116,9 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If any of the parameters have invalid values. Valid realms
-               come from `describe_realms()`, valid metrics come from
+               If an authentication token could not be loaded or if any of the
+               parameters have invalid values. Valid realms come from
+               `describe_realms()`, valid metrics come from
                `describe_metrics()`, valid dimensions and filter keys come from
                `describe_dimensions()`, valid filter values come from
                `get_filter_values()`, valid durations come from
@@ -182,8 +187,9 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If any of the parameters have invalid values. Valid durations
-               come from `get_durations()`, valid realms come from
+               If an authentication token could not be loaded or if any of the
+               parameters have invalid values. Valid durations come from
+               `get_durations()`, valid realms come from
                `describe_raw_realms()`, valid filters keys come from
                `describe_dimensions()`, valid filter values come from
                `get_filter_values()`, and valid fields come from
@@ -215,6 +221,8 @@ class DataWarehouse:
 
            Raises
            ------
+           KeyError
+               If an authentication token could not be loaded.
            RuntimeError
                If this method is called outside the runtime context.
         """
@@ -243,7 +251,8 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If `realm` is not one of the values from `describe_realms()`.
+               If an authentication token could not be loaded or if `realm` is
+               not one of the values from `describe_realms()`.
            RuntimeError
                If this method is called outside the runtime context.
            TypeError
@@ -270,7 +279,8 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If `realm` is not one of the values from `describe_realms()`.
+               If an authentication token could not be loaded or if `realm` is
+               not one of the values from `describe_realms()`.
            RuntimeError
                If this method is called outside the runtime context.
            TypeError
@@ -300,9 +310,9 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If `realm` is not one of the values from `describe_realms()` or
-               `dimension` is not one of the IDs or labels from
-               `describe_dimensions()`.
+               If an authentication token could not be loaded or if `realm` is
+               not one of the values from `describe_realms()` or `dimension` is
+               not one of the IDs or labels from `describe_dimensions()`.
            RuntimeError
                If this method is called outside the runtime context.
            TypeError
@@ -330,6 +340,11 @@ class DataWarehouse:
            Returns
            -------
            tuple of str
+
+           Raises
+           ------
+           KeyError
+               If an authentication token could not be loaded or if `realm` is
         """
         return _validator._get_durations()
 
@@ -355,6 +370,8 @@ class DataWarehouse:
 
            Raises
            ------
+           KeyError
+               If an authentication token could not be loaded.
            RuntimeError
                If this method is called outside the runtime context.
         """
@@ -383,8 +400,8 @@ class DataWarehouse:
            Raises
            ------
            KeyError
-               If `realm` is not one of the values from
-               `describe_raw_realms()`.
+               If an authentication token could not be loaded or if `realm` is
+               not one of the values from `describe_raw_realms()`.
            RuntimeError
                If this method is called outside the runtime context.
            TypeError
