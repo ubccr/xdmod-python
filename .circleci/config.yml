@@ -17,7 +17,7 @@ jobs:
             set -x
             docker compose -f .circleci/docker-compose.yml up -d
             declare -a python_containers=$(yq '.services | keys | .[] | select(. == "python-*")' .circleci/docker-compose.yml)
-            declare -a xdmod_containers=$(yq '.services | keys | .[] | select(. == "xdmod*")' .circleci/docker-compose.yml)
+            declare -a xdmod_containers=$(yq '.services | keys | .[] | select(. == "xdmod-*")' .circleci/docker-compose.yml)
             # Copy the xdmod-data source code to the Python containers, lint
             # with Flake 8, and install the package and its testing
             # dependencies.
@@ -34,7 +34,7 @@ jobs:
             for xdmod_container in $xdmod_containers; do
               # Generate OpenSSL key and certificate.
               docker exec $xdmod_container bash -c "openssl genrsa -rand /proc/cpuinfo:/proc/filesystems:/proc/interrupts:/proc/ioports:/proc/uptime 2048 > /etc/pki/tls/private/$xdmod_container.key"
-              docker exec $xdmod_container bash -c "/usr/bin/openssl req -new -key /etc/pki/tls/private/$xdmod_container.key -x509 -sha256 -days 365 -set_serial $RANDOM -extensions v3_req -out /etc/pki/tls/certs/$xdmod_container.crt -subj '/C=XX/L=Default City/O=Default Company Ltd/CN=$xdmod_container' -addext 'subjectAltName=DNS:$xdmod_container'"
+              docker exec $xdmod_container bash -c "openssl req -new -key /etc/pki/tls/private/$xdmod_container.key -x509 -sha256 -days 365 -set_serial $RANDOM -extensions v3_req -out /etc/pki/tls/certs/$xdmod_container.crt -subj '/C=XX/L=Default City/O=Default Company Ltd/CN=$xdmod_container' -addext 'subjectAltName=DNS:$xdmod_container'"
               # Update the server hostnames and certificates so the Python
               # containers can make requests to them.
               docker exec $xdmod_container bash -c "sed -i \"s/localhost/$xdmod_container/g\" /etc/httpd/conf.d/xdmod.conf"
@@ -60,6 +60,29 @@ jobs:
               date=$(date --utc +%Y-%m-%d)
               docker exec $xdmod_container xdmod-ingestor --ingest
               docker exec $xdmod_container xdmod-ingestor --aggregate=job --last-modified-start-date $date
+              # Get XDMoD API token.
+              rest_token=$(docker exec \
+                -e CURL_CA_BUNDLE="/home/circleci/project/$xdmod_container.crt" \
+                $python_container \
+                bash -c "curl \
+                  -sS \
+                  -X POST \
+                  -c xdmod.cookie \
+                  -d 'username=normaluser&password=normaluser' \
+                  https://$xdmod_container/rest/auth/login \
+                  | jq -r '.results.token'"
+              )
+              docker exec $python_container bash -c 'echo -n "XDMOD_API_TOKEN="' > ${xdmod_container}-token
+              docker exec \
+                -e CURL_CA_BUNDLE="/home/circleci/project/$xdmod_container.crt" \
+                $python_container \
+                bash -c "curl \
+                  -sS \
+                  -X POST \
+                  -b xdmod.cookie \
+                  https://$xdmod_container/rest/users/current/api/token?token=$rest_token \
+                  | jq -r '.data.token'" \
+                  >> ${xdmod_container}-token
             done
             # Run the tests against each XDMoD web server.
             for python_container in $python_containers; do
@@ -67,29 +90,8 @@ jobs:
                 # Copy certificate for doing requests.
                 docker cp $xdmod_container:/etc/pki/tls/certs/$xdmod_container.crt .
                 docker cp $xdmod_container.crt $python_container:/home/circleci/project
-                # Get XDMoD API token.
-                token=$(docker exec \
-                  -e CURL_CA_BUNDLE="/home/circleci/project/$xdmod_container.crt" \
-                  $python_container \
-                  bash -c "curl \
-                    -sS \
-                    -X POST \
-                    -c xdmod.cookie \
-                    -d 'username=normaluser&password=normaluser' \
-                    https://$xdmod_container/rest/auth/login \
-                    | jq -r '.results.token'"
-                )
-                docker exec $python_container bash -c 'echo -n "XDMOD_API_TOKEN=" > ~/.xdmod-data-token'
-                docker exec \
-                  -e CURL_CA_BUNDLE="/home/circleci/project/$xdmod_container.crt" \
-                  $python_container \
-                  bash -c "curl \
-                    -sS \
-                    -X POST \
-                    -b xdmod.cookie \
-                    https://$xdmod_container/rest/users/current/api/token?token=$token \
-                    | jq -r '.data.token' \
-                    >> ~/.xdmod-data-token"
+                # Copy XDMoD API token.
+                docker cp ${xdmod_container}-token $python_container:/home/circleci/.xdmod-data-token
                 # Run tests.
                 docker exec \
                   -e CURL_CA_BUNDLE="/home/circleci/project/$xdmod_container.crt" \
