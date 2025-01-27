@@ -139,7 +139,7 @@ def dw_methods_no_xdmod_api_token():
     token = os.environ['XDMOD_API_TOKEN']
     del os.environ['XDMOD_API_TOKEN']
     with open(Path(os.path.expanduser('~/.xdmod-jwt.env')), 'w') as jwt_file:
-        jwt_file.write('XDMOD_JWT=' + token + '\n')
+        jwt_file.write('XDMOD_JWT=' + INVALID_STR + '\n')
     dw = DataWarehouse(VALID_XDMOD_HOST)
     os.environ['XDMOD_API_TOKEN'] = token
     with dw:
