@@ -141,7 +141,7 @@ class _HttpRequester:
             **self.__headers,
             **{
                 'Authorization': 'Bearer ' + token,
-            }
+            },
         }
         if post_fields:
             response = self.__requests_session.post(
