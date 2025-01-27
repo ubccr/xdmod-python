@@ -68,7 +68,7 @@ def test___enter___RuntimeError_401():
             + ' the `XDMOD_API_TOKEN` environment variable is set before the'
             + ' `DataWarehouse` is constructed; it should be set to a valid'
             + ' API token obtained from the XDMoD web portal.'
-        )
+        ),
     ):
         with DataWarehouse(VALID_XDMOD_HOST) as dw:
             dw.describe_realms()

@@ -16,9 +16,9 @@ The package can be installed from PyPI via `pip install xdmod-data`.
 Existing installations can be upgraded via `pip install --upgrade xdmod-data`.
 
 The package has dependencies on [NumPy](https://pypi.org/project/numpy/),
-[python-dotenv](https://pypi.org/project/python-dotenv/),
 [Pandas](https://pypi.org/project/pandas/),
-[Plotly](https://pypi.org/project/plotly/), and
+[Plotly](https://pypi.org/project/plotly/),
+[Python-dotenv](https://pypi.org/project/python-dotenv/), and
 [Requests](https://pypi.org/project/requests/).
 
 Example usage is documented through Jupyter notebooks in the
