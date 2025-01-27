@@ -10,10 +10,14 @@ from xdmod_data.warehouse import DataWarehouse
 XDMOD_HOST = os.environ['XDMOD_HOST']
 XDMOD_VERSION = os.environ['XDMOD_VERSION']
 TOKEN_PATH = '~/.xdmod-data-token'
-DATA_DIR = os.path.dirname(__file__) + '/data/' + XDMOD_VERSION
 
 
 load_dotenv(Path(os.path.expanduser(TOKEN_PATH)), override=True)
+# When outputting dataframes for debugging, don't truncate any of the output.
+pandas.set_option('display.max_rows', None)
+pandas.set_option('display.max_columns', None)
+pandas.set_option('display.width', None)
+pandas.set_option('display.max_colwidth', None)
 
 
 @pytest.fixture(scope='module')
@@ -28,16 +32,21 @@ def __assert_dfs_equal(
     dtype='object',
     index_col='id',
     columns_name=None,
+    override_default_data=False,
 ):
+    data_dir = os.path.dirname(__file__) + '/data/' + (
+        XDMOD_VERSION if override_default_data
+        else 'default'
+    )
     if 'GENERATE_DATA_FILES' in os.environ:  # pragma: no cover
         try:
-            os.mkdir(DATA_DIR)
+            os.mkdir(data_dir)
         except FileExistsError:
             pass
-        actual.to_csv(DATA_DIR + '/' + data_file)
+        actual.to_csv(data_dir + '/' + data_file)
     else:
         expected = pandas.read_csv(
-            DATA_DIR + '/' + data_file,
+            data_dir + '/' + data_file,
             dtype=dtype,
             index_col=index_col,
             keep_default_na=False,
@@ -47,7 +56,9 @@ def __assert_dfs_equal(
         expected.columns.name = columns_name
         if index_col == 'Time':
             expected.index = pandas.to_datetime(expected.index)
-        assert expected.equals(actual)
+        assert expected.equals(actual), (
+            '\nEXPECTED:\n' + str(expected) + '\nACTUAL:\n' + str(actual)
+        )
 
 
 @pytest.mark.parametrize(
@@ -55,7 +66,7 @@ def __assert_dfs_equal(
     [
         (
             {},
-            '54747',
+            ('54747' if XDMOD_VERSION == 'xdmod-10-5' else '54748'),
             'raw-data-every-1000-no-fields-no-filters.csv',
         ),
         (
@@ -77,10 +88,11 @@ def __assert_dfs_equal(
                     ],
                 },
             },
-            '33345',
+            ('33345' if XDMOD_VERSION == 'xdmod-10-5' else '33346'),
             'raw-data-every-1000-with-fields-and-filters.csv',
         ),
     ],
+    ids=('no-fields-and-filters', 'with-fields-and-filters'),
 )
 def test_get_raw_data(valid_dw, capsys, additional_params, number, csv_title):
     defult_params = {
@@ -96,18 +108,29 @@ def test_get_raw_data(valid_dw, capsys, additional_params, number, csv_title):
         data,
         dtype='string',
         index_col=0,
+        override_default_data=(XDMOD_VERSION == 'xdmod-10-5'),
     )
     assert 'Got ' + number + ' rows...DONE' in capsys.readouterr().out
 
 
-def __assert_descriptor_dfs_equal(data_file, actual):
-    __assert_dfs_equal(data_file, actual, 'string')
+def __assert_descriptor_dfs_equal(
+    data_file,
+    actual,
+    override_default_data=False,
+):
+    __assert_dfs_equal(
+        data_file,
+        actual,
+        dtype='string',
+        override_default_data=override_default_data,
+    )
 
 
 def test_describe_realms(valid_dw):
     __assert_descriptor_dfs_equal(
         'realms.csv',
         valid_dw.describe_realms(),
+        override_default_data=(XDMOD_VERSION == 'xdmod-10-5'),
     )
 
 
@@ -115,6 +138,7 @@ def test_describe_metrics(valid_dw):
     __assert_descriptor_dfs_equal(
         'jobs-metrics.csv',
         valid_dw.describe_metrics('Jobs'),
+        override_default_data=(XDMOD_VERSION == 'xdmod-10-5'),
     )
 
 
@@ -122,6 +146,7 @@ def test_describe_dimensions(valid_dw):
     __assert_descriptor_dfs_equal(
         'jobs-dimensions.csv',
         valid_dw.describe_dimensions('Jobs'),
+        override_default_data=(XDMOD_VERSION == 'xdmod-10-5'),
     )
 
 

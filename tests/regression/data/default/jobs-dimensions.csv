@@ -14,4 +14,4 @@ queue,Queue,Queue pertains to the low level job queues on each resource.
 resource,Resource,A resource is a remote computer that can run jobs.
 resource_type,Resource Type,A categorization of resources into by their general capabilities.
 username,System Username,The specific system username of the users who ran jobs.
-person,User,"A person who is on a PIs allocation, hence able run jobs on resources."
+person,User,"A person who is on a PIs allocation, hence able to run jobs on resources."
