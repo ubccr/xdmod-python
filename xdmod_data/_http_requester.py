@@ -123,10 +123,11 @@ class _HttpRequester:
         _validator._assert_runtime_context(self.__in_runtime_context)
         url = self.__xdmod_host + path
         token_error_msg = (
-            'If running in JupyterHub connected with XDMoD, there is likely an'
-            + ' error with the JupyterHub. Otherwise, the '
-            + ' `XDMOD_API_TOKEN` environment variable should be set'
-            + ' to a valid API token obtained from the XDMoD web portal.',
+            'If running in JupyterHub connected with XDMoD, this is likely an'
+            + ' error with the JupyterHub. Otherwise, make sure the'
+            + ' `XDMOD_API_TOKEN` environment variable is set before the'
+            + ' `DataWarehouse` is constructed; it should be set to a valid'
+            + ' API token obtained from the XDMoD web portal.'
         )
         if self.__api_token is not None:
             token = self.__api_token
