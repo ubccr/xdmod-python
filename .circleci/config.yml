@@ -38,11 +38,15 @@ jobs:
               # Update the server hostnames and certificates so the Python
               # containers can make requests to them.
               docker exec $xdmod_container bash -c "sed -i \"s/localhost/$xdmod_container/g\" /etc/httpd/conf.d/xdmod.conf"
-              # Change server hostname.
-              if [ "$xdmod_container" = 'xdmod-main-dev' ]; then
+              if [[ "$xdmod_container" =~ 'xdmod-*-dev' ]]; then
+                if [ "$xdmod_container" = 'xdmod-main-dev' ]; then
+                  branch='main'
+                else
+                  branch="xdmod$(echo $xdmod_container | sed 's/xdmod-\(.*\)-dev/\1/' | sed 's/-/./')"
+                fi
                 # Install and run the latest development version of the XDMoD
                 # web server.
-                docker exec $xdmod_container bash -c 'git clone --depth=1 https://github.com/ubccr/xdmod.git /root/xdmod'
+                docker exec $xdmod_container bash -c 'git clone --depth=1 --branch=$branch https://github.com/ubccr/xdmod.git /root/xdmod'
                 docker exec -w /root/xdmod $xdmod_container bash -c 'composer install'
                 docker exec -w /root/xdmod $xdmod_container bash -c '/root/bin/buildrpm xdmod'
                 docker exec -w /root/xdmod $xdmod_container bash -c 'XDMOD_TEST_MODE=upgrade ./tests/ci/bootstrap.sh'
