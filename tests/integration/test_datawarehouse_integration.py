@@ -65,13 +65,13 @@ KEY_ERROR_TEST_VALUES_AND_MATCHES = {
     'field': (INVALID_STR, r'Field .* not found'),
 }
 
-key_error_test_ids = []
+param_key_error_test_ids = []
 duration_test_ids = []
 start_end_test_ids = []
 type_error_test_ids = []
 
 default_valid_params = {}
-key_error_test_params = []
+param_key_error_test_params = []
 date_malformed_test_params = []
 type_error_test_params = []
 value_error_test_methods = []
@@ -83,9 +83,9 @@ for method in METHOD_PARAMS:
         type_error_test_ids += [method + ':' + param]
         type_error_test_params += [(method, param)]
         if param in KEY_ERROR_TEST_VALUES_AND_MATCHES:
-            key_error_test_ids += [method + ':' + param]
+            param_key_error_test_ids += [method + ':' + param]
             (value, match) = KEY_ERROR_TEST_VALUES_AND_MATCHES[param]
-            key_error_test_params += [(method, {param: value}, match)]
+            param_key_error_test_params += [(method, {param: value}, match)]
         if param == 'duration':
             duration_test_ids += [method]
             start_end_test_ids += [
@@ -107,9 +107,13 @@ for method in METHOD_PARAMS:
             value_error_test_methods += [method]
     if 'filters' in METHOD_PARAMS[method]:
         for param in ('filter_key', 'filter_value'):
-            key_error_test_ids += [method + ':' + param]
+            param_key_error_test_ids += [method + ':' + param]
             (value, match) = KEY_ERROR_TEST_VALUES_AND_MATCHES[param]
-            key_error_test_params += [(method, {'filters': value}, match)]
+            param_key_error_test_params += [(
+                method,
+                {'filters': value},
+                match,
+            )]
 
 
 load_dotenv(Path(os.path.expanduser(TOKEN_PATH)), override=True)
@@ -128,6 +132,19 @@ def dw_methods(request):
 def dw_methods_outside_runtime_context():
     dw = DataWarehouse(VALID_XDMOD_HOST)
     return __get_dw_methods(dw)
+
+
+@pytest.fixture(scope='module')
+def dw_methods_no_xdmod_api_token():
+    token = os.environ['XDMOD_API_TOKEN']
+    del os.environ['XDMOD_API_TOKEN']
+    with open(Path(os.path.expanduser('~/.xdmod-jwt.env')), 'w') as jwt_file:
+        jwt_file.write('XDMOD_JWT=' + INVALID_STR + '\n')
+    dw = DataWarehouse(VALID_XDMOD_HOST)
+    os.environ['XDMOD_API_TOKEN'] = token
+    with dw:
+        os.remove(Path(os.path.expanduser('~/.xdmod-jwt.env')))
+        yield __get_dw_methods(dw)
 
 
 def __get_dw_methods(dw):
@@ -154,11 +171,31 @@ def __test_exception(dw_methods, method, additional_params, error, match):
 
 
 @pytest.mark.parametrize(
-    'method, params, match',
-    key_error_test_params,
-    ids=key_error_test_ids,
+    'method',
+    list(METHOD_PARAMS.keys()),
 )
-def test_KeyError(dw_methods, method, params, match):
+def test_token_KeyError(dw_methods_no_xdmod_api_token, method):
+    __test_exception(
+        dw_methods_no_xdmod_api_token,
+        method,
+        {},
+        KeyError,
+        (
+            'If running in JupyterHub connected with XDMoD, this is likely an'
+            + ' error with the JupyterHub. Otherwise, make sure the'
+            + ' `XDMOD_API_TOKEN` environment variable is set before the'
+            + ' `DataWarehouse` is constructed; it should be set to a valid'
+            + ' API token obtained from the XDMoD web portal.'
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    'method, params, match',
+    param_key_error_test_params,
+    ids=param_key_error_test_ids,
+)
+def test_param_KeyError(dw_methods, method, params, match):
     __test_exception(dw_methods, method, params, KeyError, match)
 
 
