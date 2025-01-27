@@ -133,7 +133,9 @@ class _HttpRequester:
             token = self.__api_token
         else:
             try:
-                values = dotenv_values(Path(os.path.expanduser('~/.xdmod-jwt.env')))
+                values = dotenv_values(
+                    Path(os.path.expanduser('~/.xdmod-jwt.env')),
+                )
                 token = values['XDMOD_JWT']
             except KeyError:
                 raise KeyError(token_error_msg) from None
