@@ -7,7 +7,7 @@ import xdmod_data._validator as _validator
 
 
 class DataWarehouse:
-    """Access the XDMoD data warehouse via XDMoD's network API.
+    """Request data from an XDMoD data warehouse via the XDMoD REST API.
 
        Methods must be called within a runtime context using the ``with``
        keyword, e.g.,
@@ -24,9 +24,6 @@ class DataWarehouse:
        ------
        KeyError
            If the `XDMOD_API_TOKEN` environment variable has not been set.
-       RuntimeError
-           If a connection cannot be made to the XDMoD server specified by
-           `xdmod_host`.
        TypeError
            If `xdmod_host` is not a string.
     """

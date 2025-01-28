@@ -23,7 +23,8 @@ It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 
 ## v1.0.1 (2024-09-27)
 
-This release has bug fixes, performance improvements, and updates for compatibility, tests, and documentation.
+This release has bug fixes, performance improvements, and updates for
+compatibility, tests, and documentation.
 
 It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 
