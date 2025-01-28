@@ -28,7 +28,7 @@ jobs:
               docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade flake8 flake8-commas flake8-quotes'
               docker exec -w /home/circleci/project $python_container bash -c 'python3 -m flake8 . --max-complexity=10 --show-source --exclude __init__.py'
               docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install -e .'
-              docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade python-dotenv pytest coverage'
+              docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade pytest coverage'
               # The minimum version of each dependency should be tested in the
               # container with the minimum Python version.
               if [ "$python_container" = "python-min" ]; then
