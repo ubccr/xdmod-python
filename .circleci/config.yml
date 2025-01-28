@@ -33,7 +33,7 @@ jobs:
               # container with the minimum Python version.
               if [ "$python_container" = "python-min" ]; then
                 min_dependency_versions=$(awk \
-                  '/install_requires/ {flag=1} flag && NF && !/install_requires/ {print $0} flag && /^\[.*\]$/ {flag=0}' \
+                  '/install_requires/ {flag=1} flag && !/install_requires/ && NF {print $0} flag && /^\[.*\]$/ {flag=0}' \
                   setup.cfg | tr -d '\n' | sed 's/ >= /==/g'
                 )
                 docker exec -w /home/circleci/project $python_container bash -c "python3 -m pip install --force-reinstall $min_dependency_versions"
