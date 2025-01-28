@@ -5,8 +5,10 @@
 - Prepare for v1.1.0 development ([\#44](https://github.com/ubccr/xdmod-data/pull/44)).
 - Implement 100% test coverage ([\#45](https://github.com/ubccr/xdmod-data/pull/45)).
 - Update Flake8 rules ([\#46](https://github.com/ubccr/xdmod-data/pull/46)).
-- Change to using CircleCI instead of GitHub Actions for continuous integration ([\#50](https://github.com/ubccr/xdmod-data/pull/50)).
-- Set up Docker Compose for CI testing ([\#53](https://github.com/ubccr/xdmod-data/pull/53)).
+- Change to using CircleCI instead of GitHub Actions for continuous integration
+  ([\#50](https://github.com/ubccr/xdmod-data/pull/50),
+  [\#53](https://github.com/ubccr/xdmod-data/pull/53),
+  [\#56](https://github.com/ubccr/xdmod-data/pull/56)).
 
 ## v1.0.2 (2024-10-31)
 
