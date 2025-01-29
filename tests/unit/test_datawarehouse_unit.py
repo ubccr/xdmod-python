@@ -46,7 +46,7 @@ def test___enter___RuntimeError_xdmod_host_malformed():
             r'(Invalid URL \'.*\': No host supplied|'
             + r'Invalid URL \'https:/controllers/metric_explorer.php\':'
             + r'No schema supplied. Perhaps you meant'
-            + r'http://https:/controllers/metric_explorer.php\?'
+            + r'http://https:/controllers/metric_explorer.php\?)'
         ),
     ):
         with DataWarehouse('https://') as dw:
