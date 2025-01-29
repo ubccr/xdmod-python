@@ -1,12 +1,18 @@
 #!/bin/bash
 # Use Docker Compose to spin up containers and test different Python versions
 # against different XDMoD web server versions.
+
+set -x
+set -eo pipefail
+
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR=$BASE_DIR/../../..
-set -x
+
 docker compose -f $BASE_DIR/docker-compose.yml up -d
+
 declare -a python_containers=$(yq '.services | keys | .[] | select(. == "python-*")' $BASE_DIR/docker-compose.yml)
 declare -a xdmod_containers=$(yq '.services | keys | .[] | select(. == "xdmod-*")' $BASE_DIR/docker-compose.yml)
+
 # Copy the xdmod-data source code to the Python containers, lint
 # with Flake 8, and install the package and its testing
 # dependencies.
@@ -28,6 +34,7 @@ for python_container in $python_containers; do
     docker exec -w /home/circleci/project $python_container bash -c "python3 -m pip install --force-reinstall $min_dependency_versions"
   fi
 done
+
 # Set up XDMoD web server containers.
 for xdmod_container in $xdmod_containers; do
   # Generate OpenSSL key and certificate.
@@ -90,6 +97,7 @@ for xdmod_container in $xdmod_containers; do
       | jq -r '.data.token'" \
       >> ${xdmod_container}-token
 done
+
 # Run the tests against each XDMoD web server.
 for python_container in $python_containers; do
   for xdmod_container in $xdmod_containers; do
