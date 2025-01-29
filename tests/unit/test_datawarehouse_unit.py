@@ -34,7 +34,7 @@ def test___enter___RuntimeError_xdmod_host_malformed():
         match=(
             r'(Invalid URL \'.*\': No host supplied|'
             + r'Invalid URL \'https:\': No schema supplied.'
-            + r' Perhaps you meant http://https:\?'
+            + r' Perhaps you meant http://https:\?)'
         ),
     ):
         with DataWarehouse('https://'):  # pragma: no cover
