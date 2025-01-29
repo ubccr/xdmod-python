@@ -1,15 +1,17 @@
 #!/bin/bash
 # Use Docker Compose to spin up containers and test different Python versions
 # against different XDMoD web server versions.
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../..
+PROJECT_DIR=$BASE_DIR/../../..
 set -x
-docker compose up -d
-declare -a python_containers=$(yq '.services | keys | .[] | select(. == "python-*")' docker-compose.yml)
-declare -a xdmod_containers=$(yq '.services | keys | .[] | select(. == "xdmod-*")' docker-compose.yml)
+docker compose -f $BASE_DIR/docker-compose.yml up -d
+declare -a python_containers=$(yq '.services | keys | .[] | select(. == "python-*")' $BASE_DIR/docker-compose.yml)
+declare -a xdmod_containers=$(yq '.services | keys | .[] | select(. == "xdmod-*")' $BASE_DIR/docker-compose.yml)
 # Copy the xdmod-data source code to the Python containers, lint
 # with Flake 8, and install the package and its testing
 # dependencies.
 for python_container in $python_containers; do
-  docker cp . $python_container:/home/circleci/project
+  docker cp $PROJECT_DIR $python_container:/home/circleci/project
   docker exec $python_container bash -c 'sudo chown -R circleci:circleci /home/circleci/project'
   docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade pip'
   docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade flake8 flake8-commas flake8-quotes'
@@ -54,14 +56,14 @@ for xdmod_container in $xdmod_containers; do
   # Copy the 10,000 users file into the container and shred it.
   # We use this file so we can test filters with more than 10,000
   # values and date ranges that span multiple quarters.
-  docker cp tests/ci/artifacts/10000users.log $xdmod_container:.
+  docker cp $PROJECT_DIR/tests/ci/artifacts/10000users.log $xdmod_container:.
   docker exec $xdmod_container xdmod-shredder -r frearson -f slurm -i 10000users.log
   # Ingest and aggregate.
   date=$(date --utc +%Y-%m-%d)
   docker exec $xdmod_container xdmod-ingestor --ingest
   docker exec $xdmod_container xdmod-ingestor --aggregate=job --last-modified-start-date $date
   # Copy certificate (for doing requests) from the XDMoD container.
-  docker cp $xdmod_container:/etc/pki/tls/certs/$xdmod_container.crt .
+  docker cp $xdmod_container:/etc/pki/tls/certs/$xdmod_container.crt $PROJECT_DIR
   # Copy certificate to one of the Python containers and get an
   # XDMoD API token for the XDMoD container.
   docker cp $xdmod_container.crt $python_container:/home/circleci/project
@@ -95,7 +97,7 @@ for python_container in $python_containers; do
     # container.
     docker cp $xdmod_container.crt $python_container:/home/circleci/project
     # Copy XDMoD API token to the Python container.
-    docker cp ${xdmod_container}-token $python_container:/home/circleci/.xdmod-data-token
+    docker cp $PROJECT_DIR/${xdmod_container}-token $python_container:/home/circleci/.xdmod-data-token
     # Run tests in the Python container.
     docker exec \
       -e CURL_CA_BUNDLE="/home/circleci/project/$xdmod_container.crt" \
