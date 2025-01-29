@@ -9,7 +9,8 @@
   ([\#48](https://github.com/ubccr/xdmod-data/pull/48),
   [\#49](https://github.com/ubccr/xdmod-data/pull/49),
   [\#51](https://github.com/ubccr/xdmod-data/pull/51),
-  [\#52](https://github.com/ubccr/xdmod-data/pull/52)).
+  [\#52](https://github.com/ubccr/xdmod-data/pull/52),
+  [\#59](https://github.com/ubccr/xdmod-data/pull/59)).
 
 ## v1.0.2 (2024-10-31)
 

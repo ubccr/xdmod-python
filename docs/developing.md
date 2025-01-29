@@ -1,6 +1,12 @@
 # Instructions for developers
 
+## Testing the code
+
+A testing script is available in `tests/ci/bootstrap.sh`. It requires Docker
+Compose and `yq`.
+
 ## Releasing a new version
+
 1. Make a new branch of `xdmod-data` and:
     1. Make sure the version number is updated in `xdmod_data/__version__.py`.
     1. In `README.md`:
@@ -71,6 +77,7 @@
     1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and close the milestone for the version.
 
 ## After release
+
 1. If this is a minor or patch release to a version that is not the most recent
    major version,
     1. For each major version above this release's major version, in a Pull
