@@ -29,7 +29,6 @@ class _HttpRequester:
     def _start_up(self):
         self.__in_runtime_context = True
         self.__requests_session = requests.Session()
-        self.__assert_connection_to_xdmod_host()
 
     def _tear_down(self):
         if self.__requests_session is not None:
@@ -111,15 +110,6 @@ class _HttpRequester:
     def _request_json(self, path, post_fields=None):
         response = self.__request(path, post_fields)
         return json.loads(response)
-
-    def __assert_connection_to_xdmod_host(self):
-        try:
-            self.__request()
-        except RuntimeError as e:  # pragma: no cover
-            raise RuntimeError(
-                "Could not connect to xdmod_host '" + self.__xdmod_host
-                + "': " + str(e),
-            ) from None
 
     def __request(self, path='', post_fields=None, stream=False):
         _validator._assert_runtime_context(self.__in_runtime_context)

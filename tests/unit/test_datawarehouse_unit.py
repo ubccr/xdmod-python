@@ -44,20 +44,20 @@ def test___enter___RuntimeError_xdmod_host_malformed():
         ),
         match=(
             r'(Invalid URL \'.*\': No host supplied|'
-            + r'Invalid URL \'https:\?Bearer=' + INVALID_STR + "': "
-            + r'No schema supplied. Perhaps you meant http://https:\?Bearer='
-            + INVALID_STR + r'\?)'
+            + r'Invalid URL \'https:/controllers/metric_explorer.php\':'
+            + r' No schema supplied. Perhaps you meant'
+            + r' http://https:/controllers/metric_explorer.php\?)'
         ),
     ):
-        with DataWarehouse('https://'):  # pragma: no cover
-            pass
+        with DataWarehouse('https://') as dw:
+            dw.describe_realms()
 
 
 def test___enter___RuntimeError_xdmod_host_unresolved():
     invalid_host = 'https://' + INVALID_STR + '.xdmod.org'
     with pytest.raises(Exception):
-        with DataWarehouse(invalid_host):  # pragma: no cover
-            pass
+        with DataWarehouse(invalid_host) as dw:
+            dw.describe_realms()
 
 
 def test___enter___RuntimeError_xdmod_host_unsupported_protocol():
@@ -66,8 +66,8 @@ def test___enter___RuntimeError_xdmod_host_unsupported_protocol():
         requests.exceptions.InvalidSchema,
         match="No connection adapters were found for '" + invalid_host,
     ):
-        with DataWarehouse(invalid_host):  # pragma no cover
-            pass
+        with DataWarehouse(invalid_host) as dw:
+            dw.describe_realms()
 
 
 def test___enter___RuntimeError_401():
