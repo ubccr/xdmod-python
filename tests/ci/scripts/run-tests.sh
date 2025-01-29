@@ -1,7 +1,7 @@
 #!/bin/bash
 # Use Docker Compose to spin up containers and test different Python versions
 # against different XDMoD web server versions.
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../..
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR=$BASE_DIR/../../..
 set -x
 docker compose -f $BASE_DIR/docker-compose.yml up -d
