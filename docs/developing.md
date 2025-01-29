@@ -9,7 +9,7 @@ To test with the notebooks in `xdmod-notebooks`, you can add this to the
 beginning of the first code cell (after the line `import sys`), replacing
 `username` with your username and `branch-name` with the name of the branch:
 ```
-! {sys.executable} -m pip install --upgrade git+https://github.com/username/xdmod-data.git@branch-name
+! {sys.executable} -m pip install --force-reinstall git+https://github.com/username/xdmod-data.git@branch-name
 ```
 
 ## Releasing a new version
