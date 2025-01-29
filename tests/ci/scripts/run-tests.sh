@@ -5,6 +5,11 @@
 set -x
 set -eo pipefail
 
+export MIN_PYTHON_VERSION=3.8
+export MAX_PYTHON_VERSION=3.13
+export XDMOD_10_5_IMAGE=tools-ext-01.ccr.xdmod.org/xdmod-10.5.0-x86_64:rockylinux8.5-0.3
+export XDMOD_11_0_IMAGE=tools-ext-01.ccr.xdmod.org/xdmod:x86_64-rockylinux8.9.20231119-v11.0.0-1.0-03
+
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR=$BASE_DIR/../../..
 
