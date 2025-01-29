@@ -4,6 +4,9 @@ import numpy
 import os
 import pandas
 from pathlib import Path
+import plotly.express as px
+import plotly.io as pio
+import xdmod_data.themes
 import pytest
 from xdmod_data.warehouse import DataWarehouse
 
@@ -226,3 +229,7 @@ def test_get_durations(valid_dw):
         expected_durations.append(year)
     actual_durations = list(valid_dw.get_durations())
     assert expected_durations == actual_durations
+
+
+def test_first_example_notebook():
+    pio.templates.default = 'timeseries'
