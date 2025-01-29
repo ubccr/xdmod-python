@@ -1,5 +1,7 @@
+from dotenv import dotenv_values
 import json
 import os
+from pathlib import Path
 import re
 import requests
 from urllib.parse import urlencode
@@ -13,14 +15,10 @@ class _HttpRequester:
         _validator._assert_str('xdmod_host', xdmod_host)
         xdmod_host = re.sub('/+$', '', xdmod_host)
         self.__xdmod_host = xdmod_host
-        try:
+        self.__api_token = None
+        if 'XDMOD_API_TOKEN' in os.environ:
             self.__api_token = os.environ['XDMOD_API_TOKEN']
-        except KeyError:
-            raise KeyError(
-                '`XDMOD_API_TOKEN` environment variable has not been set.',
-            ) from None
         self.__headers = {
-            'Authorization': 'Bearer ' + self.__api_token,
             'User-Agent': __title__ + ' Python v' + __version__,
         }
         self.__requests_session = None
@@ -124,17 +122,37 @@ class _HttpRequester:
     def __request(self, path='', post_fields=None, stream=False):
         _validator._assert_runtime_context(self.__in_runtime_context)
         url = self.__xdmod_host + path
+        token_error_msg = (
+            'If running in JupyterHub connected with XDMoD, this is likely an'
+            + ' error with the JupyterHub. Otherwise, make sure the'
+            + ' `XDMOD_API_TOKEN` environment variable is set before the'
+            + ' `DataWarehouse` is constructed; it should be set to a valid'
+            + ' API token obtained from the XDMoD web portal.'
+        )
+        if self.__api_token is not None:
+            token = self.__api_token
+        else:
+            try:
+                values = dotenv_values(
+                    Path(os.path.expanduser('~/.xdmod-jwt.env')),
+                )
+                token = values['XDMOD_JWT']
+            except KeyError:
+                raise KeyError(token_error_msg) from None
+        headers = {
+            **self.__headers,
+            **{
+                'Authorization': 'Bearer ' + token,
+            },
+        }
         if post_fields:
-            post_fields['Bearer'] = self.__api_token
             response = self.__requests_session.post(
                 url,
-                headers=self.__headers,
+                headers=headers,
                 data=post_fields,
             )
         else:
-            url += '&' if '?' in url else '?'
-            url += 'Bearer=' + self.__api_token
-            response = self.__requests_session.get(url, headers=self.__headers)
+            response = self.__requests_session.get(url, headers=headers)
         if response.status_code != 200:
             msg = ''
             try:
@@ -144,7 +162,7 @@ class _HttpRequester:
                 pass
             if response.status_code == 401:
                 msg = (
-                    ': Make sure XDMOD_API_TOKEN is set to a valid API token.'
+                    ': ' + token_error_msg
                 )
             raise RuntimeError(
                 'Error ' + str(response.status_code) + msg,

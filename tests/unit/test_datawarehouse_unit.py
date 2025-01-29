@@ -25,17 +25,6 @@ def test___init___TypeError_xdmod_host():
         DataWarehouse(2)
 
 
-def test___init___KeyError():
-    token = os.environ['XDMOD_API_TOKEN']
-    del os.environ['XDMOD_API_TOKEN']
-    with pytest.raises(
-        KeyError,
-        match='`XDMOD_API_TOKEN` environment variable has not been set.',
-    ):
-        DataWarehouse(VALID_XDMOD_HOST)
-    os.environ['XDMOD_API_TOKEN'] = token
-
-
 def test___enter___RuntimeError_xdmod_host_malformed():
     with pytest.raises(
         (
@@ -44,9 +33,8 @@ def test___enter___RuntimeError_xdmod_host_malformed():
         ),
         match=(
             r'(Invalid URL \'.*\': No host supplied|'
-            + r'Invalid URL \'https:\?Bearer=' + INVALID_STR + "': "
-            + r'No schema supplied. Perhaps you meant http://https:\?Bearer='
-            + INVALID_STR + r'\?)'
+            + r'Invalid URL \'https:\': No schema supplied.'
+            + r' Perhaps you meant http://https:\?)'
         ),
     ):
         with DataWarehouse('https://'):  # pragma: no cover
@@ -73,8 +61,13 @@ def test___enter___RuntimeError_xdmod_host_unsupported_protocol():
 def test___enter___RuntimeError_401():
     with pytest.raises(
         RuntimeError,
-        match='Error 401: Make sure XDMOD_API_TOKEN is set'
-        + ' to a valid API token.',
+        match=(
+            'Error 401: If running in JupyterHub connected with XDMoD, this'
+            + ' is likely an error with the JupyterHub. Otherwise, make sure'
+            + ' the `XDMOD_API_TOKEN` environment variable is set before the'
+            + ' `DataWarehouse` is constructed; it should be set to a valid'
+            + ' API token obtained from the XDMoD web portal.'
+        ),
     ):
         with DataWarehouse(VALID_XDMOD_HOST) as dw:
             dw.describe_realms()
