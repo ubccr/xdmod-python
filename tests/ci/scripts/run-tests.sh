@@ -22,7 +22,7 @@ declare -a xdmod_containers=$(yq '.services | keys | .[] | select(. == "xdmod-*"
 # with Flake 8, and install the package and its testing
 # dependencies.
 for python_container in $python_containers; do
-  docker cp $PROJECT_DIR $python_container:/home/circleci/project
+  docker cp $PROJECT_DIR/. $python_container:/home/circleci/project
   docker exec $python_container bash -c 'sudo chown -R circleci:circleci /home/circleci/project'
   docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade pip'
   docker exec -w /home/circleci/project $python_container bash -c 'python3 -m pip install --upgrade flake8 flake8-commas flake8-quotes'
