@@ -2,7 +2,9 @@
 
 ## v1.x.y (development branch)
 
-- Prepare for v1.1.0 development ([\#44](https://github.com/ubccr/xdmod-data/pull/44)).
+This release fixes a `ValueError` error that occurs with the Plotly
+`timeseries` template.
+
 - Implement 100% test coverage ([\#45](https://github.com/ubccr/xdmod-data/pull/45)).
 - Update Flake8 rules ([\#46](https://github.com/ubccr/xdmod-data/pull/46)).
 - Change to using CircleCI instead of GitHub Actions for continuous integration
@@ -10,6 +12,7 @@
   [\#53](https://github.com/ubccr/xdmod-data/pull/53),
   [\#56](https://github.com/ubccr/xdmod-data/pull/56),
   [\#58](https://github.com/ubccr/xdmod-data/pull/58)).
+- Fix Plotly template ValueError ([\#60](https://github.com/ubccr/xdmod-data/pull/60)).
 
 ## v1.0.2 (2024-10-31)
 
