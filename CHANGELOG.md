@@ -8,7 +8,8 @@
 - Change to using CircleCI instead of GitHub Actions for continuous integration
   ([\#50](https://github.com/ubccr/xdmod-data/pull/50),
   [\#53](https://github.com/ubccr/xdmod-data/pull/53),
-  [\#56](https://github.com/ubccr/xdmod-data/pull/56)).
+  [\#56](https://github.com/ubccr/xdmod-data/pull/56),
+  [\#58](https://github.com/ubccr/xdmod-data/pull/58)).
 
 ## v1.0.2 (2024-10-31)
 
