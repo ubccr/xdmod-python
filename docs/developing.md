@@ -10,7 +10,7 @@ cell to replace `xdmod-data` and its version constraints with the following,
 replacing `username` with your username and `branch-name` with the name of the
 branch:
 ```
-! {sys.executable} -m pip install --force-reinstall --no-deps git+https://github.com/username/xdmod-data.git@branch-name
+git+https://github.com/username/xdmod-data.git@branch-name
 ```
 
 ## Releasing a new version
