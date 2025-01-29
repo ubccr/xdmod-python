@@ -73,10 +73,12 @@ pio.templates['timeseries'] = go.layout.Template(
             '#111111',
         ],
         'xaxis': {
-            'titlefont': {
-                'family': 'Arial, sans-serif',
-                'size': 12,
-                'color': '#5078a0',
+            'title': {
+                'font': {
+                    'family': 'Arial, sans-serif',
+                    'size': 12,
+                    'color': '#5078a0',
+                },
             },
             'color': '#606060',
             'ticks': 'outside',
@@ -91,10 +93,12 @@ pio.templates['timeseries'] = go.layout.Template(
             'tickformat': '%Y-%m-%d',
         },
         'yaxis': {
-            'titlefont': {
-                'family': 'Arial, sans-serif',
-                'size': 12,
-                'color': '#1199FF',
+            'title': {
+                'font': {
+                    'family': 'Arial, sans-serif',
+                    'size': 12,
+                    'color': '#1199FF',
+                },
             },
             'color': '#606060',
             'gridcolor': '#bfc0c0',
