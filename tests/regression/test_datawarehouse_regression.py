@@ -231,5 +231,46 @@ def test_get_durations(valid_dw):
     assert expected_durations == actual_durations
 
 
-def test_first_example_notebook():
+def test_first_example_notebook(valid_dw):
     pio.templates.default = 'timeseries'
+    with valid_dw:
+        data = dw.get_data(
+            duration=('2016-01-01', '2017-12-31'),
+            realm='Jobs',
+            metric='Number of Users: Active',
+        )
+    plot = px.line(data, y='Number of Users: Active')
+    plot.show()
+    data['Day Name'] = data.index.strftime('%a')
+    plot = px.box(
+        data,
+        x='Day Name',
+        y='Number of Users: Active',
+        category_orders={'Day Name': ('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat')},
+    )
+    plot.show()
+    metric_label = 'Number of Users: Active'
+    with valid_dw:
+        data = valid_dw.get_data(
+            duration=('2016-01-01', '2017-12-31'),
+            realm='Jobs',
+            metric=metric_label,
+            dimension='Resource',
+        )
+    plot = px.line(data, labels={'value': metric_label})
+    plot.show()
+    metric_label = 'Number of Users: Active'
+    with valid_dw:
+        data = dw.get_data(
+            duration=('2016-01-01', '2017-12-31'),
+            realm='Jobs',
+            metric=metric_label,
+            dimension='Resource',
+            dataset_type='aggregate',
+        )
+    plot = px.bar(data, labels={'value': metric_label})
+    plot.update_layout(
+        showlegend=False,
+        xaxis_automargin=True,
+    )
+    plot.show()
