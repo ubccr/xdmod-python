@@ -1,5 +1,7 @@
 # xdmod-data Changelog
 
+## v1.x.y (development branch)
+
 ## v1.0.3 (2025-01-30)
 
 This release fixes a `ValueError` error that occurs with the Plotly
