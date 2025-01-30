@@ -6,7 +6,9 @@ import pandas
 from pathlib import Path
 import plotly.express as px
 import plotly.io as pio
-import xdmod_data.themes
+# The next line is used for the line `pio.templates.default = 'timeseries'`.
+# Thus, we don't want the linter to think it is unused.
+import xdmod_data.themes  # noqa: F401
 import pytest
 from xdmod_data.warehouse import DataWarehouse
 
