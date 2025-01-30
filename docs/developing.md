@@ -16,6 +16,13 @@ Compose and `yq`.
                 ```
                 This documentation is for **v1.0.2**.
                 ```
+            1. Add the following item to the list, replacing `1` with the major
+               version number of the new release. The development branches
+               should be listed in order of major version, ascending (`1.x.y`,
+               `2.x.y`, etc.):
+                ```
+                - [v1.x.y (development branch)](https://github.com/ubccr/xdmod-data/tree/v1.x.y?tab=readme-ov-file#xdmod-data)
+                ```
         1. Update the Open XDMoD compatibility matrix.
     1. Update `CHANGELOG.md` to:
         1. Change the `development branch` to, e.g., `v1.0.1 (2024-06-XX)`.
