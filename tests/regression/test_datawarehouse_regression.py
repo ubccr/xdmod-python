@@ -234,7 +234,7 @@ def test_get_durations(valid_dw):
 def test_first_example_notebook(valid_dw):
     pio.templates.default = 'timeseries'
     with valid_dw:
-        data = dw.get_data(
+        data = valid_dw.get_data(
             duration=('2016-01-01', '2017-12-31'),
             realm='Jobs',
             metric='Number of Users: Active',
