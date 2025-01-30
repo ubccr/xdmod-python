@@ -4,12 +4,12 @@ As part of the Data Analytics Framework for [XDMoD](https://open.xdmod.org),
 this Python package provides API access to the data warehouse of instances of
 Open XDMoD.
 
-This documentation is for **v1.0.3**. For documentation of other versions:
+This documentation is for **v1.x.y (development branch)**. For documentation of other versions:
 
+- [v1.0.3](https://github.com/ubccr/xdmod-data/tree/v1.0.3?tab=readme-ov-file#xdmod-data)
 - [v1.0.2](https://github.com/ubccr/xdmod-data/tree/v1.0.2?tab=readme-ov-file#xdmod-data)
 - [v1.0.1](https://github.com/ubccr/xdmod-data/tree/v1.0.1?tab=readme-ov-file#xdmod-data)
 - [v1.0.0](https://github.com/ubccr/xdmod-data/tree/v1.0.0?tab=readme-ov-file#xdmod-data)
-- [v1.x.y (development branch)](https://github.com/ubccr/xdmod-data/tree/v1.x.y?tab=readme-ov-file#xdmod-data)
 - [v2.x.y (main development branch)](https://github.com/ubccr/xdmod-data/tree/main?tab=readme-ov-file#xdmod-data)
 
 The package can be installed from PyPI via `pip install xdmod-data`.
@@ -40,7 +40,7 @@ Use of the Data Analytics Framework requires an API token. To obtain an API
 token, follow the steps below to obtain an API token from the XDMoD portal.
 
 1. First, if you are not already signed in to the portal, sign in in the
-top-left corner:
+   top-left corner:
 
     ![Screenshot of "Sign In" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/sign-in.jpg)
 
@@ -63,8 +63,8 @@ top-left corner:
     ![Screenshot of "Generate API Token" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/generate.jpg)
 
 1. Copy the token to your clipboard. Make sure to paste it somewhere secure for
-saving, as you will not be able to see the token again once you close the
-window:
+   saving, as you will not be able to see the token again once you close the
+   window:
 
     ![Screenshot of "Copy API Token to Clipboard" button](https://raw.githubusercontent.com/ubccr/xdmod-data/main/docs/images/api-token/copy.jpg)
 
