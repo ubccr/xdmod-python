@@ -246,7 +246,9 @@ def test_first_example_notebook(valid_dw):
         data,
         x='Day Name',
         y='Number of Users: Active',
-        category_orders={'Day Name': ('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat')},
+        category_orders={
+            'Day Name': ('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'),
+        },
     )
     plot.show()
     metric_label = 'Number of Users: Active'
