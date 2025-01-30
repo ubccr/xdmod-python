@@ -6,8 +6,12 @@
 
 ## v1.x.y (development branch)
 
+## v1.0.3 (2025-01-30)
+
 This release fixes a `ValueError` that occurs with the Plotly `timeseries`
 template.
+
+It is compatible with Open XDMoD versions 11.0.x and 10.5.x.
 
 - Implement 100% test coverage ([\#27](https://github.com/ubccr/xdmod-data/pull/27)).
 - Update Flake8 rules ([\#28](https://github.com/ubccr/xdmod-data/pull/28)).

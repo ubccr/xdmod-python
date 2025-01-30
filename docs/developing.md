@@ -16,6 +16,13 @@ Compose and `yq`.
                 ```
                 This documentation is for **v1.0.2**.
                 ```
+            1. Add the following item to the list, replacing `1` with the major
+               version number of the new release. The development branches
+               should be listed in order of major version, ascending (`1.x.y`,
+               `2.x.y`, etc.):
+                ```
+                - [v1.x.y (development branch)](https://github.com/ubccr/xdmod-data/tree/v1.x.y?tab=readme-ov-file#xdmod-data)
+                ```
         1. Update the Open XDMoD compatibility matrix.
     1. Update `CHANGELOG.md` to:
         1. Change the `development branch` to, e.g., `v1.0.1 (2024-06-XX)`.
@@ -49,18 +56,17 @@ Compose and `yq`.
         twine upload --repository testpypi dist/xdmod_data-${version}-py3-none-any.whl
         ```
         Enter your TestPyPI API token.
-    1. Go to https://test.pypi.org/project/xdmod-data and confirm that everything looks right.
-    1. Go to https://test.pypi.org/manage/project/xdmod-data/releases/ and:
-        1. In the `Options` menu next to the release, click `Delete`.
-        1. Type the version number in the box.
-        1. Click `Delete release`.
+    1. Go to https://test.pypi.org/project/xdmod-data and confirm that
+       everything looks right.
     1. Upload the built distribution to PyPI:
         ```
         twine upload dist/xdmod_data-${version}-py3-none-any.whl
         ```
         Enter your PyPI username and password.
-    1. Go to https://pypi.org/project/xdmod-data and confirm the new version is the latest release.
-1. Update the date of the release in `CHANGELOG.md` and commit it to the Pull Request.
+    1. Go to https://pypi.org/project/xdmod-data and confirm the new version is
+       the latest release.
+1. Update the date of the release in `CHANGELOG.md` and commit it to the Pull
+   Request.
 1. Merge the Pull Request.
 1. Go to [create a new release on GitHub](https://github.com/ubccr/xdmod-data/releases/new) and:
     1. Click `Choose a tag`.
@@ -70,11 +76,13 @@ Compose and `yq`.
     1. Where it says `Describe this release`, paste in the contents of the
        release's section in `CHANGELOG.md`. Note that single newlines are
        interpreted as line breaks, so you may need to reformat the description
-       to break the lines where you want them to break.
-    1. Where it says `Describe this release`, paste in the contents of the release's section in `CHANGELOG.md`.
-    1. Where it says `Attach binaries`, attach the built distribution (the `.whl` file) that was uploaded to PyPI.
+       to break the lines where you want them to break. Use the `Preview` to
+       make sure it looks right.
+    1. Where it says `Attach binaries`, attach the built distribution (the
+       `.whl` file) that was uploaded to PyPI.
     1. Click `Publish release`.
-    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and close the milestone for the version.
+    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
+       and close the milestone for the version.
 
 ## After release
 
@@ -82,15 +90,19 @@ Compose and `yq`.
    major version,
     1. For each major version above this release's major version, in a Pull
        Request,
-        1. Add the entry for this version to the `CHANGELOG.md`.
+        1. Add the entry for this version to the `CHANGELOG.md`. Note that the
+           PR numbers should match the ones that were merged into the major
+           branch whose Pull Request you are currently creating, NOT the branch
+           that the release was tagged on.
         1. In the `README.md`:
             1. Add an item to the top of the bulleted list for
                the new version, making sure to replace the version number in
                the link text and in the URL.
             1. Update the Open XDMoD compatibility matrix.
-1. In a Pull Request to the `main` branch of `xdmod-data`:
+        1. Get the Pull Request approved and merged.
+1. In a Pull Request to the same branch you just released:
     1. Make sure the version number is updated in `xdmod_data/__version__.py`
-       to a development pre-release of the next version, e.g., `1.0.1.dev1`.
+       to a development pre-release of the next version, e.g., `1.0.1.dev01`.
     1. In `README.md`, under the main heading, in the sentence that begins,
        `This documentation is for ...`, replace the version number in bold,
        e.g.:
@@ -107,8 +119,11 @@ Compose and `yq`.
 1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
    and add a milestone for the version under development.
 1. Make a new branch of `xdmod-data` and:
-    1. Make sure the version number is updated in `xdmod_data/__version__.py` to a pre-release of the next version, e.g., `1.0.1-01`.
-    1. Update `CHANGELOG.md` to add a section at the top called `Main development branch`.
-    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones) and add a milestone for the version.
+    1. Make sure the version number is updated in `xdmod_data/__version__.py`
+       to a development version of the next release, e.g., `1.0.1.dev01`.
+    1. Update `CHANGELOG.md` to add a section at the top called `Main
+       development branch`.
+    1. Go to the [GitHub milestones](https://github.com/ubccr/xdmod-data/milestones)
+       and add a milestone for the version.
     1. Create a Pull Request for the new version.
     1. Once the Pull Request is approved, merge it into `main`.
