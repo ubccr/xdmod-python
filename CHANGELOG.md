@@ -2,8 +2,6 @@
 
 ## v2.x.y (main development branch)
 
-- Prepare for v2.0.0 development ([\#42](https://github.com/ubccr/xdmod-data/pull/42)).
-
 ## v1.x.y (development branch)
 
 ## v1.0.3 (2025-01-30)
